@@ -20,8 +20,6 @@ import {
   ShowToAuthUserDirective
 } from './directives/user.validator.directive';
 import { MDBBootstrapModule } from 'angular-bootstrap-md';
-import { PanValidator } from './directives/cardno.validator.directive';
-import { Cvv2Validator } from './directives/cvv2.validator.directive';
 import { MatProgressButtonsModule } from 'mat-progress-buttons';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -31,7 +29,6 @@ import { CountdownModule } from 'ngx-countdown';
 import { SpinnerComponent } from '../spinner/spinner.component';
 import { InfiniteScrollComponent } from '../infinite-scroll/infinite-scroll.component';
 import { toJalaaliPipe, formatJalaaliPipe } from './pipes/moment-jalaali.pipe';
-import { CardnoPipe } from './pipes/cardno.pipe';
 import { formatTimePipe } from './pipes/time.pipe';
 import { DpDatePickerModule } from 'ng2-jalali-date-picker';
 
@@ -59,8 +56,6 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
   declarations: [
     myFocus,
     PhoneValidator,
-    PanValidator,
-    Cvv2Validator,
     EmailValidator,
     MustMatchValidator,
     IsAuthorizedDirective,
@@ -74,14 +69,11 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     ConfirmationDialogComponent,
     toJalaaliPipe,
     formatJalaaliPipe,
-    formatTimePipe,
-    CardnoPipe
+    formatTimePipe
   ],
   exports: [
     myFocus,
     PhoneValidator,
-    PanValidator,
-    Cvv2Validator,
     EmailValidator,
     MustMatchValidator,
     MaterialModule,
@@ -100,7 +92,6 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     toJalaaliPipe,
     formatJalaaliPipe,
     formatTimePipe,
-    CardnoPipe,
     DpDatePickerModule,
     TranslateModule
   ],
