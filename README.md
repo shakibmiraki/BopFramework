@@ -1,5 +1,5 @@
 # BopFramework
-Back-End (.NetCore 2.2+): 
+## Back-End (.NetCore 2.2+): 
 - Dynamicly register your dependency with IDependencyRegistrar
 - Automapper (classes inherited from IOrderedMapperProfile will automaticly register)
 - Configuration to enable and disable redis cache and memory cache
@@ -11,7 +11,7 @@ Back-End (.NetCore 2.2+):
 - IStartupTask to start task on project initialization
 - Localization
 
-Front-End (Angular8,AngularMaterial) : 
+## Front-End (Angular8,AngularMaterial) : 
 - Login Component
 - Register Component
 - AccountActivation Component
