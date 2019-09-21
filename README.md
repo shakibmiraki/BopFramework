@@ -1,5 +1,5 @@
 # BopFramework
-Server Side Features : 
+Back-End (.NetCore 2.2+): 
 - Dynamicly register your dependency with IDependencyRegistrar
 - Automapper (classes inherited from IOrderedMapperProfile will automaticly register)
 - Configuration to enable and disable redis cache and memory cache
@@ -11,5 +11,14 @@ Server Side Features :
 - IStartupTask to start task on project initialization
 - Localization
 
-Single Page Application
-- Angular
+Front-End (Angular8,AngularMaterial) : 
+- Login Component
+- Register Component
+- AccountActivation Component
+- PageNotFound Component
+- ButtonSpinner Component
+- Spinner Component
+- Upload Component
+- Core Module (HttpInterceptor,ErrorInterceptor,LocalizationIntercaptor)
+- Notification Service
+- User service
