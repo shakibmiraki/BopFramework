@@ -1,0 +1,22 @@
+th.mat-header-cell{
+    text-align: center !important;
+    font-weight: bold;
+    font-size: 14px;
+    box-sizing: border-box;
+    color: #000;
+}
+td.mat-cell:last-of-type,
+td.mat-cell:first-of-type{
+    font-weight: 400 !important;
+    font-size: 13px;
+}
+
+.disable-card .btn.btn-sm{
+    width: 130px;
+}
+
+@media (max-width: 793px) {
+    .disable-card .btn.btn-sm{
+        display: block;
+    }
+}

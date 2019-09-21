@@ -1,0 +1,6 @@
+﻿{
+  "DataProvider": "sqlserver",
+  "DataConnectionString": "Data Source=.;Initial Catalog=BopFramework;Integrated Security=True;Persist Security Info=False;MultipleActiveResultSets=True;",
+  "IsDatabaseInstalled": true,
+  "RawDataSettings": {}
+}

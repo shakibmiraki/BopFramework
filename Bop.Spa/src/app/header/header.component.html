@@ -1,0 +1,35 @@
+<mat-toolbar color="primary">
+  <div *ShowToAuthUser="true">
+    <button mat-icon-button (click)="onToggleDrawer()">
+      <mat-icon>menu</mat-icon>
+    </button>
+  </div>
+  <!-- <button mat-button routerLink="/home">Home</button> -->
+  <button mat-button routerLink="/home" routerLinkActive="active">
+    {{ 'resources.app.header.menu.home' | translate }}
+  </button>
+  <button
+    mat-button
+    *ShowToAuthUser="false"
+    routerLink="/login"
+    routerLinkActive="active"
+  >
+    {{ 'resources.app.header.menu.login' | translate }}
+  </button>
+  <button
+    mat-button
+    *ShowToAuthUser="false"
+    routerLink="/register"
+    routerLinkActive="active"
+  >
+    {{ 'resources.app.header.menu.register' | translate }}
+  </button>
+  <button
+    mat-button
+    *ShowToAuthUser="true"
+    (click)="logout()"
+    routerLinkActive="active"
+  >
+    {{ 'resources.app.header.menu.logout' | translate }}
+  </button>
+</mat-toolbar>

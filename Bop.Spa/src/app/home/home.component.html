@@ -1,0 +1,41 @@
+<header>
+  <section class="view home">
+    <div class="row">
+
+      <div class="col-lg-6 right-col">
+        <div  class="d-flex flex-column justify-content-center  align-items-center align-middle">
+            <div style="background-image:url(../../assets/sepah-logo.svg);height: 140px;width: 140px;background-repeat: no-repeat;margin-bottom: 30px;" class="img-fluid"></div>
+          <h1 class="heading font-weight-bold text-center">
+            {{ 'resources.app.home.form.title' | translate }}
+          </h1>
+          <h5 class="subheading font-weight-bold text-center">
+              {{ 'resources.app.home.form.description' | translate }}
+          </h5>
+            <div class="text-center">
+                <button data-aos="fade-up" type="button" class="bank-gradient btn btn-lily btn-margin btn-rounded btn-grad" routerLink="/register"
+                routerLinkActive="active">
+                {{ 'resources.app.home.field.registerbutton' | translate }}
+                <i class="fas fa-caret-left mr-2"></i>
+                </button>
+                <button data-aos="fade-up" type="button" class="bank-gradient btn btn-lily btn-margin btn-rounded btn-grad" routerLink="/login"
+                routerLinkActive="active">
+                {{ 'resources.app.home.field.loginbutton' | translate }}
+                <i class="fas fa-caret-left mr-2"></i>
+                </button>
+            </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6 left-col hidden-md-down">
+        <div class="view">
+          <div style="background-image:url(../../assets/bg-sepah.svg);"
+            class="img-fluid full-background-image"
+            alt="smaple image"
+          ></div>
+          <div class="mask flex-center hm-gradient"></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</header>

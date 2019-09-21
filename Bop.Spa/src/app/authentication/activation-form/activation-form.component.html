@@ -1,0 +1,82 @@
+<div class="container-fluid">
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-5">
+      <mdb-card class="testimonial-card text-center">
+        <div class="card-up bank-gradient"></div>
+
+        <div class="avatar mx-auto">
+          <img src="/assets/activation-logo.png" class="rounded-circle" />
+        </div>
+
+        <countdown [config]="{ leftTime: 60 * 2 }" (finished)="onFinished()">$!m!:$!s!</countdown>
+        <div *ngIf="needResend">
+          <div class="red-text">{{ 'resources.account.activation.resend.message' | translate }}</div>
+          <a class="green-text" (click)="resend()">{{ 'resources.account.activation.resend.button' | translate }}</a>
+        </div>
+
+        <mdb-card-body>
+          <mdb-card-title>
+            <p class="h4 mb-4">
+              {{ 'resources.account.activation.form.title' | translate }}
+            </p>
+          </mdb-card-title>
+
+          <form
+            class="ltr"
+            name="form"
+            (ngSubmit)="f.form.valid && onSubmit()"
+            #f="ngForm"
+            novalidate
+          >
+            <div class="form-group">
+              <div class="md-form">
+                <input
+                  type="text"
+                  name="token"
+                  class="form-control"
+                  [(ngModel)]="model.token"
+                  #token="ngModel"
+                  [ngClass]="{ 'is-invalid': f.submitted && token.invalid }"
+                  mdbInput
+                  required
+                  [textMask]="{ mask: tokenMask }"
+                  pattern="^[0-9]{5}$"
+                />
+
+                <label for="token">
+                  {{ 'resources.account.activation.field.token' | translate }}
+                </label>
+
+                <div
+                  *ngIf="token.touched && token.invalid"
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="token.errors.required">
+                    {{
+                      'resources.account.activation.validation.token.required'
+                        | translate
+                    }}
+                  </div>
+                  <div *ngIf="token.errors.pattern">
+                    {{
+                      'resources.account.activation.validation.token.pattern'
+                        | translate
+                    }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-center">
+              <app-button-spinner
+                [inputDisabled]="!f.valid"
+                [isRunning]="isRequesting"
+                [inputValue]="'resources.account.activation.button.activation'"
+              ></app-button-spinner>
+            </div>
+          </form>
+        </mdb-card-body>
+      </mdb-card>
+    </div>
+  </div>
+</div>

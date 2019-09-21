@@ -1,0 +1,92 @@
+<div class="container-fluid">
+  <div class="row justify-content-center mt-4" data-aos="fade-up">
+    <div class="col-lg-10 col-md-12">
+      <div class="text-center z-depth-1 p-5 white">
+        <mat-tab-group>
+          <mat-tab
+            label="{{
+              'resources.dashboard.localization.label.importlanguageresource'
+                | translate
+            }}"
+          >
+            <div class="container pt-3">
+              <form name="form" novalidate>
+                <mat-form-field class="full-width pb-3">
+                  <mat-select
+                    [(ngModel)]="selectedLanguageId"
+                    name="selectedLanguage"
+                    (selectionChange)="selected($event)"
+                    placeholder="{{
+                      'resources.dashboard.localization.field.languages'
+                        | translate
+                    }}"
+                    required
+                  >
+                    <mat-option
+                      *ngFor="let language of languages"
+                      [value]="language.languageId"
+                    >
+                      {{ language.languageName }} -
+                      {{ language.languageCulture }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <app-upload
+                  [isDisabled]="!f.valid"
+                  [language]="selectedLanguageId"
+                ></app-upload>
+              </form>
+            </div>
+          </mat-tab>
+          <mat-tab
+            label="{{
+              'resources.dashboard.localization.label.exportlanguageresource'
+                | translate
+            }}"
+          >
+            <div class="container pt-3">
+              <form
+                (ngSubmit)="f.form.valid && onSubmit()"
+                #f="ngForm"
+                name="form"
+                novalidate
+              >
+                <mat-form-field class="full-width pb-3">
+                  <mat-select
+                    [(ngModel)]="selectedLanguageId"
+                    name="selectedLanguage"
+                    (selectionChange)="selected($event)"
+                    placeholder="{{
+                      'resources.dashboard.localization.field.languages'
+                        | translate
+                    }}"
+                    required
+                  >
+                    <mat-option
+                      *ngFor="let language of languages"
+                      [value]="language.languageId"
+                    >
+                      {{ language.languageName }} -
+                      {{ language.languageCulture }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <div class="text-center">
+                  <app-button-spinner
+                    [inputDisabled]="!f.valid"
+                    [isRunning]="isRequesting"
+                    [inputValue]="
+                      'resources.dashboard.localization.button.download'
+                    "
+                  ></app-button-spinner>
+                </div>
+              </form>
+            </div>
+          </mat-tab>
+        </mat-tab-group>
+      </div>
+    </div>
+  </div>
+</div>

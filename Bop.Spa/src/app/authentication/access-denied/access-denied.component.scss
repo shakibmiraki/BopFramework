@@ -1,0 +1,133 @@
+.error-holder {
+    width: 100%;
+    margin: 50px 0;
+    text-align: center;
+  }
+  
+  .error-holder .box {
+    background: #3f51b5;
+    margin: 0 auto;
+    width: 309px;
+    height: 309px;
+    position: relative;
+  }
+  
+  .error-holder .box .error-type {
+    font-size: 156px;
+    text-align: right;
+    margin-bottom: 0;
+    color: #fff;
+    letter-spacing: -12px;
+  }
+  
+  .error-holder .error-text {
+    font-size: 53px;
+    color: #3f51b5;
+  }
+  
+  .flashing-num-1 {
+    position: relative;
+    -webkit-animation: flashNum1 0.6s linear alternate;
+    animation: flashNum1 0.6s linear alternate;
+  }
+  
+  .flashing-num-1 lesshat-selector {
+    -lh-property: 0;
+  }
+  
+  @-webkit-keyframes flashNum1 {
+    0% {
+      opacity: 0;
+    }
+  
+    100% {
+      opacity: 1;
+      left: 0;
+    }
+  }
+  
+  @keyframes flashNum1 {
+    0% {
+      opacity: 0;
+    }
+  
+    100% {
+      opacity: 1;
+      left: 0;
+    }
+  }
+  
+  [not-existing] {
+    zoom: 1;
+  }
+  
+  .flashing-num-1 lesshat-selector {
+    -lh-property: 0;
+  }
+  
+  @-webkit-keyframes flashNum2 {
+    0% {
+      opacity: 0;
+    }
+  
+    100% {
+      opacity: 1;
+      left: 0;
+    }
+  }
+  
+  @keyframes flashNum2 {
+    0% {
+      opacity: 0;
+    }
+  
+    100% {
+      opacity: 1;
+      left: 0;
+    }
+  }
+  
+  [not-existing] {
+    zoom: 1;
+  }
+  
+  .flashing-num-1 lesshat-selector {
+    -lh-property: 0;
+  }
+  
+  @-webkit-keyframes flashNum3 {
+    0% {
+      opacity: 0;
+    }
+  
+    100% {
+      opacity: 1;
+      left: 0;
+    }
+  }
+  
+  @keyframes flashNum3 {
+    0% {
+      opacity: 0;
+    }
+  
+    100% {
+      opacity: 1;
+      left: 0;
+    }
+  }
+  
+  [not-existing] {
+    zoom: 1;
+  }
+  
+  .flashing-num-1.del-1 {
+    -webkit-animation: flashNum2 820ms linear alternate;
+    animation: flashNum2 820ms linear alternate;
+  }
+  
+  .flashing-num-1.del-2 {
+    -webkit-animation: flashNum3 1.15s linear alternate;
+    animation: flashNum3 1.15s linear alternate;
+  }
+  

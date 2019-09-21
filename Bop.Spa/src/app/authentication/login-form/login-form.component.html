@@ -1,0 +1,99 @@
+<div class="container-fluid">
+  <div class="row justify-content-center mt-4" data-aos="fade-up">
+    <div class="col-md-5">
+      <mdb-card class="testimonial-card text-center">
+        <div class="card-up bank-gradient"></div>
+
+        <div class="avatar mx-auto">
+          <img src="/assets/login-logo.png" class="rounded-circle" />
+        </div>
+
+        <mdb-card-body>
+          <mdb-card-title>
+            <p class="h4 mb-4">
+                {{ 'resources.account.login.form.title' | translate }}
+            </p>
+          </mdb-card-title>
+
+          <form
+            class="ltr"
+            (ngSubmit)="f.form.valid && onSubmit()"
+            #f="ngForm"
+            name="form"
+            novalidate
+          >
+            <div class="form-group">
+              <div class="md-form">
+                <input
+                  type="text"
+                  name="phone"
+                  class="form-control mb-4"
+                  [(ngModel)]="model.phone"
+                  #phone="ngModel"
+                  [ngClass]="{ 'is-invalid': phone.touched && phone.invalid }"
+                  mdbInput
+                  required
+                  validatePhone
+                />
+                <label for="phone">
+                    {{ 'resources.account.login.field.phone' | translate }}
+                </label>
+                <div
+                  *ngIf="phone.touched && phone.invalid"
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="phone.errors.required">
+                    {{ 'resources.account.share.validation.phone.required' | translate }}
+                  </div>
+                  <div *ngIf="phone.errors.validatePhone">
+                      {{ 'resources.account.share.validation.phone.wrongformat' | translate }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="md-form">
+                <input
+                  type="password"
+                  name="password"
+                  class="form-control mb-4"
+                  [(ngModel)]="model.password"
+                  #password="ngModel"
+                  [ngClass]="{
+                    'is-invalid': password.touched && password.invalid
+                  }"
+                  mdbInput
+                  required
+                  minlength="6"
+                />
+                <label for="password">
+                    {{ 'resources.account.login.field.password' | translate }}
+                </label>
+                <div
+                  *ngIf="password.touched && password.invalid"
+                  class="invalid-feedback"
+                >
+                  <div *ngIf="password.errors.required">
+                      {{ 'resources.account.share.validation.password.required' | translate }}
+                  </div>
+                  <div *ngIf="password.errors.minlength">
+                    {{ 'resources.account.share.validation.password.minlength' | translate }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-center">
+              <app-button-spinner
+                [inputDisabled]="!f.valid"
+                [isRunning]="isRequesting"
+                [inputValue]="'resources.account.login.button.login'"
+              ></app-button-spinner>
+            </div>
+          </form>
+        </mdb-card-body>
+      </mdb-card>
+    </div>
+  </div>
+</div>

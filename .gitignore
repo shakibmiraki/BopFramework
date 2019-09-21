@@ -1,0 +1,17 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/Bop/v15
+/Bop.Core/obj
+/Bop.Core/bin
+/Web/obj
+/Bop.Web.Framework/obj
+/Bop.Web.Framework/bin
+/Bop.Web/bin
+/Bop.Web/.vscode
+/Bop.Web/obj
+/Bop.Services/bin
+/Bop.Services/obj
+/Bop.Data/bin
+/Bop.Data/obj

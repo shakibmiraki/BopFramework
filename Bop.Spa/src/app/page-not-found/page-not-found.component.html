@@ -1,0 +1,27 @@
+<div class="container-fluid">
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-5">
+      <div class="error-holder">
+        <div
+          class="box d-flex flex-column justify-content-center  align-items-center align-middle"
+        >
+          <p class="error-type">
+            <span class="flashing-num-1">4</span>
+            <span class="flashing-num-1 del-1">0</span>
+            <span class="flashing-num-1 del-2">4</span>
+          </p>
+        </div>
+        <p class="error-text mt-4">
+          {{ 'resources.app.notfound.title' | translate }}
+        </p>
+        <p>
+          {{ 'resources.app.notfound.description' | translate }}
+          <br />
+          {{ 'resources.app.notfound.helplink.part1' | translate }}
+          <a routerLink="/home">{{'resources.app.notfound.helplink.part2' | translate}}</a>
+          {{ 'resources.app.notfound.helplink.part3' | translate }}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
