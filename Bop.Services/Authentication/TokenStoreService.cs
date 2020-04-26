@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
 using Bop.Core.Configuration;
-using Bop.Core.Data;
-using Bop.Core.Domain.Users;
+using Bop.Data;
+using Bop.Core.Domain.Customers;
 using Bop.Services.Security;
 
 
@@ -13,37 +13,37 @@ namespace Bop.Services.Authentication
     {
         private readonly IEncryptionService _encryptionService;
         private readonly ITokenFactoryService _tokenFactoryService;
-        private readonly IRepository<UserToken> _userTokenRepository;
+        private readonly IRepository<CustomerToken> _customerTokenRepository;
         private readonly JwtConfig _jwtConfig;
 
         public TokenStoreService(
             IEncryptionService encryptionService,
             ITokenFactoryService tokenFactoryService, 
-            IRepository<UserToken> userTokenRepository, 
+            IRepository<CustomerToken> customerTokenRepository, 
             JwtConfig jwtConfig)
         {
             _encryptionService = encryptionService;
             _tokenFactoryService = tokenFactoryService;
-            _userTokenRepository = userTokenRepository;
+            _customerTokenRepository = customerTokenRepository;
             _jwtConfig = jwtConfig;
         }
 
-        public void AddUserToken(UserToken userToken)
+        public void AddCustomerToken(CustomerToken customerToken)
         {
-            if (!_jwtConfig.AllowMultipleLoginsFromTheSameUser)
+            if (!_jwtConfig.AllowMultipleLoginsFromTheSameCustomer)
             {
-                InvalidateUserTokens(userToken.UserId);
+                InvalidateCustomerTokens(customerToken.CustomerId);
             }
-            DeleteTokensWithSameRefreshTokenSource(userToken.RefreshTokenIdHashSource);
-            _userTokenRepository.Insert(userToken);
+            DeleteTokensWithSameRefreshTokenSource(customerToken.RefreshTokenIdHashSource);
+            _customerTokenRepository.Insert(customerToken);
         }
 
-        public void AddUserToken(User user, string refreshTokenSerial, string accessToken, string refreshTokenSourceSerial)
+        public void AddCustomerToken(Customer customer, string refreshTokenSerial, string accessToken, string refreshTokenSourceSerial)
         {
             var now = DateTimeOffset.UtcNow;
-            var token = new UserToken
+            var token = new CustomerToken
             {
-                UserId = user.Id,
+                CustomerId = customer.Id,
                 // Refresh token handles should be treated as secrets and should be stored hashed
                 RefreshTokenIdHash = _encryptionService.GetSha256Hash(refreshTokenSerial),
                 RefreshTokenIdHashSource = string.IsNullOrWhiteSpace(refreshTokenSourceSerial) ?
@@ -52,17 +52,17 @@ namespace Bop.Services.Authentication
                 RefreshTokenExpiresDateTime = now.AddMinutes(_jwtConfig.RefreshTokenExpirationMinutes),
                 AccessTokenExpiresDateTime = now.AddMinutes(_jwtConfig.AccessTokenExpirationMinutes)
             };
-            AddUserToken(token);
+            AddCustomerToken(token);
         }
 
         public void DeleteExpiredTokens()
         {
             var now = DateTimeOffset.UtcNow;
-            var userTokens = _userTokenRepository.Table.Where(x => x.RefreshTokenExpiresDateTime < now).ToList();
+            var customerTokens = _customerTokenRepository.Table.Where(x => x.RefreshTokenExpiresDateTime < now).ToList();
 
-            foreach (var userToken in userTokens)
+            foreach (var customerToken in customerTokens)
             {
-                _userTokenRepository.Delete(userToken);
+                _customerTokenRepository.Delete(customerToken);
             }
         }
 
@@ -71,7 +71,7 @@ namespace Bop.Services.Authentication
             var token = FindToken(refreshTokenValue);
             if (token != null)
             {
-                _userTokenRepository.Delete(token);
+                _customerTokenRepository.Delete(token);
             }
         }
 
@@ -81,21 +81,21 @@ namespace Bop.Services.Authentication
             {
                 return;
             }
-            var userTokens = _userTokenRepository.Table.Where(t => t.RefreshTokenIdHashSource == refreshTokenIdHashSource).ToList();
+            var customerTokens = _customerTokenRepository.Table.Where(t => t.RefreshTokenIdHashSource == refreshTokenIdHashSource).ToList();
 
-            foreach (var userToken in userTokens)
+            foreach (var customerToken in customerTokens)
             {
-                _userTokenRepository.Delete(userToken);
+                _customerTokenRepository.Delete(customerToken);
             }
         }
 
-        public void RevokeUserBearerTokens(string userIdValue, string refreshTokenValue)
+        public void RevokeCustomerBearerTokens(string customerIdValue, string refreshTokenValue)
         {
-            if (!string.IsNullOrWhiteSpace(userIdValue) && int.TryParse(userIdValue, out int userId))
+            if (!string.IsNullOrWhiteSpace(customerIdValue) && int.TryParse(customerIdValue, out int customerId))
             {
-                if (_jwtConfig.AllowSignoutAllUserActiveClients)
+                if (_jwtConfig.AllowSignoutAllCustomerActiveClients)
                 {
-                    InvalidateUserTokens(userId);
+                    InvalidateCustomerTokens(customerId);
                 }
             }
 
@@ -112,7 +112,7 @@ namespace Bop.Services.Authentication
             DeleteExpiredTokens();
         }
 
-        public UserToken FindToken(string refreshTokenValue)
+        public CustomerToken FindToken(string refreshTokenValue)
         {
             if (string.IsNullOrWhiteSpace(refreshTokenValue))
             {
@@ -126,24 +126,24 @@ namespace Bop.Services.Authentication
             }
 
             var refreshTokenIdHash = _encryptionService.GetSha256Hash(refreshTokenSerial);
-            return _userTokenRepository.Table.FirstOrDefault(x => x.RefreshTokenIdHash == refreshTokenIdHash);
+            return _customerTokenRepository.Table.FirstOrDefault(x => x.RefreshTokenIdHash == refreshTokenIdHash);
         }
 
-        public void InvalidateUserTokens(int userId)
+        public void InvalidateCustomerTokens(int customerId)
         {
-            var userTokens = _userTokenRepository.Table.Where(x => x.UserId == userId).ToList();
-            foreach (var userToken in userTokens)
+            var customerTokens = _customerTokenRepository.Table.Where(x => x.CustomerId == customerId).ToList();
+            foreach (var customerToken in customerTokens)
             {
-                _userTokenRepository.Delete(userToken);
+                _customerTokenRepository.Delete(customerToken);
             }
         }
 
-        public bool IsValidToken(string accessToken, int userId)
+        public bool IsValidToken(string accessToken, int customerId)
         {
             var accessTokenHash = _encryptionService.GetSha256Hash(accessToken);
-            var userToken = _userTokenRepository.Table.FirstOrDefault(
-                x => x.AccessTokenHash == accessTokenHash && x.UserId == userId);
-            return userToken?.AccessTokenExpiresDateTime >= DateTimeOffset.UtcNow;
+            var customerToken = _customerTokenRepository.Table.FirstOrDefault(
+                x => x.AccessTokenHash == accessTokenHash && x.CustomerId == customerId);
+            return customerToken?.AccessTokenExpiresDateTime >= DateTimeOffset.UtcNow;
         }
     }
 }

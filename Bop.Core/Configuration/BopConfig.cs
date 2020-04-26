@@ -28,6 +28,11 @@ namespace Bop.Core.Configuration
         public int? RedisDatabaseId { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the data protection system should be configured to persist keys in the Redis database
+        /// </summary>
+        public bool UseRedisToStoreDataProtectionKeys { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether we should use Redis server for caching (instead of default in-memory caching)
         /// </summary>
         public bool UseRedisForCaching { get; set; }

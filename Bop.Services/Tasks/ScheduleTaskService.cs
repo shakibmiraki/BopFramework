@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bop.Core.Data;
 using Bop.Core.Domain.Tasks;
-
+using Bop.Data;
+using Bop.Services.Caching.Extensions;
 
 namespace Bop.Services.Tasks
 {
@@ -51,7 +51,7 @@ namespace Bop.Services.Tasks
             if (taskId == 0)
                 return null;
 
-            return _taskRepository.GetById(taskId);
+            return _taskRepository.ToCachedGetById(taskId);
         }
 
         /// <summary>

@@ -2,7 +2,6 @@
 using Bop.Core;
 using Bop.Core.Domain.Common;
 
-
 namespace Bop.Services.Common
 {
     /// <summary>
@@ -30,6 +29,13 @@ namespace Bop.Services.Common
         GenericAttribute GetAttributeById(int attributeId);
 
         /// <summary>
+        /// Get attributes
+        /// </summary>
+        /// <param name="key">Key</param>
+        /// <returns>Get attributes</returns>
+        IList<GenericAttribute> GetAttributesByKey(string key);
+
+        /// <summary>
         /// Inserts an attribute
         /// </summary>
         /// <param name="attribute">attribute</param>
@@ -50,21 +56,14 @@ namespace Bop.Services.Common
         IList<GenericAttribute> GetAttributesForEntity(int entityId, string keyGroup);
 
         /// <summary>
-        /// Get attributes by key
-        /// </summary>
-        /// <param name="key">Key</param>
-        /// <returns>Get attributes</returns>
-        IList<GenericAttribute> GetAttributesByKey(string key);
-
-
-        /// <summary>
         /// Save attribute value
         /// </summary>
         /// <typeparam name="TPropType">Property type</typeparam>
         /// <param name="entity">Entity</param>
         /// <param name="key">Key</param>
         /// <param name="value">Value</param>
-        void SaveAttribute<TPropType>(BaseEntity entity, string key, TPropType value);
+        /// <param name="storeId">Store identifier; pass 0 if this attribute will be available for all stores</param>
+        void SaveAttribute<TPropType>(BaseEntity entity, string key, TPropType value, int storeId = 0);
 
         /// <summary>
         /// Get an attribute of an entity
@@ -72,8 +71,21 @@ namespace Bop.Services.Common
         /// <typeparam name="TPropType">Property type</typeparam>
         /// <param name="entity">Entity</param>
         /// <param name="key">Key</param>
+        /// <param name="storeId">Load a value specific for a certain store; pass 0 to load a value shared for all stores</param>
         /// <param name="defaultValue">Default value</param>
         /// <returns>Attribute</returns>
-        TPropType GetAttribute<TPropType>(BaseEntity entity, string key, TPropType defaultValue = default(TPropType));
+        TPropType GetAttribute<TPropType>(BaseEntity entity, string key, int storeId = 0, TPropType defaultValue = default);
+
+        /// <summary>
+        /// Get an attribute of an entity
+        /// </summary>
+        /// <typeparam name="TPropType">Property type</typeparam>
+        /// <param name="entityId">Entity identifier</param>
+        /// <param name="key">Key</param>
+        /// <param name="storeId">Load a value specific for a certain store; pass 0 to load a value shared for all stores</param>
+        /// <param name="defaultValue">Default value</param>
+        /// <returns>Attribute</returns>
+        TPropType GetAttribute<TEntity, TPropType>(int entityId, string key, int storeId = 0, TPropType defaultValue = default)
+            where TEntity : BaseEntity;
     }
 }

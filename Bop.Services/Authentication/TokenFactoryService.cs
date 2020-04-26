@@ -5,10 +5,11 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using Bop.Core.Configuration;
-using Bop.Core.Domain.Users;
+using Bop.Core.Domain.Customers;
 using Bop.Services.Security;
-using Bop.Services.Users;
+using Bop.Services.Customers;
 using Microsoft.IdentityModel.Tokens;
+using Bop.Services.Logging;
 
 namespace Bop.Services.Authentication
 {
@@ -28,26 +29,26 @@ namespace Bop.Services.Authentication
     public class TokenFactoryService : ITokenFactoryService
     {
         private readonly IEncryptionService _encryptionService;
-        private readonly IUserService _userService;
+        private readonly ICustomerService _customerService;
         private readonly ILogger _logger;
         private readonly JwtConfig _jwtConfig;
 
         public TokenFactoryService(
             IEncryptionService encryptionService,
-            IUserService userService,
+            ICustomerService customerService,
             ILogger logger,
             JwtConfig jwtConfig)
         {
             _encryptionService = encryptionService;
-            _userService = userService;
+            _customerService = customerService;
             _logger = logger;
             _jwtConfig = jwtConfig;
         }
 
 
-        public JwtTokensData CreateJwtTokens(User user)
+        public JwtTokensData CreateJwtTokens(Customer customer)
         {
-            var (accessToken, claims) = CreateAccessToken(user);
+            var (accessToken, claims) = CreateAccessToken(customer);
             var (refreshTokenValue, refreshTokenSerial) = CreateRefreshToken();
             return new JwtTokensData
             {
@@ -120,7 +121,7 @@ namespace Bop.Services.Authentication
             return decodedRefreshTokenPrincipal?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.SerialNumber)?.Value;
         }
 
-        private (string AccessToken, IEnumerable<Claim> Claims) CreateAccessToken(User user)
+        private (string AccessToken, IEnumerable<Claim> Claims) CreateAccessToken(Customer customer)
         {
             var claims = new List<Claim>
             {
@@ -134,21 +135,21 @@ namespace Bop.Services.Authentication
                 new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(),
                     ClaimValueTypes.Integer64, _jwtConfig.Issuer),
 
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString(), ClaimValueTypes.String, _jwtConfig.Issuer),
+                new Claim(ClaimTypes.NameIdentifier, customer.Id.ToString(), ClaimValueTypes.String, _jwtConfig.Issuer),
 
-                new Claim(ClaimTypes.MobilePhone, user.Phone, ClaimValueTypes.String, _jwtConfig.Issuer),
+                new Claim(ClaimTypes.MobilePhone, customer.Phone, ClaimValueTypes.String, _jwtConfig.Issuer),
                 // custom data
-                new Claim(ClaimTypes.UserData, user.Id.ToString(), ClaimValueTypes.String, _jwtConfig.Issuer),
+                new Claim(ClaimTypes.UserData, customer.Id.ToString(), ClaimValueTypes.String, _jwtConfig.Issuer),
 
                 new Claim(ClaimTypes.Name, BopAuthenticationDefaults.ClaimsIssuer, ClaimValueTypes.String,
                     _jwtConfig.Issuer)
             };
 
             // add roles
-            var userRoles = _userService.GetUserById(user.Id).UserRoles;
-            foreach (var userRole in userRoles)
+            var customerRoles = _customerService.GetCustomerById(customer.Id).CustomerRoles;
+            foreach (var customerRole in customerRoles)
             {
-                claims.Add(new Claim(ClaimTypes.Role, userRole.SystemName, ClaimValueTypes.String, _jwtConfig.Issuer));
+                claims.Add(new Claim(ClaimTypes.Role, customerRole.SystemName, ClaimValueTypes.String, _jwtConfig.Issuer));
             }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.Key));

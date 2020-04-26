@@ -1,6 +1,6 @@
-﻿using Bop.Core.Domain.Localization;
+﻿using Bop.Core.Domain.Customers;
+using Bop.Core.Domain.Localization;
 using Bop.Core.Domain.Site;
-using Bop.Core.Domain.Users;
 
 
 namespace Bop.Core
@@ -13,7 +13,7 @@ namespace Bop.Core
         /// <summary>
         /// Gets or sets the current customer
         /// </summary>
-        User CurrentUser { get; set; }
+        Customer CurrentCustomer { get; set; }
 
         /// <summary>
         /// Gets or sets current user working language

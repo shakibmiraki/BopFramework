@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using Bop.Core;
+using Bop.Core.Domain.Customers;
 using Bop.Core.Domain.Logging;
-using Bop.Core.Domain.Users;
 
-namespace Bop.Services
+namespace Bop.Services.Logging
 {
     /// <summary>
     /// Logger interface
@@ -69,32 +69,32 @@ namespace Bop.Services
         /// <param name="logLevel">Log level</param>
         /// <param name="shortMessage">The short message</param>
         /// <param name="fullMessage">The full message</param>
-        /// <param name="user">The user to associate log record with</param>
+        /// <param name="customer">The customer to associate log record with</param>
         /// <returns>A log item</returns>
-        Log InsertLog(LogLevel logLevel, string shortMessage, string fullMessage = "", User user = null);
+        Log InsertLog(LogLevel logLevel, string shortMessage, string fullMessage = "", Customer customer = null);
 
         /// <summary>
         /// Information
         /// </summary>
         /// <param name="message">Message</param>
         /// <param name="exception">Exception</param>
-        /// <param name="user">User</param>
-        void Information(string message, Exception exception = null, User user = null);
+        /// <param name="customer">Customer</param>
+        void Information(string message, Exception exception = null, Customer customer = null);
 
         /// <summary>
         /// Warning
         /// </summary>
         /// <param name="message">Message</param>
         /// <param name="exception">Exception</param>
-        /// <param name="user">User</param>
-        void Warning(string message, Exception exception = null, User user = null);
+        /// <param name="customer">Customer</param>
+        void Warning(string message, Exception exception = null, Customer customer = null);
 
         /// <summary>
         /// Error
         /// </summary>
         /// <param name="message">Message</param>
         /// <param name="exception">Exception</param>
-        /// <param name="user">User</param>
-        void Error(string message, Exception exception = null, User user = null);
+        /// <param name="customer">Customer</param>
+        void Error(string message, Exception exception = null, Customer customer = null);
     }
 }

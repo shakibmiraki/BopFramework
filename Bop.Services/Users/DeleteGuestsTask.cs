@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Bop.Core.Domain.Users;
+using Bop.Core.Domain.Customers;
 using Bop.Services.Tasks;
 
-namespace Bop.Services.Users
+namespace Bop.Services.Customers
 {
     /// <summary>
     /// Represents a task for deleting guest customers
@@ -13,18 +11,18 @@ namespace Bop.Services.Users
     {
         #region Fields
 
-        private readonly UserSettings _userSettings;
-        private readonly IUserService _userService;
+        private readonly CustomerSettings _customerSettings;
+        private readonly ICustomerService _customerService;
 
         #endregion
 
         #region Ctor
 
-        public DeleteGuestsTask(UserSettings userSettings,
-            IUserService userService)
+        public DeleteGuestsTask(CustomerSettings customerSettings,
+            ICustomerService customerService)
         {
-            _userSettings = userSettings;
-            _userService = userService;
+            _customerSettings = customerSettings;
+            _customerService = customerService;
         }
 
         #endregion
@@ -36,11 +34,11 @@ namespace Bop.Services.Users
         /// </summary>
         public void Execute()
         {
-            var olderThanMinutes = _userSettings.DeleteGuestTaskOlderThanMinutes;
+            var olderThanMinutes = _customerSettings.DeleteGuestTaskOlderThanMinutes;
             // Default value in case 0 is returned.  0 would effectively disable this service and harm performance.
             olderThanMinutes = olderThanMinutes == 0 ? 1440 : olderThanMinutes;
 
-            _userService.DeleteGuestUsers(null, DateTime.UtcNow.AddMinutes(-olderThanMinutes));
+            _customerService.DeleteGuestCustomers(null, DateTime.UtcNow.AddMinutes(-olderThanMinutes));
         }
 
         #endregion

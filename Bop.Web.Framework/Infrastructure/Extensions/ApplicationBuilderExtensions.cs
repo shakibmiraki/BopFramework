@@ -4,18 +4,20 @@ using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Bop.Core;
 using Bop.Core.Configuration;
-using Bop.Core.Data;
+using Bop.Data;
 using Bop.Core.Domain.Common;
 using Bop.Core.Infrastructure;
-using Bop.Services;
 using Bop.Services.Localization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
-
-
+using Microsoft.Extensions.Hosting;
+using Bop.Services.Logging;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Net.Http.Headers;
+using Bop.Web.Framework.Globalization;
 
 namespace Bop.Web.Framework.Infrastructure.Extensions
 {
@@ -33,6 +35,24 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
             EngineContext.Current.ConfigureRequestPipeline(application);
         }
 
+
+        public static void StartEngine(this IApplicationBuilder application)
+        {
+            var engine = EngineContext.Current;
+
+            //further actions are performed only when the database is installed
+            if (DataSettingsManager.DatabaseIsInstalled)
+            {
+                //initialize and start schedule tasks
+                Services.Tasks.TaskManager.Instance.Initialize();
+                Services.Tasks.TaskManager.Instance.Start();
+
+                //log application start
+                engine.Resolve<ILogger>().Information("Application started");
+            }
+        }
+
+
         /// <summary>
         /// Add exception handling
         /// </summary>
@@ -40,8 +60,8 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
         public static void UseBopExceptionHandler(this IApplicationBuilder application)
         {
             var bopConfig = EngineContext.Current.Resolve<BopConfig>();
-            var hostingEnvironment = EngineContext.Current.Resolve<IHostingEnvironment>();
-            var useDetailedExceptionPage = bopConfig.DisplayFullErrorStack || hostingEnvironment.IsDevelopment();
+            var webHostEnvironment = EngineContext.Current.Resolve<IWebHostEnvironment>();
+            var useDetailedExceptionPage = bopConfig.DisplayFullErrorStack || webHostEnvironment.IsDevelopment();
             if (useDetailedExceptionPage)
             {
                 //get detailed exceptions for developing and testing purposes
@@ -69,7 +89,7 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
                         {
 
                             //get current customer
-                            var currentCustomer = EngineContext.Current.Resolve<IWorkContext>().CurrentUser;
+                            var currentCustomer = EngineContext.Current.Resolve<IWorkContext>().CurrentCustomer;
 
                             //log error
                             EngineContext.Current.Resolve<ILogger>().Error(exception.Message, exception, currentCustomer);
@@ -100,7 +120,7 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
                 {
                     var logger = EngineContext.Current.Resolve<ILogger>();
                     var workContext = EngineContext.Current.Resolve<IWorkContext>();
-                    logger.Error("Error 400. Bad request", null, user: workContext.CurrentUser);
+                    logger.Error("Error 400. Bad request", null, customer: workContext.CurrentCustomer);
                 }
 
                 return Task.CompletedTask;
@@ -116,6 +136,29 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
             //whether to use compression (gzip by default)
             if (DataSettingsManager.DatabaseIsInstalled && EngineContext.Current.Resolve<CommonSettings>().UseResponseCompression)
                 application.UseResponseCompression();
+        }
+
+
+        /// <summary>
+        /// Configure static file serving
+        /// </summary>
+        /// <param name="application">Builder for configuring an application's request pipeline</param>
+        public static void UseBopStaticFiles(this IApplicationBuilder application)
+        {
+            static void staticFileResponse(StaticFileResponseContext context)
+            {
+                if (!DataSettingsManager.DatabaseIsInstalled)
+                    return;
+
+                var commonSettings = EngineContext.Current.Resolve<CommonSettings>();
+                if (!string.IsNullOrEmpty(commonSettings.StaticFilesCacheControl))
+                    context.Context.Response.Headers.Append(HeaderNames.CacheControl, commonSettings.StaticFilesCacheControl);
+            }
+
+            //common static files
+            application.UseStaticFiles(new StaticFileOptions { OnPrepareResponse = staticFileResponse });
+
+
         }
 
 
@@ -155,6 +198,20 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
 
 
         /// <summary>
+        /// Set current culture info
+        /// </summary>
+        /// <param name="application">Builder for configuring an application's request pipeline</param>
+        public static void UseCulture(this IApplicationBuilder application)
+        {
+            //check whether database is installed
+            if (!DataSettingsManager.DatabaseIsInstalled)
+                return;
+
+            application.UseMiddleware<CultureMiddleware>();
+        }
+
+
+        /// <summary>
         /// Configure Cors
         /// </summary>
         /// <param name="application">Builder for configuring an application's request pipeline</param>
@@ -165,24 +222,21 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
 
 
         /// <summary>
-        /// Configure MVC routing
+        /// Configure Endpoints routing
         /// </summary>
         /// <param name="application">Builder for configuring an application's request pipeline</param>
-        public static void UseBopMvc(this IApplicationBuilder application)
+        public static void UseBopEndpoints(this IApplicationBuilder application)
         {
-            application.UseMvc(routes =>
+            //Add the EndpointRoutingMiddleware
+            application.UseRouting();
+
+            //Execute the endpoint selected by the routing middleware
+            application.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller}/{action=Index}/{id?}");
-
-                routes.MapRoute(
-                    name : "areas",
-                    template : "{area:exists}/{controller=Home}/{action=Index}/{id?}"
-                );
+                //register all routes
+                endpoints.MapRazorPages();
+                //EngineContext.Current.Resolve<IRoutePublisher>().RegisterRoutes(endpoints);
             });
-
-            
         }
 
     }

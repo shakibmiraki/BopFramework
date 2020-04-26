@@ -1,6 +1,5 @@
 ﻿using Bop.Core.Configuration;
 
-
 namespace Bop.Core.Domain.Localization
 {
     /// <summary>

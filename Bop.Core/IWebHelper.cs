@@ -33,7 +33,14 @@ namespace Bop.Core
         /// </summary>
         /// <param name="useSsl">Whether to get SSL secured URL; pass null to determine automatically</param>
         /// <returns>Store location</returns>
-        string GetStoreLocation(bool? useSsl = null);
+        string GetSiteLocation(bool? useSsl = null);
+
+        /// <summary>
+        /// Returns true if the requested resource is one of the typical resources that needn't be processed by the CMS engine.
+        /// </summary>
+        /// <returns>True if the request targets a static resource file.</returns>
+        bool IsStaticResource();
+
 
         /// <summary>
         /// Gets query string value by name

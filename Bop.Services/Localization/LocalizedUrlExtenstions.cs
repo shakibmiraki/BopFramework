@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
+using Microsoft.AspNetCore.Http;
 using Bop.Core.Domain.Localization;
 using Bop.Core.Infrastructure;
-using Bop.Services.Localization;
-using Microsoft.AspNetCore.Http;
 
 namespace Bop.Services.Localization
 {
@@ -53,7 +52,7 @@ namespace Bop.Services.Localization
         /// <returns>Result</returns>
         public static string RemoveApplicationPathFromRawUrl(this string rawUrl, PathString pathBase)
         {
-            new PathString(rawUrl).StartsWithSegments(pathBase, out PathString result);
+            new PathString(rawUrl).StartsWithSegments(pathBase, out var result);
             return WebUtility.UrlDecode(result);
         }
 

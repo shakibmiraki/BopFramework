@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Bop.Services.Users
+namespace Bop.Services.Customers
 {
     /// <summary>
     /// Change password result

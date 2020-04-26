@@ -5,7 +5,7 @@ using Bop.Core.Caching;
 using Bop.Core.Domain.Tasks;
 using Bop.Core.Infrastructure;
 using Bop.Services.Localization;
-
+using Bop.Services.Logging;
 
 namespace Bop.Services.Tasks
 {
@@ -146,15 +146,15 @@ namespace Bop.Services.Tasks
             {
                 var scheduleTaskService = EngineContext.Current.Resolve<IScheduleTaskService>();
                 var localizationService = EngineContext.Current.Resolve<ILocalizationService>();
-                var workContext = EngineContext.Current.Resolve<IWorkContext>();
-                var scheduleTaskUrl = $"{workContext.CurrentSite.Url}{NopTaskDefaults.ScheduleTaskPath}";
+                var hostedSiteContext = EngineContext.Current.Resolve<IHostedSiteContext>();
+                var scheduleTaskUrl = $"{hostedSiteContext.CurrentHostedSite.Url}{NopTaskDefaults.ScheduleTaskPath}";
 
                 ScheduleTask.Enabled = !ScheduleTask.StopOnError;
                 ScheduleTask.LastEndUtc = DateTime.UtcNow;
                 scheduleTaskService.UpdateTask(ScheduleTask);
 
                 var message = string.Format(localizationService.GetResource("ScheduleTasks.Error"), ScheduleTask.Name,
-                    exc.Message, ScheduleTask.Type, workContext.CurrentSite.Name, scheduleTaskUrl);
+                    exc.Message, ScheduleTask.Type, hostedSiteContext.CurrentHostedSite.Name, scheduleTaskUrl);
 
                 //log error
                 var logger = EngineContext.Current.Resolve<ILogger>();

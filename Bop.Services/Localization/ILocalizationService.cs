@@ -7,7 +7,6 @@ using Bop.Core.Configuration;
 using Bop.Core.Domain.Localization;
 using Bop.Core.Domain.Security;
 
-
 namespace Bop.Services.Localization
 {
     /// <summary>
@@ -32,9 +31,8 @@ namespace Bop.Services.Localization
         /// Gets a locale string resource
         /// </summary>
         /// <param name="resourceName">A string representing a resource name</param>
-        /// <param name="language"></param>
         /// <returns>Locale string resource</returns>
-        LocaleStringResource GetLocaleStringResourceByName(string resourceName,Language language);
+        LocaleStringResource GetLocaleStringResourceByName(string resourceName);
 
         /// <summary>
         /// Gets a locale string resource
@@ -45,13 +43,6 @@ namespace Bop.Services.Localization
         /// <returns>Locale string resource</returns>
         LocaleStringResource GetLocaleStringResourceByName(string resourceName, int languageId,
             bool logIfNotFound = true);
-
-        /// <summary>
-        /// Gets all locale string resources by language identifier
-        /// </summary>
-        /// <param name="languageId">Language identifier</param>
-        /// <returns>Locale string resources</returns>
-        IList<LocaleStringResource> GetAllResources(int languageId);
 
         /// <summary>
         /// Inserts a locale string resource
@@ -92,21 +83,20 @@ namespace Bop.Services.Localization
         string GetResource(string resourceKey, int languageId,
             bool logIfNotFound = true, string defaultValue = "", bool returnEmptyIfNotFound = false);
 
-
         /// <summary>
-        /// Export language resources to JSON
+        /// Export language resources to XML
         /// </summary>
         /// <param name="language">Language</param>
         /// <returns>Result in XML format</returns>
-        string ExportResourcesToJson(Language language);
+        string ExportResourcesToXml(Language language);
 
         /// <summary>
-        /// Import language resources from JSON file
+        /// Import language resources from XML file
         /// </summary>
         /// <param name="language">Language</param>
-        /// <param name="resources">Resource Dictionary contain key and value</param>
-        void ImportResourcesFromJson(Language language, Dictionary<string,string> resources);
-
+        /// <param name="xmlStreamReader">Stream reader of XML file</param>
+        /// <param name="updateExistingResources">A value indicating whether to update existing resources</param>
+        void ImportResourcesFromXml(Language language, StreamReader xmlStreamReader, bool updateExistingResources = true);
 
         /// <summary>
         /// Get localized property of an entity
@@ -178,5 +168,10 @@ namespace Bop.Services.Localization
         /// </summary>
         /// <param name="permissionRecord">Permission record</param>
         void DeleteLocalizedPermissionName(PermissionRecord permissionRecord);
+
+        string ExportResourcesToJson(Language language);
+
+        void ImportResourcesFromJson(Language language, Dictionary<string, string> resources);
+
     }
 }

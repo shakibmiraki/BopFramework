@@ -1,6 +1,5 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bop.Core.Domain.Localization;
-
 
 namespace Bop.Services.Localization
 {
@@ -18,26 +17,17 @@ namespace Bop.Services.Localization
         /// <summary>
         /// Gets all languages
         /// </summary>
-        /// <param name="loadCacheableCopy">A value indicating whether to load a copy that could be cached (workaround until Entity Framework supports 2-level caching)</param>
+        /// <param name="storeId">Load records allowed only in a specified store; pass 0 to load all records</param>
+        /// <param name="showHidden">A value indicating whether to show hidden records</param>
         /// <returns>Languages</returns>
-        IList<Language> GetAllLanguages(bool loadCacheableCopy = true);
+        IList<Language> GetAllLanguages(bool showHidden = false, int storeId = 0);
 
         /// <summary>
         /// Gets a language
         /// </summary>
         /// <param name="languageId">Language identifier</param>
-        /// <param name="loadCacheableCopy">A value indicating whether to load a copy that could be cached (workaround until Entity Framework supports 2-level caching)</param>
         /// <returns>Language</returns>
-        Language GetLanguageById(int languageId, bool loadCacheableCopy = true);
-
-        /// <summary>
-        /// Gets a language
-        /// </summary>
-        /// <param name="languageCulture">Language Culture</param>
-        /// <param name="loadCacheableCopy">A value indicating whether to load a copy that could be cached (workaround until Entity Framework supports 2-level caching)</param>
-        /// <returns>Language</returns>
-        Language GetLanguageByLanguageCulture(string languageCulture, bool loadCacheableCopy = true);
-
+        Language GetLanguageById(int languageId);
 
         /// <summary>
         /// Inserts a language

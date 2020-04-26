@@ -3,11 +3,11 @@ using System.Linq;
 using Bop.Core;
 using Bop.Core.Domain.Localization;
 using Bop.Core.Domain.Site;
-using Bop.Core.Domain.Users;
+using Bop.Core.Domain.Customers;
 using Bop.Services.Authentication;
 using Bop.Services.Localization;
 using Bop.Services.Site;
-using Bop.Services.Users;
+using Bop.Services.Customers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.Net.Http.Headers;
@@ -21,7 +21,7 @@ namespace Bop.Web.Framework
     {
         #region Const
 
-        private const string USER_COOKIE_NAME = ".Bop.User";
+        private const string USER_COOKIE_NAME = ".Bop.Customer";
 
         #endregion
 
@@ -29,13 +29,13 @@ namespace Bop.Web.Framework
 
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IAuthenticationService _authenticationService;
-        private readonly IUserService _userService;
+        private readonly ICustomerService _customerService;
         private readonly IHostedSiteService _hostedSiteService;
         private readonly ILanguageService _languageService;
         private readonly LocalizationSettings _localizationSettings;
 
 
-        private User _cachedUser;
+        private Customer _cachedCustomer;
         private HostedSite _cachedHostedSite;
         private Language _cachedLanguage;
 
@@ -50,18 +50,18 @@ namespace Bop.Web.Framework
         /// </summary>
         /// <param name="httpContextAccessor">HTTP context accessor</param>
         /// <param name="authenticationService">Authentication service</param>
-        /// <param name="userService">Customer service</param>
+        /// <param name="customerService">Customer service</param>
         /// <param name="hostedSiteService"></param>
         /// <param name="languageService"></param>
         /// <param name="localizationSettings"></param>
         public WebWorkContext(IHttpContextAccessor httpContextAccessor,
             IAuthenticationService authenticationService,
-            IUserService userService,
+            ICustomerService customerService,
             IHostedSiteService hostedSiteService, ILanguageService languageService,LocalizationSettings localizationSettings)
         {
             _httpContextAccessor = httpContextAccessor;
             _authenticationService = authenticationService;
-            _userService = userService;
+            _customerService = customerService;
             _hostedSiteService = hostedSiteService;
             _localizationSettings = localizationSettings;
             _languageService = languageService;
@@ -72,16 +72,16 @@ namespace Bop.Web.Framework
         #region Utilities
 
         /// <summary>
-        /// Get bop user cookie
+        /// Get bop customer cookie
         /// </summary>
         /// <returns>String value of cookie</returns>
-        protected virtual string GetUserCookie()
+        protected virtual string GetCustomerCookie()
         {
             return _httpContextAccessor.HttpContext?.Request?.Cookies[USER_COOKIE_NAME];
         }
 
         /// <summary>
-        /// Set bop user cookie
+        /// Set bop customer cookie
         /// </summary>
         /// <param name="customerGuid">Guid of the customer</param>
         protected virtual void SetCustomerCookie(Guid customerGuid)
@@ -158,62 +158,62 @@ namespace Bop.Web.Framework
         /// <summary>
         /// Gets or sets the current customer
         /// </summary>
-        public virtual User CurrentUser
+        public virtual Customer CurrentCustomer
         {
             get
             {
                 //whether there is a cached value
-                if (_cachedUser != null)
-                    return _cachedUser;
+                if (_cachedCustomer != null)
+                    return _cachedCustomer;
 
-                User user = _authenticationService.GetAuthenticatedUser();
+                Customer customer = _authenticationService.GetAuthenticatedCustomer();
                 
 
 
 
-                if (user == null || user.Deleted || !user.Active || user.RequireReLogin)
+                if (customer == null || customer.Deleted || !customer.Active || customer.RequireReLogin)
                 {
                     //get guest customer
-                    var userCookie = GetUserCookie();
-                    if (!string.IsNullOrEmpty(userCookie))
+                    var customerCookie = GetCustomerCookie();
+                    if (!string.IsNullOrEmpty(customerCookie))
                     {
-                        if (Guid.TryParse(userCookie, out Guid userGuid))
+                        if (Guid.TryParse(customerCookie, out Guid customerGuid))
                         {
-                            //get user from cookie (should not be registered)
-                            var userByCookie = _userService.GetUserByGuid(userGuid);
-                            if (userByCookie != null && !userByCookie.IsRegistered())
-                                user = userByCookie;
+                            //get customer from cookie (should not be registered)
+                            var customerByCookie = _customerService.GetCustomerByGuid(customerGuid);
+                            if (customerByCookie != null && !customerByCookie.IsRegistered())
+                                customer = customerByCookie;
                         }
                     }
                 }
 
-                if (user == null || user.Deleted || !user.Active || user.RequireReLogin)
+                if (customer == null || customer.Deleted || !customer.Active || customer.RequireReLogin)
                 {
                     //create guest if not exists
-                    user = _userService.InsertGuestUser();
+                    customer = _customerService.InsertGuestCustomer();
                 }
 
-                if (!user.Deleted && user.Active && !user.RequireReLogin)
+                if (!customer.Deleted && customer.Active && !customer.RequireReLogin)
                 {
                     //set customer cookie
-                    SetCustomerCookie(user.UserGuid);
+                    SetCustomerCookie(customer.CustomerGuid);
 
                     //cache the found customer
-                    _cachedUser = user;
+                    _cachedCustomer = customer;
                 }
 
-                return _cachedUser;
+                return _cachedCustomer;
             }
             set
             {
-                SetCustomerCookie(value.UserGuid);
-                _cachedUser = value;
+                SetCustomerCookie(value.CustomerGuid);
+                _cachedCustomer = value;
             }
         }
 
 
         /// <summary>
-        /// Gets or sets current user working language
+        /// Gets or sets current customer working language
         /// </summary>
         public virtual Language WorkingLanguage
         {
@@ -224,19 +224,19 @@ namespace Bop.Web.Framework
                     return _cachedLanguage;
 
 
-                Language userLanguage = null;
+                Language customerLanguage = null;
 
-                userLanguage = GetLanguageFromUrl();
+                customerLanguage = GetLanguageFromUrl();
 
                 //whether we should detect the language from the request
-                if (userLanguage == null && _localizationSettings.AutomaticallyDetectLanguage)
+                if (customerLanguage == null && _localizationSettings.AutomaticallyDetectLanguage)
                 {
                     //if not, try to get language from the request
-                    userLanguage = GetLanguageFromRequest();
+                    customerLanguage = GetLanguageFromRequest();
                 }
 
                 //cache the found language
-                _cachedLanguage = userLanguage;
+                _cachedLanguage = customerLanguage;
 
                 return _cachedLanguage;
             }

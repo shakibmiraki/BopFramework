@@ -18,10 +18,10 @@ namespace Bop.Core.Infrastructure
         /// Initializes a new instance of a BopFileProvider
         /// </summary>
         /// <param name="hostingEnvironment">Hosting environment</param>
-        public BopFileProvider(IHostingEnvironment hostingEnvironment) 
-            : base(File.Exists(hostingEnvironment.WebRootPath) ? Path.GetDirectoryName(hostingEnvironment.WebRootPath) : hostingEnvironment.WebRootPath)
+        public BopFileProvider(IWebHostEnvironment webHostEnvironment)
+            : base(File.Exists(webHostEnvironment.WebRootPath) ? Path.GetDirectoryName(webHostEnvironment.WebRootPath) : webHostEnvironment.WebRootPath)
         {
-            var path = hostingEnvironment.ContentRootPath ?? string.Empty;
+            var path = webHostEnvironment.ContentRootPath ?? string.Empty;
             if (File.Exists(path))
                 path = Path.GetDirectoryName(path);
 

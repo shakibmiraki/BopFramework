@@ -14,16 +14,16 @@ namespace Bop.Web
         #region Fields
 
         private readonly IConfiguration _configuration;
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         #endregion
 
         #region Ctor
 
-        public Startup(IConfiguration configuration, IHostingEnvironment hostingEnvironment)
+        public Startup(IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
             _configuration = configuration;
-            _hostingEnvironment = hostingEnvironment;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         #endregion
@@ -40,12 +40,13 @@ namespace Bop.Web
         /// <param name="services">Collection of service descriptors</param>
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            return services.ConfigureApplicationServices(_configuration,_hostingEnvironment);
+            return services.ConfigureApplicationServices(_configuration,_webHostEnvironment);
         }
 
         public void Configure(IApplicationBuilder application)
         {
             application.ConfigureRequestPipeline();
+            application.StartEngine();
         }
     }
 }

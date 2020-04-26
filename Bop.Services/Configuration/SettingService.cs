@@ -1,15 +1,17 @@
+﻿using Bop.Core;
+using Bop.Core.Caching;
+using Bop.Core.Configuration;
+using Bop.Core.Domain.Configuration;
+using Bop.Data;
+using Bop.Services.Caching.CachingDefaults;
+using Bop.Services.Caching.Extensions;
+using Bop.Services.Events;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using Bop.Core;
-using Bop.Core.Caching;
-using Bop.Core.Configuration;
-using Bop.Core.Data;
-using Bop.Core.Domain.Configuration;
-using Bop.Services.Events;
 
 
 namespace Bop.Services.Configuration
@@ -40,47 +42,24 @@ namespace Bop.Services.Configuration
 
         #endregion
 
-        #region Nested classes
-
-        /// <summary>
-        /// Setting (for caching)
-        /// </summary>
-        [Serializable]
-        public class SettingForCaching
-        {
-            public int Id { get; set; }
-
-            public string Name { get; set; }
-
-            public string Value { get; set; }
-
-            public int StoreId { get; set; }
-        }
-
-        #endregion
-
         #region Utilities
 
         /// <summary>
         /// Gets all settings
         /// </summary>
         /// <returns>Settings</returns>
-        protected virtual IDictionary<string, IList<SettingForCaching>> GetAllSettingsCached()
+        protected virtual IDictionary<string, IList<Setting>> GetAllSettingsDictionary()
         {
             //cache
-            return _cacheManager.Get(BopConfigurationDefaults.SettingsAllCacheKey, () =>
+            return _cacheManager.Get(BopConfigurationCachingDefaults.SettingsAllAsDictionaryCacheKey, () =>
             {
-                //we use no tracking here for performance optimization
-                //anyway records are loaded only for read-only operations
-                var query = from s in _settingRepository.TableNoTracking
-                            orderby s.Name
-                            select s;
-                var settings = query.ToList();
-                var dictionary = new Dictionary<string, IList<SettingForCaching>>();
+                var settings = GetAllSettings();
+
+                var dictionary = new Dictionary<string, IList<Setting>>();
                 foreach (var s in settings)
                 {
                     var resourceName = s.Name.ToLowerInvariant();
-                    var settingForCaching = new SettingForCaching
+                    var settingForCaching = new Setting
                     {
                         Id = s.Id,
                         Name = s.Name,
@@ -89,7 +68,7 @@ namespace Bop.Services.Configuration
                     if (!dictionary.ContainsKey(resourceName))
                     {
                         //first setting
-                        dictionary.Add(resourceName, new List<SettingForCaching>
+                        dictionary.Add(resourceName, new List<Setting>
                         {
                             settingForCaching
                         });
@@ -112,15 +91,16 @@ namespace Bop.Services.Configuration
         /// <param name="type">Type</param>
         /// <param name="key">Key</param>
         /// <param name="value">Value</param>
+        /// <param name="storeId">Store identifier</param>
         /// <param name="clearCache">A value indicating whether to clear cache after setting update</param>
-        protected virtual void SetSetting(Type type, string key, object value,bool clearCache = true)
+        protected virtual void SetSetting(Type type, string key, object value, bool clearCache = true)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
             key = key.Trim().ToLowerInvariant();
             var valueStr = TypeDescriptor.GetConverter(type).ConvertToInvariantString(value);
 
-            var allSettings = GetAllSettingsCached();
+            var allSettings = GetAllSettingsDictionary();
             var settingForCaching = allSettings.ContainsKey(key) ?
                 allSettings[key].FirstOrDefault() : null;
             if (settingForCaching != null)
@@ -141,7 +121,7 @@ namespace Bop.Services.Configuration
                 InsertSetting(setting, clearCache);
             }
         }
-       
+
         #endregion
 
         #region Methods
@@ -160,7 +140,7 @@ namespace Bop.Services.Configuration
 
             //cache
             if (clearCache)
-                _cacheManager.RemoveByPrefix(BopConfigurationDefaults.SettingsPrefixCacheKey);
+                ClearCache();
 
             //event notification
             _eventPublisher.EntityInserted(setting);
@@ -180,7 +160,7 @@ namespace Bop.Services.Configuration
 
             //cache
             if (clearCache)
-                _cacheManager.RemoveByPrefix(BopConfigurationDefaults.SettingsPrefixCacheKey);
+                ClearCache();
 
             //event notification
             _eventPublisher.EntityUpdated(setting);
@@ -198,7 +178,7 @@ namespace Bop.Services.Configuration
             _settingRepository.Delete(setting);
 
             //cache
-            _cacheManager.RemoveByPrefix(BopConfigurationDefaults.SettingsPrefixCacheKey);
+            ClearCache();
 
             //event notification
             _eventPublisher.EntityDeleted(setting);
@@ -216,7 +196,7 @@ namespace Bop.Services.Configuration
             _settingRepository.Delete(settings);
 
             //cache
-            _cacheManager.RemoveByPrefix(BopConfigurationDefaults.SettingsPrefixCacheKey);
+            ClearCache();
 
             //event notification
             foreach (var setting in settings)
@@ -235,22 +215,24 @@ namespace Bop.Services.Configuration
             if (settingId == 0)
                 return null;
 
-            return _settingRepository.GetById(settingId);
+            return _settingRepository.ToCachedGetById(settingId);
         }
 
         /// <summary>
         /// Get setting by key
         /// </summary>
         /// <param name="key">Key</param>
+        /// <param name="storeId">Store identifier</param>
+        /// <param name="loadSharedValueIfNotFound">A value indicating whether a shared (for all stores) value should be loaded if a value specific for a certain is not found</param>
         /// <returns>Setting</returns>
-        public virtual Setting GetSetting(string key, bool loadSharedValueIfNotFound = false)
+        public virtual Setting GetSetting(string key)
         {
             if (string.IsNullOrEmpty(key))
                 return null;
 
-            var settings = GetAllSettingsCached();
+            var settings = GetAllSettingsDictionary();
             key = key.Trim().ToLowerInvariant();
-            if (!settings.ContainsKey(key)) 
+            if (!settings.ContainsKey(key))
                 return null;
 
             var settingsByKey = settings[key];
@@ -259,6 +241,7 @@ namespace Bop.Services.Configuration
             return setting != null ? GetSettingById(setting.Id) : null;
         }
 
+
         /// <summary>
         /// Get setting value by key
         /// </summary>
@@ -266,14 +249,14 @@ namespace Bop.Services.Configuration
         /// <param name="key">Key</param>
         /// <param name="defaultValue">Default value</param>
         /// <returns>Setting value</returns>
-        public virtual T GetSettingByKey<T>(string key, T defaultValue = default(T))
+        public virtual T GetSettingByKey<T>(string key, T defaultValue = default)
         {
             if (string.IsNullOrEmpty(key))
                 return defaultValue;
 
-            var settings = GetAllSettingsCached();
+            var settings = GetAllSettingsDictionary();
             key = key.Trim().ToLowerInvariant();
-            if (!settings.ContainsKey(key)) 
+            if (!settings.ContainsKey(key))
                 return defaultValue;
 
             var settingsByKey = settings[key];
@@ -288,6 +271,7 @@ namespace Bop.Services.Configuration
         /// <typeparam name="T">Type</typeparam>
         /// <param name="key">Key</param>
         /// <param name="value">Value</param>
+        /// <param name="storeId">Store identifier</param>
         /// <param name="clearCache">A value indicating whether to clear cache after setting update</param>
         public virtual void SetSetting<T>(string key, T value, bool clearCache = true)
         {
@@ -303,7 +287,9 @@ namespace Bop.Services.Configuration
             var query = from s in _settingRepository.Table
                         orderby s.Name
                         select s;
-            var settings = query.ToList();
+
+            var settings = query.ToCachedList(BopConfigurationCachingDefaults.SettingsAllCacheKey);
+
             return settings;
         }
 
@@ -349,7 +335,7 @@ namespace Bop.Services.Configuration
                     continue;
 
                 var key = type.Name + "." + prop.Name;
-
+                //load by store
                 var setting = GetSettingByKey<string>(key);
                 if (setting == null)
                     continue;
@@ -407,6 +393,7 @@ namespace Bop.Services.Configuration
         /// <typeparam name="TPropType">Property type</typeparam>
         /// <param name="settings">Settings</param>
         /// <param name="keySelector">Key selector</param>
+        /// <param name="storeId">Store ID</param>
         /// <param name="clearCache">A value indicating whether to clear cache after setting update</param>
         public virtual void SaveSetting<T, TPropType>(T settings,
             Expression<Func<T, TPropType>> keySelector,
@@ -414,17 +401,13 @@ namespace Bop.Services.Configuration
         {
             if (!(keySelector.Body is MemberExpression member))
             {
-                throw new ArgumentException(string.Format(
-                    "Expression '{0}' refers to a method, not a property.",
-                    keySelector));
+                throw new ArgumentException($"Expression '{keySelector}' refers to a method, not a property.");
             }
 
             var propInfo = member.Member as PropertyInfo;
             if (propInfo == null)
             {
-                throw new ArgumentException(string.Format(
-                       "Expression '{0}' refers to a field, not a property.",
-                       keySelector));
+                throw new ArgumentException($"Expression '{keySelector}' refers to a field, not a property.");
             }
 
             var key = GetSettingKey(settings, keySelector);
@@ -465,10 +448,10 @@ namespace Bop.Services.Configuration
             var key = GetSettingKey(settings, keySelector);
             key = key.Trim().ToLowerInvariant();
 
-            var allSettings = GetAllSettingsCached();
+            var allSettings = GetAllSettingsDictionary();
             var settingForCaching = allSettings.ContainsKey(key) ?
                 allSettings[key].FirstOrDefault() : null;
-            if (settingForCaching == null) 
+            if (settingForCaching == null)
                 return;
 
             //update
@@ -481,7 +464,7 @@ namespace Bop.Services.Configuration
         /// </summary>
         public virtual void ClearCache()
         {
-            _cacheManager.RemoveByPrefix(BopConfigurationDefaults.SettingsPrefixCacheKey);
+            _cacheManager.RemoveByPrefix(BopConfigurationCachingDefaults.SettingsPrefixCacheKey);
         }
 
         /// <summary>
@@ -502,7 +485,7 @@ namespace Bop.Services.Configuration
                 throw new ArgumentException($"Expression '{keySelector}' refers to a field, not a property.");
 
             var key = $"{typeof(TSettings).Name}.{propInfo.Name}";
-            
+
             return key;
         }
         #endregion

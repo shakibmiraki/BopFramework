@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Bop.Core;
 using Bop.Core.Domain.Common;
-using Bop.Core.Domain.Users;
+using Bop.Core.Domain.Customers;
 using Bop.Services.Common;
 using Bop.Services.Events;
 using Bop.Services.Localization;
@@ -97,29 +96,29 @@ namespace Bop.Services.Messages
         /// <summary>
         /// Sends an email validation message to a customer
         /// </summary>
-        /// <param name="user">Customer instance</param>
+        /// <param name="customer">Customer instance</param>
         /// <param name="languageId">Message language identifier</param>
         /// <returns>Queued email identifier</returns>
-        public virtual int SendUserPhoneValidationMessage(User user, int languageId)
+        public virtual int SendCustomerPhoneValidationMessage(Customer customer, int languageId)
         {
 
-            var userPhone = user.Phone;
-            var userToken = _genericAttributeService.GetAttribute<string>(user, BopUserDefaults.AccountActivationTokenAttribute);
+            var customerPhone = customer.Phone;
+            var customerToken = _genericAttributeService.GetAttribute<string>(customer, BopCustomerDefaults.AccountActivationTokenAttribute);
 
-            if (user == null)
-                throw new ArgumentNullException(nameof(user));
+            if (customer == null)
+                throw new ArgumentNullException(nameof(customer));
 
-            if (string.IsNullOrEmpty(userPhone))
-                throw new ArgumentNullException(nameof(user.Phone));
+            if (string.IsNullOrEmpty(customerPhone))
+                throw new ArgumentNullException(nameof(customer.Phone));
 
-            if (string.IsNullOrEmpty(userToken))
-                throw new ArgumentNullException(nameof(userToken));
+            if (string.IsNullOrEmpty(customerToken))
+                throw new ArgumentNullException(nameof(customerToken));
 
             languageId = EnsureLanguageIsActive(languageId);
 
             var messageTemplate = GetActiveMessageTemplates(languageId);
 
-            return SendNotification(messageTemplate, userToken, userPhone);
+            return SendNotification(messageTemplate, customerToken, customerPhone);
 
         }
 

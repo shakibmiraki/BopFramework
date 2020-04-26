@@ -1,6 +1,6 @@
 ﻿using Bop.Services.Localization;
 using Bop.Web.Framework.Validators;
-using Bop.Web.Models.Users;
+using Bop.Web.Models.Customers;
 using FluentValidation;
 
 namespace Bop.Web.Validator

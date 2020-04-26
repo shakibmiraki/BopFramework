@@ -2,23 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bop.Core;
-using Bop.Core.Caching;
-using Bop.Core.Data;
 using Bop.Core.Domain.Common;
-using Bop.Data.Extensions;
+using Bop.Data;
+using Bop.Services.Caching.Extensions;
 using Bop.Services.Events;
-
+using Bop.Services.Caching.CachingDefaults;
 
 namespace Bop.Services.Common
 {
     /// <summary>
     /// Generic attribute service
     /// </summary>
-    public class GenericAttributeService : IGenericAttributeService
+    public partial class GenericAttributeService : IGenericAttributeService
     {
         #region Fields
 
-        private readonly ICacheManager _cacheManager;
         private readonly IEventPublisher _eventPublisher;
         private readonly IRepository<GenericAttribute> _genericAttributeRepository;
 
@@ -26,11 +24,9 @@ namespace Bop.Services.Common
 
         #region Ctor
 
-        public GenericAttributeService(ICacheManager cacheManager,
-            IEventPublisher eventPublisher,
+        public GenericAttributeService(IEventPublisher eventPublisher,
             IRepository<GenericAttribute> genericAttributeRepository)
         {
-            _cacheManager = cacheManager;
             _eventPublisher = eventPublisher;
             _genericAttributeRepository = genericAttributeRepository;
         }
@@ -49,10 +45,7 @@ namespace Bop.Services.Common
                 throw new ArgumentNullException(nameof(attribute));
 
             _genericAttributeRepository.Delete(attribute);
-
-            //cache
-            _cacheManager.RemoveByPrefix(BopCommonDefaults.GenericAttributePrefixCacheKey);
-
+            
             //event notification
             _eventPublisher.EntityDeleted(attribute);
         }
@@ -67,10 +60,7 @@ namespace Bop.Services.Common
                 throw new ArgumentNullException(nameof(attributes));
 
             _genericAttributeRepository.Delete(attributes);
-
-            //cache
-            _cacheManager.RemoveByPrefix(BopCommonDefaults.GenericAttributePrefixCacheKey);
-
+            
             //event notification
             foreach (var attribute in attributes)
             {
@@ -88,7 +78,22 @@ namespace Bop.Services.Common
             if (attributeId == 0)
                 return null;
 
-            return _genericAttributeRepository.GetById(attributeId);
+            return _genericAttributeRepository.ToCachedGetById(attributeId);
+        }
+
+
+        /// <summary>
+        /// Get attributes
+        /// </summary>
+        /// <param name="key">Key</param>
+        /// <returns>Get attributes</returns>
+        public virtual IList<GenericAttribute> GetAttributesByKey(string key)
+        {
+            var query = from ga in _genericAttributeRepository.Table
+                        where ga.Key == key
+                        select ga;
+            var attributes = query.ToList();
+            return attributes;
         }
 
         /// <summary>
@@ -100,11 +105,9 @@ namespace Bop.Services.Common
             if (attribute == null)
                 throw new ArgumentNullException(nameof(attribute));
 
+            attribute.CreatedOrUpdatedDateUTC = DateTime.UtcNow;
             _genericAttributeRepository.Insert(attribute);
-
-            //cache
-            _cacheManager.RemoveByPrefix(BopCommonDefaults.GenericAttributePrefixCacheKey);
-
+            
             //event notification
             _eventPublisher.EntityInserted(attribute);
         }
@@ -118,11 +121,9 @@ namespace Bop.Services.Common
             if (attribute == null)
                 throw new ArgumentNullException(nameof(attribute));
 
+            attribute.CreatedOrUpdatedDateUTC = DateTime.UtcNow;
             _genericAttributeRepository.Update(attribute);
-
-            //cache
-            _cacheManager.RemoveByPrefix(BopCommonDefaults.GenericAttributePrefixCacheKey);
-
+            
             //event notification
             _eventPublisher.EntityUpdated(attribute);
         }
@@ -135,33 +136,16 @@ namespace Bop.Services.Common
         /// <returns>Get attributes</returns>
         public virtual IList<GenericAttribute> GetAttributesForEntity(int entityId, string keyGroup)
         {
-            var key = string.Format(BopCommonDefaults.GenericAttributeCacheKey, entityId, keyGroup);
-            return _cacheManager.Get(key, () =>
-            {
-                var query = from ga in _genericAttributeRepository.Table
-                            where ga.EntityId == entityId &&
-                            ga.KeyGroup == keyGroup
-                            select ga;
-                var attributes = query.ToList();
-                return attributes;
-            });
-        }
+            var key = BopCommonCachingDefaults.GenericAttributeCacheKey.FillCacheKey(entityId, keyGroup);
 
-
-        /// <summary>
-        /// Get attributes
-        /// </summary>
-        /// <param name="key">Key</param>
-        /// <returns>Get attributes</returns>
-        public virtual IList<GenericAttribute> GetAttributesByKey(string key)
-        {
             var query = from ga in _genericAttributeRepository.Table
-                where ga.Key == key
+                where ga.EntityId == entityId &&
+                      ga.KeyGroup == keyGroup
                 select ga;
-            var attributes = query.ToList();
+            var attributes = query.ToCachedList(key);
+
             return attributes;
         }
-
 
         /// <summary>
         /// Save attribute value
@@ -170,7 +154,8 @@ namespace Bop.Services.Common
         /// <param name="entity">Entity</param>
         /// <param name="key">Key</param>
         /// <param name="value">Value</param>
-        public virtual void SaveAttribute<TPropType>(BaseEntity entity, string key, TPropType value)
+        /// <param name="storeId">Store identifier; pass 0 if this attribute will be available for all stores</param>
+        public virtual void SaveAttribute<TPropType>(BaseEntity entity, string key, TPropType value, int storeId = 0)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
@@ -178,7 +163,7 @@ namespace Bop.Services.Common
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
-            var keyGroup = entity.GetUnproxiedEntityType().Name;
+            var keyGroup = entity.GetType().Name;
 
             var props = GetAttributesForEntity(entity.Id, keyGroup)
                 .ToList();
@@ -212,8 +197,7 @@ namespace Bop.Services.Common
                     EntityId = entity.Id,
                     Key = key,
                     KeyGroup = keyGroup,
-                    Value = valueStr,
-                    InsertDate = DateTime.Now
+                    Value = valueStr
                 };
 
                 InsertAttribute(prop);
@@ -226,14 +210,15 @@ namespace Bop.Services.Common
         /// <typeparam name="TPropType">Property type</typeparam>
         /// <param name="entity">Entity</param>
         /// <param name="key">Key</param>
+        /// <param name="storeId">Load a value specific for a certain store; pass 0 to load a value shared for all stores</param>
         /// <param name="defaultValue">Default value</param>
         /// <returns>Attribute</returns>
-        public virtual TPropType GetAttribute<TPropType>(BaseEntity entity, string key, TPropType defaultValue = default(TPropType))
+        public virtual TPropType GetAttribute<TPropType>(BaseEntity entity, string key, int storeId = 0, TPropType defaultValue = default)
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            var keyGroup = entity.GetUnproxiedEntityType().Name;
+            var keyGroup = entity.GetType().Name;
 
             var props = GetAttributesForEntity(entity.Id, keyGroup);
 
@@ -252,6 +237,25 @@ namespace Bop.Services.Common
                 return defaultValue;
 
             return CommonHelper.To<TPropType>(prop.Value);
+        }
+
+        /// <summary>
+        /// Get an attribute of an entity
+        /// </summary>
+        /// <typeparam name="TPropType">Property type</typeparam>
+        /// <typeparam name="TEntity">Entity type</typeparam>
+        /// <param name="entityId">Entity identifier</param>
+        /// <param name="key">Key</param>
+        /// <param name="storeId">Load a value specific for a certain store; pass 0 to load a value shared for all stores</param>
+        /// <param name="defaultValue">Default value</param>
+        /// <returns>Attribute</returns>
+        public virtual TPropType GetAttribute<TEntity, TPropType>(int entityId, string key, int storeId = 0, TPropType defaultValue = default)
+            where TEntity : BaseEntity
+        {
+            var entity = (TEntity)Activator.CreateInstance(typeof(TEntity));
+            entity.Id = entityId;
+
+            return GetAttribute(entity, key, storeId, defaultValue);
         }
 
         #endregion

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Bop.Core.Domain.Tasks;
 
-
 namespace Bop.Services.Tasks
 {
     /// <summary>

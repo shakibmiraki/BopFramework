@@ -1,4 +1,4 @@
-using Bop.Core.Domain.Users;
+using Bop.Core.Domain.Customers;
 
 namespace Bop.Services.Authentication
 {
@@ -10,9 +10,9 @@ namespace Bop.Services.Authentication
         /// <summary>
         /// Sign in
         /// </summary>
-        /// <param name="user">Customer</param>
+        /// <param name="customer">Customer</param>
         /// <param name="isPersistent">Whether the authentication session is persisted across multiple requests</param>
-        void SignIn(User user, bool isPersistent);
+        void SignIn(Customer customer, bool isPersistent);
 
         /// <summary>
         /// Sign out
@@ -23,6 +23,6 @@ namespace Bop.Services.Authentication
         /// Get authenticated customer
         /// </summary>
         /// <returns>Customer</returns>
-        User GetAuthenticatedUser();
+        Customer GetAuthenticatedCustomer();
     }
 }

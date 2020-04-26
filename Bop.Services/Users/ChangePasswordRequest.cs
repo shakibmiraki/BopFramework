@@ -1,7 +1,7 @@
-﻿using Bop.Core.Domain.Users;
+﻿using Bop.Core.Domain.Customers;
 
 
-namespace Bop.Services.Users
+namespace Bop.Services.Customers
 {
     /// <summary>
     /// Change password request

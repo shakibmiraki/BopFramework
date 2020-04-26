@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Bop.Core.Domain.Security;
-using Bop.Core.Domain.Users;
+using Bop.Core.Domain.Customers;
 
 
 namespace Bop.Services.Security
@@ -44,7 +44,7 @@ namespace Bop.Services.Security
             {
                 new DefaultPermissionRecord 
                 {
-                    UserRoleSystemName = BopUserDefaults.AdministratorsRoleName,
+                    CustomerRoleSystemName = BopCustomerDefaults.AdministratorsRoleName,
                     PermissionRecords = new[] 
                     {
                         AccessAdminPanel,
@@ -56,7 +56,7 @@ namespace Bop.Services.Security
                 },
                 new DefaultPermissionRecord 
                 {
-                    UserRoleSystemName = BopUserDefaults.RegisteredRoleName,
+                    CustomerRoleSystemName = BopCustomerDefaults.RegisteredRoleName,
                     PermissionRecords = new[] 
                     {
                         AccessAdminPanel

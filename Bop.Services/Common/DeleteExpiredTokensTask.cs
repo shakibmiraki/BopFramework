@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Bop.Core.Domain.Users;
+using Bop.Core.Domain.Customers;
 using Bop.Services.Tasks;
 
 namespace Bop.Services.Common
@@ -18,9 +18,8 @@ namespace Bop.Services.Common
 
         public void Execute()
         {
-            var tokens = _genericAttributeService.GetAttributesByKey(BopUserDefaults.AccountActivationTokenAttribute)
-                .Where(token => token.InsertDate < DateTime.Now.AddMinutes(-2)).ToList();
-
+            var tokens = _genericAttributeService.GetAttributesByKey(BopCustomerDefaults.AccountActivationTokenAttribute)
+                .Where(token => token.CreatedOrUpdatedDateUTC < DateTime.Now.AddMinutes(-2)).ToList();
 
             _genericAttributeService.DeleteAttributes(tokens);
 

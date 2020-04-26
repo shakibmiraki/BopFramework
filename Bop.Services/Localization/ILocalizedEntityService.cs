@@ -3,7 +3,6 @@ using System.Linq.Expressions;
 using Bop.Core;
 using Bop.Core.Domain.Localization;
 
-
 namespace Bop.Services.Localization
 {
     /// <summary>

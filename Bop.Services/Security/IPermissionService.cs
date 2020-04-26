@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Bop.Core.Domain.Security;
-using Bop.Core.Domain.Users;
+using Bop.Core.Domain.Customers;
 
 namespace Bop.Services.Security
 {
@@ -70,9 +70,9 @@ namespace Bop.Services.Security
         /// Authorize permission
         /// </summary>
         /// <param name="permission">Permission record</param>
-        /// <param name="user">Customer</param>
+        /// <param name="customer">Customer</param>
         /// <returns>true - authorized; otherwise, false</returns>
-        bool Authorize(PermissionRecord permission, User user);
+        bool Authorize(PermissionRecord permission, Customer customer);
 
         /// <summary>
         /// Authorize permission
@@ -85,8 +85,8 @@ namespace Bop.Services.Security
         /// Authorize permission
         /// </summary>
         /// <param name="permissionRecordSystemName">Permission record system name</param>
-        /// <param name="user">Customer</param>
+        /// <param name="customer">Customer</param>
         /// <returns>true - authorized; otherwise, false</returns>
-        bool Authorize(string permissionRecordSystemName, User user);
+        bool Authorize(string permissionRecordSystemName, Customer customer);
     }
 }

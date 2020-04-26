@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Bop.Core;
 using Bop.Core.Domain.Common;
 using Bop.Core.Domain.Tasks;
 using Bop.Core.Http;
 using Bop.Core.Infrastructure;
 using Bop.Services.Localization;
-using Microsoft.Extensions.DependencyInjection;
+using Bop.Services.Logging;
 
 namespace Bop.Services.Tasks
 {
@@ -25,7 +26,7 @@ namespace Bop.Services.Tasks
 
         private readonly Dictionary<string, string> _tasks;
         private Timer _timer;
-        private bool _disposed;
+        private bool _disposed = false;
 
         #endregion
 
@@ -33,7 +34,7 @@ namespace Bop.Services.Tasks
 
         static TaskThread()
         {
-            _scheduleTaskUrl = $"{EngineContext.Current.Resolve<IWorkContext>().CurrentSite.Url}{NopTaskDefaults.ScheduleTaskPath}";
+            _scheduleTaskUrl = $"{EngineContext.Current.Resolve<IHostedSiteContext>().CurrentHostedSite.Url}{NopTaskDefaults.ScheduleTaskPath}";
             _timeout = EngineContext.Current.Resolve<CommonSettings>().ScheduleTaskRunTimeout;
         }
 
@@ -54,6 +55,7 @@ namespace Bop.Services.Tasks
 
             StartedUtc = DateTime.UtcNow;
             IsRunning = true;
+            HttpClient client = null;
 
             foreach (var taskName in _tasks.Keys)
             {
@@ -61,7 +63,7 @@ namespace Bop.Services.Tasks
                 try
                 {
                     //create and configure client
-                    var client = EngineContext.Current.Resolve<IHttpClientFactory>().CreateClient(BopHttpDefaults.DefaultHttpClient);
+                    client = EngineContext.Current.Resolve<IHttpClientFactory>().CreateClient(BopHttpDefaults.DefaultHttpClient);
                     if (_timeout.HasValue)
                         client.Timeout = TimeSpan.FromMilliseconds(_timeout.Value);
 
@@ -71,20 +73,26 @@ namespace Bop.Services.Tasks
                 }
                 catch (Exception ex)
                 {
-                    var _serviceScopeFactory = EngineContext.Current.Resolve<IServiceScopeFactory>();
-                    using (var scope = _serviceScopeFactory.CreateScope())
+                    var serviceScopeFactory = EngineContext.Current.Resolve<IServiceScopeFactory>();
+                    using var scope = serviceScopeFactory.CreateScope();
+                    // Resolve
+                    var logger = scope.ServiceProvider.GetRequiredService<ILogger>();
+                    var localizationService = scope.ServiceProvider.GetRequiredService<ILocalizationService>();
+                    var hosteSiteContext = scope.ServiceProvider.GetRequiredService<IHostedSiteContext>();
+
+                    var message = ex.InnerException?.GetType() == typeof(TaskCanceledException) ? localizationService.GetResource("ScheduleTasks.TimeoutError") : ex.Message;
+
+                    message = string.Format(localizationService.GetResource("ScheduleTasks.Error"), taskName,
+                        message, taskType, hosteSiteContext.CurrentHostedSite.Name, _scheduleTaskUrl);
+
+                    logger.Error(message, ex);
+                }
+                finally
+                {
+                    if (client != null)
                     {
-                        // Resolve
-                        var logger = scope.ServiceProvider.GetRequiredService<ILogger>();
-                        var localizationService = scope.ServiceProvider.GetRequiredService<ILocalizationService>();
-                        var workContext = scope.ServiceProvider.GetRequiredService<IWorkContext>();
-
-                        var message = ex.InnerException?.GetType() == typeof(TaskCanceledException) ? localizationService.GetResource("ScheduleTasks.TimeoutError") : ex.Message;
-
-                        message = string.Format(localizationService.GetResource("ScheduleTasks.Error"), taskName,
-                            message, taskType, workContext.CurrentSite.Name, _scheduleTaskUrl);
-
-                        logger.Error(message, ex);
+                        client.Dispose();
+                        client = null;
                     }
                 }
             }
@@ -119,15 +127,25 @@ namespace Bop.Services.Tasks
         /// </summary>
         public void Dispose()
         {
-            if (_timer == null || _disposed)
+            Dispose(true);
+            GC.SuppressFinalize(this);            
+        }
+
+        // Protected implementation of Dispose pattern.
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
                 return;
 
-            lock (this)
+            if (disposing)
             {
-                _timer.Dispose();
-                _timer = null;
-                _disposed = true;
+                lock (this)
+                {
+                    _timer?.Dispose();
+                }
             }
+
+            _disposed = true;
         }
 
         /// <summary>

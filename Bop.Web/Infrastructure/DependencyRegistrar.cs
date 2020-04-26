@@ -22,8 +22,8 @@ namespace Bop.Web.Infrastructure
         public void Register(ContainerBuilder builder, ITypeFinder typeFinder, BopConfig config)
         {
             //factories
-            builder.RegisterType<UserModelFactory>().As<IUserModelFactory>().InstancePerLifetimeScope();
-            builder.RegisterType<Factories.UserModelFactory>().As<Factories.IUserModelFactory>().InstancePerLifetimeScope();
+            builder.RegisterType<CustomerModelFactory>().As<ICustomerModelFactory>().InstancePerLifetimeScope();
+            builder.RegisterType<Factories.CustomerModelFactory>().As<Factories.ICustomerModelFactory>().InstancePerLifetimeScope();
         }
 
         /// <summary>

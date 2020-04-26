@@ -2,18 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using Bop.Core;
-using Bop.Core.Data;
+using Bop.Data;
 using Bop.Core.Domain.Common;
 using Bop.Core.Domain.Localization;
 using Bop.Core.Domain.Security;
 using Bop.Core.Domain.Site;
 using Bop.Core.Domain.Tasks;
-using Bop.Core.Domain.Users;
+using Bop.Core.Domain.Customers;
 using Bop.Core.Infrastructure;
 using Bop.Services.Configuration;
 using Bop.Services.Security;
-using Bop.Services.Users;
-
+using Bop.Services.Customers;
 
 namespace Bop.Services.Installation
 {
@@ -25,14 +24,15 @@ namespace Bop.Services.Installation
         #region Fields
 
 
-        private readonly IRepository<User> _customerRepository;
-        private readonly IRepository<UserPassword> _customerPasswordRepository;
-        private readonly IRepository<UserRole> _userRoleRepository;
+        private readonly IRepository<Customer> _customerRepository;
+        private readonly IRepository<CustomerPassword> _customerPasswordRepository;
+        private readonly IRepository<CustomerRole> _customerRoleRepository;
         private readonly IRepository<Language> _languageRepository;
         private readonly IRepository<ScheduleTask> _scheduleTaskRepository;
         private readonly IRepository<HostedSite> _hostedSiteRepository;
         private readonly IWebHelper _webHelper;
         private readonly IPermissionService _permissionService;
+        private readonly IBopDataProvider _dataProvider;
 
 
 
@@ -41,43 +41,57 @@ namespace Bop.Services.Installation
 
         #region Ctor
 
-        public CodeFirstInstallationService(IRepository<User> customerRepository,
-            IRepository<UserPassword> customerPasswordRepository,
-            IRepository<UserRole> userRoleRepository,
+        public CodeFirstInstallationService(IRepository<Customer> customerRepository,
+            IRepository<CustomerPassword> customerPasswordRepository,
+            IRepository<CustomerRole> customerRoleRepository,
             IRepository<Language> languageRepository,
             IRepository<ScheduleTask> scheduleTaskRepository,
             IRepository<HostedSite> hostedSiteRepository,
-            IWebHelper webHelper, IPermissionService permissionService)
+            IWebHelper webHelper, IPermissionService permissionService,
+            IBopDataProvider dataProvider)
         {
             _customerRepository = customerRepository;
             _customerPasswordRepository = customerPasswordRepository;
-            _userRoleRepository = userRoleRepository;
+            _customerRoleRepository = customerRoleRepository;
             _languageRepository = languageRepository;
             _scheduleTaskRepository = scheduleTaskRepository;
             _webHelper = webHelper;
             _permissionService = permissionService;
             _hostedSiteRepository = hostedSiteRepository;
+            _dataProvider = dataProvider;
         }
 
         #endregion
 
         #region Utilities
 
+        protected virtual T InsertInstallationData<T>(T entity) where T : BaseEntity
+        {
+            return _dataProvider.InsertEntity(entity);
+        }
+
+        protected virtual void InsertInstallationData<T>(params T[] entities) where T : BaseEntity
+        {
+            foreach (var entity in entities)
+            {
+                InsertInstallationData(entity);
+            }
+        }
+
         protected virtual void InstallHostedSite()
         {
-            var storeUrl = _webHelper.GetStoreLocation(false);
             var stores = new List<HostedSite>
             {
                 new HostedSite
                 {
                     Name = "Zeipt",
-                    Url = storeUrl,
+                    Url = "",
                     SslEnabled = false,
-                    Hosts = "digital-receipt.com,www.digital-receipt.com",
+                    Hosts = "shakib-miraki.com,www.shakib-mirak.com",
                     DisplayOrder = 1,
-                    CompanyName = "Iran Argham",
+                    CompanyName = "Shakib",
                     CompanyAddress = "Iran, Tehran",
-                    CompanyPhoneNumber = "(98) 456-78901",
+                    CompanyPhoneNumber = "(98) 456-78905",
                     DefaultLanguageId = 0
                 }
             };
@@ -108,84 +122,67 @@ namespace Bop.Services.Installation
                     Published = true,
                     DisplayOrder = 2
                 }
-                
+
             };
             _languageRepository.Insert(languages);
         }
 
-        //protected virtual void InstallLocaleResources()
-        //{
-        //    //'English' language
-        //    var language = _languageRepository.Table.Single(l => l.Name == "English");
-
-        //    //save resources
-        //    var directoryPath = _fileProvider.MapPath(BopInstallationDefaults.LocalizationResourcesPath);
-        //    var pattern = $"*.{BopInstallationDefaults.LocalizationResourcesFileExtension}";
-        //    foreach (var filePath in _fileProvider.EnumerateFiles(directoryPath, pattern))
-        //    {
-        //        var localizationService = EngineContext.Current.Resolve<ILocalizationService>();
-        //        using (var streamReader = new StreamReader(filePath))
-        //        {
-        //            localizationService.ImportResourcesFromXml(language, streamReader);
-        //        }
-        //    }
-        //}
-
-        protected virtual void InstallCustomersAndUsers(string defaultUserPhone, string defaultUserPassword)
+        protected virtual void InstallCustomersAndCustomers(string defaultCustomerPhone, string defaultCustomerPassword)
         {
-            var crAdministrators = new UserRole
+            var crAdministrators = new CustomerRole
             {
                 Name = "Administrators",
                 Active = true,
                 IsSystemRole = true,
-                SystemName = BopUserDefaults.AdministratorsRoleName
+                SystemName = BopCustomerDefaults.AdministratorsRoleName
             };
 
-            var crRegistered = new UserRole
+            var crRegistered = new CustomerRole
             {
                 Name = "Registered",
                 Active = true,
                 IsSystemRole = true,
-                SystemName = BopUserDefaults.RegisteredRoleName
+                SystemName = BopCustomerDefaults.RegisteredRoleName
             };
 
-            var crGuests = new UserRole
+            var crGuests = new CustomerRole
             {
                 Name = "Guests",
                 Active = true,
                 IsSystemRole = true,
-                SystemName = BopUserDefaults.GuestsRoleName
+                SystemName = BopCustomerDefaults.GuestsRoleName
             };
 
-            var userRoles = new List<UserRole>
+            var customerRoles = new List<CustomerRole>
             {
                 crAdministrators,
                 crRegistered,
                 crGuests
             };
-            _userRoleRepository.Insert(userRoles);
+            _customerRoleRepository.Insert(customerRoles);
 
-            //admin user
-            var adminUser = new User
+            //admin customer
+            var adminUser = new Customer
             {
-                Phone = defaultUserPhone,
-                Username = defaultUserPhone,
+                Phone = defaultCustomerPhone,
+                Username = defaultCustomerPhone,
                 Active = true,
                 CreatedOnUtc = DateTime.UtcNow,
                 LastActivityDateUtc = DateTime.UtcNow,
             };
 
-            adminUser.AddUserRoleMapping(new UserUserRoleMapping { UserRole = crAdministrators });
-            adminUser.AddUserRoleMapping(new UserUserRoleMapping { UserRole = crRegistered });
-
             _customerRepository.Insert(adminUser);
 
+            InsertInstallationData(
+                new CustomerCustomerRoleMapping { CustomerId = adminUser.Id, CustomerRoleId = crAdministrators.Id },
+                new CustomerCustomerRoleMapping { CustomerId = adminUser.Id, CustomerRoleId = crRegistered.Id });
 
             //set hashed admin password
-            var customerRegistrationService = EngineContext.Current.Resolve<IUserRegistrationService>();
-            customerRegistrationService.ChangePassword(new ChangePasswordRequest(defaultUserPhone, false,
-                 PasswordFormat.Hashed, defaultUserPassword, null, BopUserServiceDefaults.DefaultHashedPasswordFormat));
+            var customerRegistrationService = EngineContext.Current.Resolve<ICustomerRegistrationService>();
+            customerRegistrationService.ChangePassword(new ChangePasswordRequest(defaultCustomerPhone, false,
+                 PasswordFormat.Hashed, defaultCustomerPhone, null, BopCustomerServiceDefaults.DefaultHashedPasswordFormat));
         }
+
 
 
         protected virtual void InstallSettings()
@@ -195,7 +192,8 @@ namespace Bop.Services.Installation
 
             settingService.SaveSetting(new CommonSettings
             {
-                UseResponseCompression = true
+                UseResponseCompression = true,
+                StaticFilesCacheControl = "public,max-age=31536000"
             });
 
 
@@ -211,12 +209,11 @@ namespace Bop.Services.Installation
                 IgnoreRtlPropertyForAdminArea = false
             });
 
-            settingService.SaveSetting(new UserSettings
+            settingService.SaveSetting(new CustomerSettings
             {
-                UsernamesEnabled = false,
-                AllowUsersToChangeUsernames = false,
+                UsernameEnabled = false,
                 DefaultPasswordFormat = PasswordFormat.Hashed,
-                HashedPasswordFormat = BopUserServiceDefaults.DefaultHashedPasswordFormat,
+                HashedPasswordFormat = BopCustomerServiceDefaults.DefaultHashedPasswordFormat,
                 PasswordMinLength = 6,
                 PasswordRequireDigit = false,
                 PasswordRequireLowercase = false,
@@ -227,7 +224,6 @@ namespace Bop.Services.Installation
                 PasswordLifetime = 90,
                 FailedPasswordAllowedAttempts = 0,
                 FailedPasswordLockoutMinutes = 30,
-                AllowViewingProfiles = false,
                 DeleteGuestTaskOlderThanMinutes = 1440
             });
 
@@ -243,17 +239,6 @@ namespace Bop.Services.Installation
                 HoneypotInputName = "hpinput",
                 AllowNonAsciiCharactersInHeaders = true
             });
-
-
-            settingService.SaveSetting(new CaptchaSettings
-            {
-                Enabled = true,
-                ShowOnLoginPage = true,
-                ShowOnRegistrationPage = true,
-                ReCaptchaDefaultLanguage = "fa",
-                AutomaticallyChooseLanguage = false
-            });
-
         }
 
 
@@ -283,7 +268,7 @@ namespace Bop.Services.Installation
                 {
                     Name = "Delete guests",
                     Seconds = 43200,
-                    Type = "Bop.Services.Users.DeleteGuestsTask, Bop.Services",
+                    Type = "Bop.Services.Customers.DeleteGuestsTask, Bop.Services",
                     Enabled = true,
                     StopOnError = false
                 },
@@ -319,14 +304,14 @@ namespace Bop.Services.Installation
         /// <summary>
         /// Install required data
         /// </summary>
-        /// <param name="defaultUserPhone">Default user email</param>
-        /// <param name="defaultUserPassword">Default user password</param>
-        public virtual void InstallRequiredData(string defaultUserPhone, string defaultUserPassword)
+        /// <param name="defaultCustomerPhone">Default customer email</param>
+        /// <param name="defaultCustomerPassword">Default customer password</param>
+        public virtual void InstallRequiredData(string defaultCustomerPhone, string defaultCustomerPassword)
         {
             InstallHostedSite();
             InstallLanguages();
             InstallSettings();
-            InstallCustomersAndUsers(defaultUserPhone, defaultUserPassword);
+            InstallCustomersAndCustomers(defaultCustomerPhone, defaultCustomerPassword);
             InstallScheduleTasks();
             InstallPermission();
         }

@@ -1,6 +1,5 @@
 ﻿
-
-using Bop.Core.Domain.Users;
+using Bop.Core.Domain.Customers;
 
 namespace Bop.Core.Configuration
 {
@@ -44,7 +43,7 @@ namespace Bop.Core.Configuration
 
         public string GetReceiptsPath { get; set; }
 
-        public string AdminRoleName { get; set; } = BopUserDefaults.AdministratorsRoleName;
+        public string AdminRoleName { get; set; } = BopCustomerDefaults.AdministratorsRoleName;
 
         public string CorsPath { get; set; }
     }

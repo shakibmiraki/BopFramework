@@ -1,13 +1,14 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using Bop.Core.Caching;
-using Bop.Core.Data;
 using Bop.Core.Domain.Localization;
+using Bop.Data;
+using Bop.Services.Caching.CachingDefaults;
+using Bop.Services.Caching.Extensions;
 using Bop.Services.Configuration;
 using Bop.Services.Events;
-
 
 namespace Bop.Services.Localization
 {
@@ -22,7 +23,6 @@ namespace Bop.Services.Localization
         private readonly IRepository<Language> _languageRepository;
         private readonly ISettingService _settingService;
         private readonly IStaticCacheManager _cacheManager;
-
         private readonly LocalizationSettings _localizationSettings;
 
         #endregion
@@ -54,10 +54,7 @@ namespace Bop.Services.Localization
         {
             if (language == null)
                 throw new ArgumentNullException(nameof(language));
-
-            if (language is IEntityForCaching)
-                throw new ArgumentException("Cacheable entities are not supported by Entity Framework");
-
+            
             //update default admin area language (if required)
             if (_localizationSettings.DefaultAdminLanguageId == language.Id)
             {
@@ -73,10 +70,7 @@ namespace Bop.Services.Localization
             }
 
             _languageRepository.Delete(language);
-
-            //cache
-            _cacheManager.RemoveByPrefix(BopLocalizationDefaults.LanguagesPrefixCacheKey);
-
+            
             //event notification
             _eventPublisher.EntityDeleted(language);
         }
@@ -84,35 +78,31 @@ namespace Bop.Services.Localization
         /// <summary>
         /// Gets all languages
         /// </summary>
-        /// <param name="loadCacheableCopy">A value indicating whether to load a copy that could be cached (workaround until Entity Framework supports 2-level caching)</param>
+        /// <param name="storeId">Load records allowed only in a specified store; pass 0 to load all records</param>
+        /// <param name="showHidden">A value indicating whether to show hidden records</param>
         /// <returns>Languages</returns>
-        public virtual IList<Language> GetAllLanguages(bool loadCacheableCopy = true)
+        public virtual IList<Language> GetAllLanguages(bool showHidden = false, int storeId = 0)
         {
-            IList<Language> LoadLanguagesFunc()
-            {
-                var query = _languageRepository.Table;
-                query = query.Where(l => l.Published);
-                query = query.OrderBy(l => l.DisplayOrder).ThenBy(l => l.Id);
-                return query.ToList();
-            }
+            var query = _languageRepository.Table;
+            if (!showHidden) query = query.Where(l => l.Published);
+            query = query.OrderBy(l => l.DisplayOrder).ThenBy(l => l.Id);
 
-            IList<Language> languages;
-            if (loadCacheableCopy)
+            //cacheable copy
+            var key = BopLocalizationCachingDefaults.LanguagesAllCacheKey.FillCacheKey(storeId, showHidden);
+            
+            var languages = _cacheManager.Get(key, () =>
             {
-                //cacheable copy
-                var key = string.Format(BopLocalizationDefaults.LanguagesAllCacheKey);
-                languages = _cacheManager.Get(key, () =>
+                var allLanguages = query.ToList();
+
+                //store mapping
+                if (storeId > 0)
                 {
-                    var result = new List<Language>();
-                    foreach (var language in LoadLanguagesFunc())
-                        result.Add(new LanguageForCaching(language));
-                    return result;
-                });
-            }
-            else
-            {
-                languages = LoadLanguagesFunc();
-            }
+                    allLanguages = allLanguages
+                        .ToList();
+                }
+
+                return allLanguages;
+            });
 
             return languages;
         }
@@ -121,57 +111,13 @@ namespace Bop.Services.Localization
         /// Gets a language
         /// </summary>
         /// <param name="languageId">Language identifier</param>
-        /// <param name="loadCacheableCopy">A value indicating whether to load a copy that could be cached (workaround until Entity Framework supports 2-level caching)</param>
         /// <returns>Language</returns>
-        public virtual Language GetLanguageById(int languageId, bool loadCacheableCopy = true)
+        public virtual Language GetLanguageById(int languageId)
         {
             if (languageId == 0)
                 return null;
 
-            Language LoadLanguageFunc()
-            {
-                return _languageRepository.GetById(languageId);
-            }
-
-            if (!loadCacheableCopy) 
-                return LoadLanguageFunc();
-
-            //cacheable copy
-            var key = string.Format(BopLocalizationDefaults.LanguagesByIdCacheKey, languageId);
-            return _cacheManager.Get(key, () =>
-            {
-                var language = LoadLanguageFunc();
-                return language == null ? null : new LanguageForCaching(language);
-            });
-        }
-
-        /// <summary>
-        /// Gets a language
-        /// </summary>
-        /// <param name="languageCulture">Language Culture</param>
-        /// <param name="loadCacheableCopy">A value indicating whether to load a copy that could be cached (workaround until Entity Framework supports 2-level caching)</param>
-        /// <returns>Language</returns>
-        public virtual Language GetLanguageByLanguageCulture(string languageCulture, bool loadCacheableCopy = true)
-        {
-            if (string.IsNullOrEmpty(languageCulture))
-                return null;
-
-            Language LoadLanguageFunc()
-            {
-                return _languageRepository.TableNoTracking.SingleOrDefault(language =>
-                    language.LanguageCulture == languageCulture);
-            }
-
-            if (!loadCacheableCopy) 
-                return LoadLanguageFunc();
-
-            //cacheable copy
-            var key = string.Format(BopLocalizationDefaults.LanguagesByIdCacheKey, languageCulture);
-            return _cacheManager.Get(key, () =>
-            {
-                var language = LoadLanguageFunc();
-                return language == null ? null : new LanguageForCaching(language);
-            });
+            return _languageRepository.ToCachedGetById(languageId);
         }
 
         /// <summary>
@@ -183,13 +129,7 @@ namespace Bop.Services.Localization
             if (language == null)
                 throw new ArgumentNullException(nameof(language));
 
-            if (language is IEntityForCaching)
-                throw new ArgumentException("Cacheable entities are not supported by Entity Framework");
-
             _languageRepository.Insert(language);
-
-            //cache
-            _cacheManager.RemoveByPrefix(BopLocalizationDefaults.LanguagesPrefixCacheKey);
 
             //event notification
             _eventPublisher.EntityInserted(language);
@@ -204,14 +144,8 @@ namespace Bop.Services.Localization
             if (language == null)
                 throw new ArgumentNullException(nameof(language));
 
-            if (language is IEntityForCaching)
-                throw new ArgumentException("Cacheable entities are not supported by Entity Framework");
-
             //update language
             _languageRepository.Update(language);
-
-            //cache
-            _cacheManager.RemoveByPrefix(BopLocalizationDefaults.LanguagesPrefixCacheKey);
 
             //event notification
             _eventPublisher.EntityUpdated(language);

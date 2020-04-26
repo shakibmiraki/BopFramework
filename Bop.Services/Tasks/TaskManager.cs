@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Bop.Core.Infrastructure;
+using Bop.Data;
 
 namespace Bop.Services.Tasks
 {
@@ -32,6 +33,9 @@ namespace Bop.Services.Tasks
         /// </summary>
         public void Initialize()
         {
+            if (!DataSettingsManager.DatabaseIsInstalled)
+                return;
+
             _taskThreads.Clear();
 
             var taskService = EngineContext.Current.Resolve<IScheduleTaskService>();

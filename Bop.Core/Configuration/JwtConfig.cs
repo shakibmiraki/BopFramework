@@ -15,8 +15,8 @@ namespace Bop.Core.Configuration
 
         public int RefreshTokenExpirationMinutes { get; set; }
 
-        public bool AllowMultipleLoginsFromTheSameUser { get; set; }
+        public bool AllowMultipleLoginsFromTheSameCustomer { get; set; }
 
-        public bool AllowSignoutAllUserActiveClients { get; set; }
+        public bool AllowSignoutAllCustomerActiveClients { get; set; }
     }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using Bop.Core;
 using Bop.Services;
 using Bop.Services.Localization;
+using Bop.Services.Logging;
 using Bop.Services.Security;
 using Bop.Web.Areas.Admin.Models;
 using Bop.Web.Framework;
@@ -58,7 +59,7 @@ namespace Bop.Web.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message, ex, _workContext.CurrentUser);
+                _logger.Error(ex.Message, ex, _workContext.CurrentCustomer);
                 response.Messages.Add(_localizationService.GetResource("localization.export.createfile.error"));
                 return StatusCode(StatusCodes.Status500InternalServerError, response);
             }
@@ -85,7 +86,7 @@ namespace Bop.Web.Areas.Admin.Controllers
                     }
                     var importedLanguage = JsonConvert.DeserializeObject<ExportLanguage>(jsonContent);
 
-                    var language = _languageService.GetLanguageByLanguageCulture(importedLanguage.Configuration.LanguageCode);
+                    var language = _languageService.GetLanguageById(importedLanguage.Configuration.LanguageId);
                     if (language is null)
                     {
                         response.Messages.Add(
@@ -106,7 +107,7 @@ namespace Bop.Web.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message, ex, _workContext.CurrentUser);
+                _logger.Error(ex.Message, ex, _workContext.CurrentCustomer);
                 response.Messages.Add(_localizationService.GetResource("localization.language.import.error"));
                 return StatusCode(500, response);
             }
@@ -140,7 +141,7 @@ namespace Bop.Web.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message, ex, _workContext.CurrentUser);
+                _logger.Error(ex.Message, ex, _workContext.CurrentCustomer);
                 response.Messages.Add(_localizationService.GetResource("localization.language.getalllanguages.error"));
                 return StatusCode(StatusCodes.Status500InternalServerError, response);
             }

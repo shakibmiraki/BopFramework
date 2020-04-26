@@ -28,8 +28,6 @@ namespace Bop.Web.Framework.Infrastructure
             //add and configure MVC feature
             services.AddBopMvc();
 
-            
-
         }
 
         /// <summary>
@@ -45,8 +43,8 @@ namespace Bop.Web.Framework.Infrastructure
             //use cors policy
             application.UseBopCors();
 
-            //MVC routing
-            application.UseBopMvc();
+            //Endpoints routing
+            application.UseBopEndpoints();
         }
 
         /// <summary>

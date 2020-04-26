@@ -1,6 +1,5 @@
 ﻿using Bop.Core.Infrastructure;
 using Bop.Web.Framework.Infrastructure.Extensions;
-using EasyCaching.Core;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,9 +24,6 @@ namespace Bop.Web.Framework.Infrastructure
 
             //add options feature
             services.AddOptions();
-
-            //add Easy caching
-            services.AddEasyCaching();
 
             //add distributed memory cache
             services.AddDistributedMemoryCache();
@@ -54,8 +50,8 @@ namespace Bop.Web.Framework.Infrastructure
             //use response compression
             application.UseBopResponseCompression();
 
-            
-            application.UseStaticFiles();
+            //use static files feature
+            application.UseBopStaticFiles();
 
             //use HTTP session
             application.UseSession();
@@ -63,8 +59,8 @@ namespace Bop.Web.Framework.Infrastructure
             //use request localization
             application.UseBopRequestLocalization();
 
-            //easy caching
-            application.UseEasyCaching();
+            //set request culture
+            application.UseCulture();
         }
 
         /// <summary>

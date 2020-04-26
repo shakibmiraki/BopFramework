@@ -1,6 +1,4 @@
-
-
-namespace Bop.Core.Domain.Localization
+﻿namespace Bop.Core.Domain.Localization
 {
     /// <summary>
     /// Represents a locale string resource
@@ -21,10 +19,5 @@ namespace Bop.Core.Domain.Localization
         /// Gets or sets the resource value
         /// </summary>
         public string ResourceValue { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the language
-        /// </summary>
-        public virtual Language Language { get; set; }
     }
 }

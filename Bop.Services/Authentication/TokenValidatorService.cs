@@ -2,19 +2,19 @@
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Bop.Services.Users;
+using Bop.Services.Customers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace Bop.Services.Authentication
 {
     public class TokenValidatorService : ITokenValidatorService
     {
-        private readonly IUserService _userService;
+        private readonly ICustomerService _customerService;
         private readonly ITokenStoreService _tokenStoreService;
 
-        public TokenValidatorService(IUserService userService, ITokenStoreService tokenStoreService)
+        public TokenValidatorService(ICustomerService customerService, ITokenStoreService tokenStoreService)
         {
-            _userService = userService;
+            _customerService = customerService;
             _tokenStoreService = tokenStoreService;
         }
 
@@ -34,22 +34,22 @@ namespace Bop.Services.Authentication
                 return;
             }
 
-            var userIdString = claimsIdentity.FindFirst(ClaimTypes.UserData).Value;
-            if (!int.TryParse(userIdString, out int userId))
+            var customerIdString = claimsIdentity.FindFirst(ClaimTypes.UserData).Value;
+            if (!int.TryParse(customerIdString, out int customerId))
             {
-                context.Fail("This is not our issued token. It has no user-id.");
+                context.Fail("This is not our issued token. It has no customer-id.");
                 return;
             }
 
-            var user = _userService.GetUserById(userId);
-            if (user == null || !user.Active)
+            var customer = _customerService.GetCustomerById(customerId);
+            if (customer == null || !customer.Active)
             {
-                // user has changed his/her password/roles/stat/IsActive
+                // customer has changed his/her password/roles/stat/IsActive
                 context.Fail("This token is expired. Please login again.");
             }
 
             var accessToken = context.SecurityToken as JwtSecurityToken;
-            if (string.IsNullOrWhiteSpace(accessToken?.RawData) || !_tokenStoreService.IsValidToken(accessToken.RawData, userId))
+            if (string.IsNullOrWhiteSpace(accessToken?.RawData) || !_tokenStoreService.IsValidToken(accessToken.RawData, customerId))
             {
                 context.Fail("This token is not in our database.");
             }

@@ -18,7 +18,7 @@ namespace Bop.Core.Domain.Security
         /// <summary>
         /// Gets or sets the user role system name
         /// </summary>
-        public string UserRoleSystemName { get; set; }
+        public string CustomerRoleSystemName { get; set; }
 
         /// <summary>
         /// Gets or sets the permissions

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Bop.Core.Domain.Users;
+﻿using Bop.Core.Domain.Customers;
 
 
 namespace Bop.Services.Messages
@@ -15,10 +14,10 @@ namespace Bop.Services.Messages
         /// <summary>
         /// Sends an phone validation message to a customer
         /// </summary>
-        /// <param name="user">User instance</param>
+        /// <param name="customer">Customer instance</param>
         /// <param name="languageId">Message language identifier</param>
         /// <returns>Queued email identifier</returns>
-        int SendUserPhoneValidationMessage(User user, int languageId);
+        int SendCustomerPhoneValidationMessage(Customer customer, int languageId);
 
         #endregion
     }

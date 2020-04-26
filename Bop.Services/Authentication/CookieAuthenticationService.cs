@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
-using Bop.Core.Domain.Users;
-using Bop.Services.Users;
+using Bop.Core.Domain.Customers;
+using Bop.Services.Customers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
@@ -17,9 +17,9 @@ namespace Bop.Services.Authentication
         #region Fields
 
 
-        private readonly IUserService _userService;
+        private readonly ICustomerService _customerService;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private User _cachedUser;
+        private Customer _cachedCustomer;
 
         #endregion
 
@@ -28,12 +28,12 @@ namespace Bop.Services.Authentication
         /// <summary>
         /// Ctor
         /// </summary>
-        /// <param name="userService">User service</param>
+        /// <param name="customerService">Customer service</param>
         /// <param name="httpContextAccessor">HTTP context accessor</param>
-        public CookieAuthenticationService(IUserService userService,
+        public CookieAuthenticationService(ICustomerService customerService,
             IHttpContextAccessor httpContextAccessor)
         {
-            _userService = userService;
+            _customerService = customerService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -44,25 +44,25 @@ namespace Bop.Services.Authentication
         /// <summary>
         /// Sign in
         /// </summary>
-        /// <param name="user">User</param>
+        /// <param name="customer">Customer</param>
         /// <param name="isPersistent">Whether the authentication session is persisted across multiple requests</param>
-        public virtual async void SignIn(User user, bool isPersistent)
+        public virtual async void SignIn(Customer customer, bool isPersistent)
         {
-            if (user == null)
-                throw new ArgumentNullException(nameof(user));
+            if (customer == null)
+                throw new ArgumentNullException(nameof(customer));
 
-            //create claims for user's username and email
+            //create claims for customer's customername and email
             var claims = new List<Claim>();
 
-            if (!string.IsNullOrEmpty(user.Username))
-                claims.Add(new Claim(ClaimTypes.Name, user.Username, ClaimValueTypes.String, BopAuthenticationDefaults.ClaimsIssuer));
+            if (!string.IsNullOrEmpty(customer.Username))
+                claims.Add(new Claim(ClaimTypes.Name, customer.Username, ClaimValueTypes.String, BopAuthenticationDefaults.ClaimsIssuer));
 
-            if (!string.IsNullOrEmpty(user.Phone))
-                claims.Add(new Claim(ClaimTypes.MobilePhone, user.Phone, ClaimValueTypes.Email, BopAuthenticationDefaults.ClaimsIssuer));
+            if (!string.IsNullOrEmpty(customer.Phone))
+                claims.Add(new Claim(ClaimTypes.MobilePhone, customer.Phone, ClaimValueTypes.Email, BopAuthenticationDefaults.ClaimsIssuer));
 
             //create principal for the current authentication scheme
-            var userIdentity = new ClaimsIdentity(claims, BopAuthenticationDefaults.AuthenticationScheme);
-            var userPrincipal = new ClaimsPrincipal(userIdentity);
+            var customerIdentity = new ClaimsIdentity(claims, BopAuthenticationDefaults.AuthenticationScheme);
+            var customerPrincipal = new ClaimsPrincipal(customerIdentity);
 
             //set value indicating whether session is persisted and the time at which the authentication was issued
             var authenticationProperties = new AuthenticationProperties
@@ -72,10 +72,10 @@ namespace Bop.Services.Authentication
             };
 
             //sign in
-            await _httpContextAccessor.HttpContext.SignInAsync(BopAuthenticationDefaults.AuthenticationScheme, userPrincipal, authenticationProperties);
+            await _httpContextAccessor.HttpContext.SignInAsync(BopAuthenticationDefaults.AuthenticationScheme, customerPrincipal, authenticationProperties);
 
-            //cache authenticated user
-            _cachedUser = user;
+            //cache authenticated customer
+            _cachedCustomer = customer;
         }
 
         /// <summary>
@@ -83,44 +83,44 @@ namespace Bop.Services.Authentication
         /// </summary>
         public virtual async void SignOut()
         {
-            //reset cached user
-            _cachedUser = null;
+            //reset cached customer
+            _cachedCustomer = null;
 
             //and sign out from the current authentication scheme
             await _httpContextAccessor.HttpContext.SignOutAsync(BopAuthenticationDefaults.AuthenticationScheme);
         }
 
         /// <summary>
-        /// Get authenticated user
+        /// Get authenticated customer
         /// </summary>
-        /// <returns>User</returns>
-        public virtual User GetAuthenticatedUser()
+        /// <returns>Customer</returns>
+        public virtual Customer GetAuthenticatedCustomer()
         {
-            //whether there is a cached user
-            if (_cachedUser != null)
-                return _cachedUser;
+            //whether there is a cached customer
+            if (_cachedCustomer != null)
+                return _cachedCustomer;
 
-            //try to get authenticated user identity
+            //try to get authenticated customer identity
             var authenticateResult = _httpContextAccessor.HttpContext.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme).Result;
             if (!authenticateResult.Succeeded)
                 return null;
 
-            User user = null;
+            Customer customer = null;
 
-            //try to get user by username
-            var userIdClaim = authenticateResult.Principal.FindFirst(claim => claim.Type == ClaimTypes.NameIdentifier
+            //try to get customer by customername
+            var customerIdClaim = authenticateResult.Principal.FindFirst(claim => claim.Type == ClaimTypes.NameIdentifier
                 && claim.Issuer.Equals(BopAuthenticationDefaults.ClaimsIssuer, StringComparison.InvariantCultureIgnoreCase));
-            if (userIdClaim != null)
-                user = _userService.GetUserById(int.Parse(userIdClaim.Value));
+            if (customerIdClaim != null)
+                customer = _customerService.GetCustomerById(int.Parse(customerIdClaim.Value));
 
-            //whether the found user is available
-            if (user == null || !user.Active || user.RequireReLogin || user.Deleted || !user.IsRegistered())
+            //whether the found customer is available
+            if (customer == null || !customer.Active || customer.RequireReLogin || customer.Deleted || !customer.IsRegistered())
                 return null;
 
-            //cache authenticated user
-            _cachedUser = user;
+            //cache authenticated customer
+            _cachedCustomer = customer;
 
-            return _cachedUser;
+            return _cachedCustomer;
         }
 
         #endregion

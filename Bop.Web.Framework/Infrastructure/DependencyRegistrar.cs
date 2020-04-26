@@ -8,12 +8,10 @@ using Autofac.Core;
 using Bop.Core;
 using Bop.Core.Caching;
 using Bop.Core.Configuration;
-using Bop.Core.Data;
+using Bop.Data;
 using Bop.Core.Infrastructure;
 using Bop.Core.Infrastructure.DependencyManagement;
 using Bop.Core.Redis;
-using Bop.Data;
-using Bop.Services;
 using Bop.Services.Authentication;
 using Bop.Services.Common;
 using Bop.Services.Configuration;
@@ -24,11 +22,10 @@ using Bop.Services.Messages;
 using Bop.Services.Security;
 using Bop.Services.Site;
 using Bop.Services.Tasks;
-using Bop.Services.Users;
+using Bop.Services.Customers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.EntityFrameworkCore;
-
-
+using Nop.Web.Framework;
+using Bop.Services.Logging;
 
 namespace Bop.Web.Framework.Infrastructure
 {
@@ -52,13 +49,11 @@ namespace Bop.Web.Framework.Infrastructure
             builder.RegisterType<WebHelper>().As<IWebHelper>().InstancePerLifetimeScope();
 
             //data layer
-            builder.RegisterType<EfDataProviderManager>().As<IDataProviderManager>().InstancePerDependency();
-            builder.Register(context => context.Resolve<IDataProviderManager>().DataProvider).As<IDataProvider>().InstancePerDependency();
-            builder.Register(context => new BopObjectContext(context.Resolve<DbContextOptions<BopObjectContext>>()))
-                .As<IDbContext>().InstancePerLifetimeScope();
+            builder.RegisterType<DataProviderManager>().As<IDataProviderManager>().InstancePerDependency();
+            builder.Register(context => context.Resolve<IDataProviderManager>().DataProvider).As<IBopDataProvider>().InstancePerDependency();
 
             //repositories
-            builder.RegisterGeneric(typeof(EfRepository<>)).As(typeof(IRepository<>)).InstancePerLifetimeScope();
+            builder.RegisterGeneric(typeof(EntityRepository<>)).As(typeof(IRepository<>)).InstancePerLifetimeScope();
 
             //cache manager
             builder.RegisterType<PerRequestCacheManager>().As<ICacheManager>().InstancePerLifetimeScope();
@@ -88,8 +83,12 @@ namespace Bop.Web.Framework.Infrastructure
             //work context
             builder.RegisterType<WebWorkContext>().As<IWorkContext>().InstancePerLifetimeScope();
 
+            //store context
+            builder.RegisterType<HostedSiteContext>().As<IHostedSiteContext>().InstancePerLifetimeScope();
+
+
             //services
-            builder.RegisterType<UserService>().As<IUserService>().InstancePerLifetimeScope();
+            builder.RegisterType<CustomerService>().As<ICustomerService>().InstancePerLifetimeScope();
             builder.RegisterType<PermissionService>().As<IPermissionService>().InstancePerLifetimeScope();
             builder.RegisterType<LocalizationService>().As<ILocalizationService>().InstancePerLifetimeScope();
             builder.RegisterType<LocalizedEntityService>().As<ILocalizedEntityService>().InstancePerLifetimeScope();
@@ -101,7 +100,7 @@ namespace Bop.Web.Framework.Infrastructure
             builder.RegisterType<SettingService>().As<ISettingService>().InstancePerLifetimeScope();
             builder.RegisterType<HostedSiteService>().As<IHostedSiteService>().InstancePerLifetimeScope();
             builder.RegisterType<ScheduleTaskService>().As<IScheduleTaskService>().InstancePerLifetimeScope();
-            builder.RegisterType<UserRegistrationService>().As<IUserRegistrationService>().InstancePerLifetimeScope();
+            builder.RegisterType<CustomerRegistrationService>().As<ICustomerRegistrationService>().InstancePerLifetimeScope();
             builder.RegisterType<GenericAttributeService>().As<IGenericAttributeService>().InstancePerLifetimeScope();
             builder.RegisterType<WorkflowMessageService>().As<IWorkflowMessageService>().InstancePerLifetimeScope();
             builder.RegisterType<AntiForgeryCookieService>().As<IAntiForgeryCookieService>().InstancePerLifetimeScope();
@@ -112,7 +111,6 @@ namespace Bop.Web.Framework.Infrastructure
 
             builder.RegisterType<ActionContextAccessor>().As<IActionContextAccessor>().InstancePerLifetimeScope();
             
-
             //register all settings
             builder.RegisterSource(new SettingsSource());
 
@@ -121,9 +119,6 @@ namespace Bop.Web.Framework.Infrastructure
             {
                 builder.RegisterType<CodeFirstInstallationService>().As<IInstallationService>().InstancePerLifetimeScope();
             }
-
-            
-
 
 
             //event consumers

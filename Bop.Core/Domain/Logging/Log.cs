@@ -1,12 +1,11 @@
-using System;
-using Bop.Core.Domain.Users;
+﻿using System;
 
 namespace Bop.Core.Domain.Logging
 {
     /// <summary>
     /// Represents a log record
     /// </summary>
-    public class Log : BaseEntity
+    public partial class Log : BaseEntity
     {
         /// <summary>
         /// Gets or sets the log level identifier
@@ -29,6 +28,11 @@ namespace Bop.Core.Domain.Logging
         public string IpAddress { get; set; }
 
         /// <summary>
+        /// Gets or sets the customer identifier
+        /// </summary>
+        public int? CustomerId { get; set; }
+
+        /// <summary>
         /// Gets or sets the page URL
         /// </summary>
         public string PageUrl { get; set; }
@@ -42,11 +46,6 @@ namespace Bop.Core.Domain.Logging
         /// Gets or sets the date and time of instance creation
         /// </summary>
         public DateTime CreatedOnUtc { get; set; }
-
-        /// <summary>
-        /// Gets or sets the customer
-        /// </summary>
-        public virtual User User { get; set; }
 
         /// <summary>
         /// Gets or sets the log level

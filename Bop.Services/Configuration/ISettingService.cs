@@ -1,9 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using Bop.Core.Configuration;
 using Bop.Core.Domain.Configuration;
-
 
 namespace Bop.Services.Configuration
 {
@@ -35,9 +34,8 @@ namespace Bop.Services.Configuration
         /// Get setting by key
         /// </summary>
         /// <param name="key">Key</param>
-        /// <param name="loadSharedValueIfNotFound">A value indicating whether a shared (for all stores) value should be loaded if a value specific for a certain is not found</param>
         /// <returns>Setting</returns>
-        Setting GetSetting(string key, bool loadSharedValueIfNotFound = false);
+        Setting GetSetting(string key);
 
         /// <summary>
         /// Get setting value by key
@@ -46,7 +44,7 @@ namespace Bop.Services.Configuration
         /// <param name="key">Key</param>
         /// <param name="defaultValue">Default value</param>
         /// <returns>Setting value</returns>
-        T GetSettingByKey<T>(string key, T defaultValue = default(T));
+        T GetSettingByKey<T>(string key, T defaultValue = default);
 
         /// <summary>
         /// Set setting value
@@ -80,6 +78,7 @@ namespace Bop.Services.Configuration
         /// </summary>
         /// <typeparam name="T">Type</typeparam>
         T LoadSetting<T>() where T : ISettings, new();
+        
         /// <summary>
         /// Load settings
         /// </summary>
@@ -102,7 +101,8 @@ namespace Bop.Services.Configuration
         /// <param name="keySelector">Key selector</param>
         /// <param name="clearCache">A value indicating whether to clear cache after setting update</param>
         void SaveSetting<T, TPropType>(T settings,
-            Expression<Func<T, TPropType>> keySelector,bool clearCache = true) where T : ISettings, new();
+            Expression<Func<T, TPropType>> keySelector, bool clearCache = true) where T : ISettings, new();
+
 
         /// <summary>
         /// Delete all settings

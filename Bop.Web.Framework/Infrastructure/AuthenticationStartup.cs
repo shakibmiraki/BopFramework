@@ -19,6 +19,9 @@ namespace Bop.Web.Framework.Infrastructure
         /// <param name="configuration">Configuration of the application</param>
         public void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
+            //add data protection
+            services.AddNopDataProtection();
+
             //add authentication
             services.AddBopAuthentication();
         }

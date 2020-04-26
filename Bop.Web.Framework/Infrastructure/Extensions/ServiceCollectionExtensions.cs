@@ -3,27 +3,28 @@ using System.Linq;
 using System.Text;
 using Bop.Core;
 using Bop.Core.Configuration;
-using Bop.Core.Data;
+using Bop.Data;
 using Bop.Core.Http;
 using Bop.Core.Infrastructure;
-using Bop.Data;
-using Bop.Services;
 using Bop.Services.Authentication;
 using Bop.Services.Installation;
-using Bop.Services.Tasks;
-using EasyCaching.Core;
-using EasyCaching.InMemory;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using StackExchange.Profiling.Storage;
-
+using Bop.Services.Logging;
+using Bop.Core.Domain;
+using Bop.Services.Security;
+using Newtonsoft.Json.Serialization;
+using System.Net;
+using Bop.Core.Security;
+using Microsoft.AspNetCore.DataProtection;
+using Bop.Core.Redis;
 
 namespace Bop.Web.Framework.Infrastructure.Extensions
 {
@@ -40,8 +41,12 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
         /// <param name="hostingEnvironment">Hosting environment</param>
         /// <returns>Configured service provider</returns>
         public static IServiceProvider ConfigureApplicationServices(this IServiceCollection services,
-            IConfiguration configuration, IHostingEnvironment hostingEnvironment)
+            IConfiguration configuration, IWebHostEnvironment webHostEnvironment)
         {
+
+            //most of API providers require TLS 1.2 nowadays
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
             //add BopConfig configuration parameters
             var bopConfig = services.ConfigureStartupConfig<BopConfig>(configuration.GetSection("Bop"));
 
@@ -59,10 +64,10 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
 
 
             //validate host environment
-            CommonHelper.ValidateHostEnvironment(hostingEnvironment);
+            //CommonHelper.ValidateHostEnvironment(webHostEnvironment);
 
             //create default file provider
-            CommonHelper.DefaultFileProvider = new BopFileProvider(hostingEnvironment);
+            CommonHelper.DefaultFileProvider = new BopFileProvider(webHostEnvironment);
 
             //initialize plugins
             services.AddMvcCore();
@@ -75,31 +80,21 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
             if (!DataSettingsManager.DatabaseIsInstalled)
                 CreateAndSeedDatabase();
 
-            //initialize and start schedule tasks
-            TaskManager.Instance.Initialize();
-            TaskManager.Instance.Start();
-
-            //log application start
-            engine.Resolve<ILogger>().Information("Application started");
-
             return serviceProvider;
         }
 
         private static void CreateAndSeedDatabase()
         {
-            //initialize database
-            EngineContext.Current.Resolve<IDataProvider>().InitializeDatabase();
-
-            var installationService = EngineContext.Current.Resolve<IInstallationService>();
-
-            installationService.InstallRequiredData("09185198393", "123456");
-
+            var dataProvider = EngineContext.Current.Resolve<IBopDataProvider>();
             var dataSetting = DataSettingsManager.LoadSettings(reloadSettings: true);
+
+            dataProvider.CreateDatabase(dataSetting.Collation);
+            dataProvider.InitializeDatabase();
+            var installationService = EngineContext.Current.Resolve<IInstallationService>();
+            installationService.InstallRequiredData(dataSetting.Phone, dataSetting.Password);
+
             dataSetting.IsDatabaseInstalled = true;
-
-            //save settings
             DataSettingsManager.SaveSettings(dataSetting);
-
         }
 
         /// <summary>
@@ -172,6 +167,34 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
 
 
         /// <summary>
+        /// Adds data protection services
+        /// </summary>
+        /// <param name="services">Collection of service descriptors</param>
+        public static void AddNopDataProtection(this IServiceCollection services)
+        {
+            //check whether to persist data protection in Redis
+            var bopConfig = services.BuildServiceProvider().GetRequiredService<BopConfig>();
+            if (bopConfig.RedisEnabled && bopConfig.UseRedisToStoreDataProtectionKeys)
+            {
+                //store keys in Redis
+                services.AddDataProtection().PersistKeysToStackExchangeRedis(() =>
+                {
+                    var redisConnectionWrapper = EngineContext.Current.Resolve<IRedisConnectionWrapper>();
+                    return redisConnectionWrapper.GetDatabase(bopConfig.RedisDatabaseId ?? (int)RedisDatabaseNumber.DataProtectionKeys);
+                }, BopDataProtectionDefaults.RedisDataProtectionKey);
+            }
+            else
+            {
+                var dataProtectionKeysPath = CommonHelper.DefaultFileProvider.MapPath(BopDataProtectionDefaults.DataProtectionKeysPath);
+                var dataProtectionKeysFolder = new System.IO.DirectoryInfo(dataProtectionKeysPath);
+
+                //configure the data protection system to persist keys to the specified directory
+                services.AddDataProtection().PersistKeysToFileSystem(dataProtectionKeysFolder);
+            }
+        }
+
+
+        /// <summary>
         /// Adds authentication service
         /// </summary>
         /// <param name="services">Collection of service descriptors</param>
@@ -179,7 +202,6 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
         {
 
             var jwtConfig = services.BuildServiceProvider().GetRequiredService<JwtConfig>();
-
 
             // Needed for jwt auth.
             services
@@ -239,30 +261,22 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
         /// <returns>A builder for configuring MVC services</returns>
         public static IMvcBuilder AddBopMvc(this IServiceCollection services)
         {
+
             //add basic MVC feature
-            var mvcBuilder = services.AddMvc();
+            var mvcBuilder = services.AddControllersWithViews();
 
+            mvcBuilder.AddRazorRuntimeCompilation();
 
-            //sets the default value of settings on MvcOptions to match the behavior of asp.net core mvc 2.2
-            mvcBuilder.SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
-            //use cookie-based temp data provider
-            mvcBuilder.AddCookieTempDataProvider(options =>
-            {
-                options.Cookie.Name = $"{BopCookieDefaults.Prefix}{BopCookieDefaults.TempDataCookie}";
-
-                //whether to allow the use of cookies from SSL protected page on the other store pages which are not
-                options.Cookie.SecurePolicy = CookieSecurePolicy.None;
-            });
-
+            services.AddRazorPages();
 
             //MVC now serializes JSON with camel case names by default, use this code to avoid it
-            //mvcBuilder.AddJsonOptions(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
+            mvcBuilder.AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
+
 
             //add fluent validation
             mvcBuilder.AddFluentValidation(configuration =>
             {
-                //register all available validators from Bop assemblies
+                //register all available validators from Nop assemblies
                 var assemblies = mvcBuilder.PartManager.ApplicationParts
                     .OfType<AssemblyPart>()
                     .Where(part => part.Name.StartsWith("Bop", StringComparison.InvariantCultureIgnoreCase))
@@ -272,6 +286,9 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
                 //implicit/automatic validation of child properties
                 configuration.ImplicitlyValidateChildProperties = true;
             });
+
+            //register controllers as services, it'll allow to override them
+            mvcBuilder.AddControllersAsServices();
 
             return mvcBuilder;
         }
@@ -301,18 +318,6 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
 
 
         /// <summary>
-        /// Register base object context
-        /// </summary>
-        /// <param name="services">Collection of service descriptors</param>
-        public static void AddBopObjectContext(this IServiceCollection services)
-        {
-            services.AddDbContextPool<BopObjectContext>(optionsBuilder =>
-            {
-                optionsBuilder.UseSqlServerWithLazyLoading(services);
-            });
-        }
-
-        /// <summary>
         /// Add and configure MiniProfiler service
         /// </summary>
         /// <param name="services">Collection of service descriptors</param>
@@ -327,27 +332,14 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
                 //use memory cache provider for storing each result
                 ((MemoryCacheStorage)miniProfilerOptions.Storage).CacheDuration = TimeSpan.FromMinutes(60);
 
-                ////whether MiniProfiler should be displayed
-                //miniProfilerOptions.ShouldProfile = request =>
-                //    EngineContext.Current.Resolve<StoreInformationSettings>().DisplayMiniProfilerInPublicStore;
+                //whether MiniProfiler should be displayed
+                miniProfilerOptions.ShouldProfile = request =>
+                    EngineContext.Current.Resolve<HostedSiteInformationSettings>().DisplayMiniProfilerInPublicStore;
 
-                ////determine who can access the MiniProfiler results
-                //miniProfilerOptions.ResultsAuthorize = request =>
-                //    !EngineContext.Current.Resolve<StoreInformationSettings>().DisplayMiniProfilerForAdminOnly ||
-                //    EngineContext.Current.Resolve<IPermissionService>().Authorize(StandardPermissionProvider.AccessAdminPanel);
-            }).AddEntityFramework();
-        }
-
-        /// <summary>
-        /// Add and configure EasyCaching service
-        /// </summary>
-        /// <param name="services">Collection of service descriptors</param>
-        public static void AddEasyCaching(this IServiceCollection services)
-        {
-            services.AddEasyCaching(option =>
-            {
-                //use memory cache
-                option.UseInMemory("bop_memory_cache");
+                //determine who can access the MiniProfiler results
+                miniProfilerOptions.ResultsAuthorize = request =>
+                    !EngineContext.Current.Resolve<HostedSiteInformationSettings>().DisplayMiniProfilerForAdminOnly ||
+                    EngineContext.Current.Resolve<IPermissionService>().Authorize(StandardPermissionProvider.AccessAdminPanel);
             });
         }
 

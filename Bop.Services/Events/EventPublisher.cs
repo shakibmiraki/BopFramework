@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Bop.Core.Infrastructure;
-
+using Bop.Services.Logging;
 
 namespace Bop.Services.Events
 {

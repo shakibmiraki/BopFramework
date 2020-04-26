@@ -13,7 +13,7 @@ namespace Bop.Core.Domain.Common
         /// Gets or sets the entity identifier
         /// </summary>
         public int EntityId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the key group
         /// </summary>
@@ -30,9 +30,9 @@ namespace Bop.Core.Domain.Common
         public string Value { get; set; }
 
         /// <summary>
-        /// Gets or sets the insertdate
+        /// Gets or sets the created or updated date
         /// </summary>
-        public DateTime InsertDate { get; set; }
+        public DateTime? CreatedOrUpdatedDateUTC { get; set; }
 
     }
 }

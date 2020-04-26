@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bop.Core.Caching;
-using Bop.Core.Data;
+using Bop.Data;
 using Bop.Core.Domain.Site;
 using Bop.Services.Events;
 
@@ -45,9 +45,6 @@ namespace Bop.Services.Site
         {
             if (hostedSite == null)
                 throw new ArgumentNullException(nameof(hostedSite));
-
-            if (hostedSite is IEntityForCaching)
-                throw new ArgumentException("Cacheable entities are not supported by Entity Framework");
 
             var allStores = GetAllHostedSites();
             if (allStores.Count == 1)
@@ -105,9 +102,6 @@ namespace Bop.Services.Site
             if (store == null)
                 throw new ArgumentNullException(nameof(store));
 
-            if (store is IEntityForCaching)
-                throw new ArgumentException("Cacheable entities are not supported by Entity Framework");
-
             _hostedSiteRepository.Insert(store);
 
             _cacheManager.RemoveByPrefix(BopHostedSiteDefaults.HostedSitesPrefixCacheKey);
@@ -124,9 +118,6 @@ namespace Bop.Services.Site
         {
             if (store == null)
                 throw new ArgumentNullException(nameof(store));
-
-            if (store is IEntityForCaching)
-                throw new ArgumentException("Cacheable entities are not supported by Entity Framework");
 
             _hostedSiteRepository.Update(store);
 

@@ -4,10 +4,10 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using Bop.Core.Configuration;
-using Bop.Core.Data;
 using Bop.Core.Http;
 using Bop.Core.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
@@ -120,30 +120,49 @@ namespace Bop.Core
         /// </summary>
         /// <param name="useSsl">Whether to get SSL secured URL; pass null to determine automatically</param>
         /// <returns>Store location</returns>
-        public string GetStoreLocation(bool? useSsl = null)
+        public virtual string GetSiteLocation(bool? useSsl = null)
         {
-            var hostedSiteLocation = string.Empty;
+            var siteLocation = string.Empty;
 
             //get store host
-            var storeHost = GetStoreHost(useSsl ?? IsCurrentConnectionSecured());
-            if (!string.IsNullOrEmpty(storeHost))
+            var siteHost = GetSiteHost(useSsl ?? IsCurrentConnectionSecured());
+            if (!string.IsNullOrEmpty(siteHost))
             {
                 //add application path base if exists
-                hostedSiteLocation = IsRequestAvailable() ? $"{storeHost.TrimEnd('/')}{_httpContextAccessor.HttpContext.Request.PathBase}" : storeHost;
+                siteLocation = IsRequestAvailable() ? $"{siteHost.TrimEnd('/')}{_httpContextAccessor.HttpContext.Request.PathBase}" : siteHost;
             }
 
             //if host is empty (it is possible only when HttpContext is not available), use URL of a store entity configured in admin area
-            if (string.IsNullOrEmpty(storeHost) && DataSettingsManager.DatabaseIsInstalled)
+            if (string.IsNullOrEmpty(siteHost))
             {
                 //do not inject IWorkContext via constructor because it'll cause circular references
-                hostedSiteLocation = EngineContext.Current.Resolve<IWorkContext>().CurrentSite?.Url
-                                ?? throw new Exception("Current store cannot be loaded");
+                siteLocation = EngineContext.Current.Resolve<IHostedSiteContext>().CurrentHostedSite?.Url
+                    ?? throw new Exception("Current store cannot be loaded");
             }
 
             //ensure that URL is ended with slash
-            hostedSiteLocation = $"{hostedSiteLocation.TrimEnd('/')}/";
+            siteLocation = $"{siteLocation.TrimEnd('/')}/";
 
-            return hostedSiteLocation;
+            return siteLocation;
+        }
+
+
+        /// <summary>
+        /// Returns true if the requested resource is one of the typical resources that needn't be processed by the cms engine.
+        /// </summary>
+        /// <returns>True if the request targets a static resource file.</returns>
+        public virtual bool IsStaticResource()
+        {
+            if (!IsRequestAvailable())
+                return false;
+
+            string path = _httpContextAccessor.HttpContext.Request.Path;
+
+            //a little workaround. FileExtensionContentTypeProvider contains most of static file extensions. So we can use it
+            //source: https://github.com/aspnet/StaticFiles/blob/dev/src/Microsoft.AspNetCore.StaticFiles/FileExtensionContentTypeProvider.cs
+            //if it can return content type, then it's a static file
+            var contentTypeProvider = new FileExtensionContentTypeProvider();
+            return contentTypeProvider.TryGetContentType(path, out var _);
         }
 
         /// <summary>
@@ -151,7 +170,7 @@ namespace Bop.Core
         /// </summary>
         /// <param name="useSsl">Whether to get SSL secured URL</param>
         /// <returns>Store host location</returns>
-        public virtual string GetStoreHost(bool useSsl)
+        public virtual string GetSiteHost(bool useSsl)
         {
             if (!IsRequestAvailable())
                 return string.Empty;
@@ -162,12 +181,12 @@ namespace Bop.Core
                 return string.Empty;
 
             //add scheme to the URL
-            var storeHost = $"{(useSsl ? Uri.UriSchemeHttps : Uri.UriSchemeHttp)}{Uri.SchemeDelimiter}{hostHeader.FirstOrDefault()}";
+            var siteHost = $"{(useSsl ? Uri.UriSchemeHttps : Uri.UriSchemeHttp)}{Uri.SchemeDelimiter}{hostHeader.FirstOrDefault()}";
 
             //ensure that host is ended with slash
-            storeHost = $"{storeHost.TrimEnd('/')}/";
+            siteHost = $"{siteHost.TrimEnd('/')}/";
 
-            return storeHost;
+            return siteHost;
         }
 
 

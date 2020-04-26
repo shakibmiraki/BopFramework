@@ -1,16 +1,13 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bop.Core;
-using Bop.Core.Data;
-using Bop.Core.Domain;
 using Bop.Core.Domain.Common;
+using Bop.Core.Domain.Customers;
 using Bop.Core.Domain.Logging;
-using Bop.Core.Domain.Users;
 using Bop.Data;
-using Bop.Data.Extensions;
 
-namespace Bop.Services
+namespace Bop.Services.Logging
 {
     /// <summary>
     /// Default logger
@@ -19,8 +16,8 @@ namespace Bop.Services
     {
         #region Fields
 
-
-        private readonly IDbContext _dbContext;
+        private readonly CommonSettings _commonSettings;
+        
         private readonly IRepository<Log> _logRepository;
         private readonly IWebHelper _webHelper;
 
@@ -28,21 +25,17 @@ namespace Bop.Services
 
         #region Ctor
 
-        public DefaultLogger(IDbContext dbContext,
+        public DefaultLogger(CommonSettings commonSettings,
             IRepository<Log> logRepository,
             IWebHelper webHelper)
         {
-            _dbContext = dbContext;
+            _commonSettings = commonSettings;
             _logRepository = logRepository;
             _webHelper = webHelper;
         }
 
         #endregion
 
-        #region Utilities
-
-
-        #endregion
 
         #region Methods
 
@@ -53,13 +46,11 @@ namespace Bop.Services
         /// <returns>Result</returns>
         public virtual bool IsEnabled(LogLevel level)
         {
-            switch (level)
+            return level switch
             {
-                case LogLevel.Debug:
-                    return false;
-                default:
-                    return true;
-            }
+                LogLevel.Debug => false,
+                _ => true,
+            };
         }
 
         /// <summary>
@@ -91,13 +82,7 @@ namespace Bop.Services
         /// </summary>
         public virtual void ClearLog()
         {
-            //do all databases support "Truncate command"?
-            var logTableName = _dbContext.GetTableName<Log>();
-            _dbContext.ExecuteSqlCommand($"TRUNCATE TABLE [{logTableName}]");
-
-            //var log = _logRepository.Table.ToList();
-            //foreach (var logItem in log)
-            //    _logRepository.Delete(logItem);
+            _logRepository.Truncate();
         }
 
         /// <summary>
@@ -178,9 +163,9 @@ namespace Bop.Services
         /// <param name="logLevel">Log level</param>
         /// <param name="shortMessage">The short message</param>
         /// <param name="fullMessage">The full message</param>
-        /// <param name="user">The user to associate log record with</param>
+        /// <param name="customer">The customer to associate log record with</param>
         /// <returns>A log item</returns>
-        public virtual Log InsertLog(LogLevel logLevel, string shortMessage, string fullMessage = "", User user = null)
+        public virtual Log InsertLog(LogLevel logLevel, string shortMessage, string fullMessage = "", Customer customer = null)
         {
             var log = new Log
             {
@@ -188,7 +173,7 @@ namespace Bop.Services
                 ShortMessage = shortMessage,
                 FullMessage = fullMessage,
                 IpAddress = _webHelper.GetCurrentIpAddress(),
-                User = user,
+                CustomerId = customer?.Id,
                 PageUrl = _webHelper.GetThisPageUrl(true),
                 ReferrerUrl = _webHelper.GetUrlReferrer(),
                 CreatedOnUtc = DateTime.UtcNow
@@ -204,15 +189,15 @@ namespace Bop.Services
         /// </summary>
         /// <param name="message">Message</param>
         /// <param name="exception">Exception</param>
-        /// <param name="user">User</param>
-        public virtual void Information(string message, Exception exception = null, User user = null)
+        /// <param name="customer">Customer</param>
+        public virtual void Information(string message, Exception exception = null, Customer customer = null)
         {
             //don't log thread abort exception
             if (exception is System.Threading.ThreadAbortException)
                 return;
 
             if (IsEnabled(LogLevel.Information))
-                InsertLog(LogLevel.Information, message, exception?.ToString() ?? string.Empty, user);
+                InsertLog(LogLevel.Information, message, exception?.ToString() ?? string.Empty, customer);
         }
 
         /// <summary>
@@ -220,15 +205,15 @@ namespace Bop.Services
         /// </summary>
         /// <param name="message">Message</param>
         /// <param name="exception">Exception</param>
-        /// <param name="user">User</param>
-        public virtual void Warning(string message, Exception exception = null, User user = null)
+        /// <param name="customer">Customer</param>
+        public virtual void Warning(string message, Exception exception = null, Customer customer = null)
         {
             //don't log thread abort exception
             if (exception is System.Threading.ThreadAbortException)
                 return;
 
             if (IsEnabled(LogLevel.Warning))
-                InsertLog(LogLevel.Warning, message, exception?.ToString() ?? string.Empty, user);
+                InsertLog(LogLevel.Warning, message, exception?.ToString() ?? string.Empty, customer);
         }
 
         /// <summary>
@@ -236,15 +221,15 @@ namespace Bop.Services
         /// </summary>
         /// <param name="message">Message</param>
         /// <param name="exception">Exception</param>
-        /// <param name="user">User</param>
-        public virtual void Error(string message, Exception exception = null, User user = null)
+        /// <param name="customer">Customer</param>
+        public virtual void Error(string message, Exception exception = null, Customer customer = null)
         {
             //don't log thread abort exception
             if (exception is System.Threading.ThreadAbortException)
                 return;
 
             if (IsEnabled(LogLevel.Error))
-                InsertLog(LogLevel.Error, message, exception?.ToString() ?? string.Empty, user);
+                InsertLog(LogLevel.Error, message, exception?.ToString() ?? string.Empty, customer);
         }
 
         #endregion

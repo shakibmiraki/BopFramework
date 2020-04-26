@@ -16,6 +16,12 @@ namespace Bop.Core.Domain.Common
 
 
         /// <summary>
+        /// Gets or sets a value of "Cache-Control" header value for static content (in seconds)
+        /// </summary>
+        public string StaticFilesCacheControl { get; set; }
+
+
+        /// <summary>
         /// The length of time, in milliseconds, before the running schedule task times out. Set null to use default value
         /// </summary>
         public int? ScheduleTaskRunTimeout { get; set; }

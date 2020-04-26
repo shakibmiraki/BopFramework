@@ -1,20 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text;
+using System.Xml;
+using LinqToDB;
 using Bop.Core;
 using Bop.Core.Caching;
 using Bop.Core.Configuration;
-using Bop.Core.Data;
 using Bop.Core.Domain.Localization;
 using Bop.Core.Domain.Security;
 using Bop.Data;
-using Bop.Data.Extensions;
+using Bop.Services.Caching.Extensions;
 using Bop.Services.Configuration;
-using Bop.Services.Events;
-using Newtonsoft.Json;
 
+using Bop.Services.Events;
+using Bop.Services.Logging;
+using Bop.Services.Caching.CachingDefaults;
+using Nop.Services.Defaults;
+using Newtonsoft.Json;
 
 namespace Bop.Services.Localization
 {
@@ -25,8 +31,7 @@ namespace Bop.Services.Localization
     {
         #region Fields
 
-        private readonly IDataProvider _dataProvider;
-        private readonly IDbContext _dbContext;
+        private readonly IBopDataProvider _dataProvider;
         private readonly IEventPublisher _eventPublisher;
         private readonly ILanguageService _languageService;
         private readonly ILocalizedEntityService _localizedEntityService;
@@ -41,8 +46,7 @@ namespace Bop.Services.Localization
 
         #region Ctor
 
-        public LocalizationService(IDataProvider dataProvider,
-            IDbContext dbContext,
+        public LocalizationService(IBopDataProvider dataProvider,
             IEventPublisher eventPublisher,
             ILanguageService languageService,
             ILocalizedEntityService localizedEntityService,
@@ -54,7 +58,6 @@ namespace Bop.Services.Localization
             LocalizationSettings localizationSettings)
         {
             _dataProvider = dataProvider;
-            _dbContext = dbContext;
             _eventPublisher = eventPublisher;
             _languageService = languageService;
             _localizedEntityService = localizedEntityService;
@@ -82,14 +85,28 @@ namespace Bop.Services.Localization
             //insert
             _lsrRepository.Insert(resources);
 
-            //cache
-            _cacheManager.RemoveByPrefix(BopLocalizationDefaults.LocaleStringResourcesPrefixCacheKey);
-
             //event notification
             foreach (var resource in resources)
             {
                 _eventPublisher.EntityInserted(resource);
             }
+        }
+
+        /// <summary>
+        /// Gets all locale string resources by language identifier
+        /// </summary>
+        /// <param name="languageId">Language identifier</param>
+        /// <returns>Locale string resources</returns>
+        protected virtual IList<LocaleStringResource> GetAllResources(int languageId)
+        {
+            var query = from l in _lsrRepository.Table
+                orderby l.ResourceName
+                where l.LanguageId == languageId
+                select l;
+
+            var locales = query.ToList();
+
+            return locales;
         }
 
         /// <summary>
@@ -104,14 +121,35 @@ namespace Bop.Services.Localization
             //update
             _lsrRepository.Update(resources);
 
-            //cache
-            _cacheManager.RemoveByPrefix(BopLocalizationDefaults.LocaleStringResourcesPrefixCacheKey);
-
             //event notification
             foreach (var resource in resources)
             {
                 _eventPublisher.EntityUpdated(resource);
             }
+        }
+
+        protected virtual HashSet<(string name, string value)> LoadLocaleResourcesFromStream(StreamReader xmlStreamReader, string language)
+        {
+            var result = new HashSet<(string name, string value)>();
+
+            using (var xmlReader = XmlReader.Create(xmlStreamReader))
+                while (xmlReader.ReadToFollowing("Language"))
+                {
+                    if (xmlReader.NodeType != XmlNodeType.Element) 
+                        continue;
+
+                    using var languageReader = xmlReader.ReadSubtree();
+                    while (languageReader.ReadToFollowing("LocaleResource"))
+                        if (xmlReader.NodeType == XmlNodeType.Element && xmlReader.GetAttribute("Name") is string name)
+                        {
+                            using var lrReader = languageReader.ReadSubtree();
+                            if (lrReader.ReadToFollowing("Value") && lrReader.NodeType == XmlNodeType.Element) result.Add((name, lrReader.ReadString()));
+                        }
+
+                    break;
+                }
+
+            return result;
         }
 
         private static Dictionary<string, KeyValuePair<int, string>> ResourceValuesToDictionary(IEnumerable<LocaleStringResource> locales)
@@ -143,9 +181,6 @@ namespace Bop.Services.Localization
 
             _lsrRepository.Delete(localeStringResource);
 
-            //cache
-            _cacheManager.RemoveByPrefix(BopLocalizationDefaults.LocaleStringResourcesPrefixCacheKey);
-
             //event notification
             _eventPublisher.EntityDeleted(localeStringResource);
         }
@@ -160,20 +195,16 @@ namespace Bop.Services.Localization
             if (localeStringResourceId == 0)
                 return null;
 
-            return _lsrRepository.GetById(localeStringResourceId);
+            return _lsrRepository.ToCachedGetById(localeStringResourceId);
         }
 
         /// <summary>
         /// Gets a locale string resource
         /// </summary>
         /// <param name="resourceName">A string representing a resource name</param>
-        /// <param name="language"></param>
         /// <returns>Locale string resource</returns>
-        public virtual LocaleStringResource GetLocaleStringResourceByName(string resourceName,Language language)
+        public virtual LocaleStringResource GetLocaleStringResourceByName(string resourceName)
         {
-            if (language != null)
-                return GetLocaleStringResourceByName(resourceName, language.Id);
-
             if (_workContext.WorkingLanguage != null)
                 return GetLocaleStringResourceByName(resourceName, _workContext.WorkingLanguage.Id);
 
@@ -194,26 +225,13 @@ namespace Bop.Services.Localization
                         orderby lsr.ResourceName
                         where lsr.LanguageId == languageId && lsr.ResourceName == resourceName
                         select lsr;
+
             var localeStringResource = query.FirstOrDefault();
 
             if (localeStringResource == null && logIfNotFound)
                 _logger.Warning($"Resource string ({resourceName}) not found. Language ID = {languageId}");
-            return localeStringResource;
-        }
 
-        /// <summary>
-        /// Gets all locale string resources by language identifier
-        /// </summary>
-        /// <param name="languageId">Language identifier</param>
-        /// <returns>Locale string resources</returns>
-        public virtual IList<LocaleStringResource> GetAllResources(int languageId)
-        {
-            var query = from l in _lsrRepository.Table
-                        orderby l.ResourceName
-                        where l.LanguageId == languageId
-                        select l;
-            var locales = query.ToList();
-            return locales;
+            return localeStringResource;
         }
 
         /// <summary>
@@ -226,9 +244,6 @@ namespace Bop.Services.Localization
                 throw new ArgumentNullException(nameof(localeStringResource));
 
             _lsrRepository.Insert(localeStringResource);
-
-            //cache
-            _cacheManager.RemoveByPrefix(BopLocalizationDefaults.LocaleStringResourcesPrefixCacheKey);
 
             //event notification
             _eventPublisher.EntityInserted(localeStringResource);
@@ -245,9 +260,6 @@ namespace Bop.Services.Localization
 
             _lsrRepository.Update(localeStringResource);
 
-            //cache
-            _cacheManager.RemoveByPrefix(BopLocalizationDefaults.LocaleStringResourcesPrefixCacheKey);
-
             //event notification
             _eventPublisher.EntityUpdated(localeStringResource);
         }
@@ -260,7 +272,7 @@ namespace Bop.Services.Localization
         /// <returns>Locale string resources</returns>
         public virtual Dictionary<string, KeyValuePair<int, string>> GetAllResourceValues(int languageId, bool? loadPublicLocales)
         {
-            var key = string.Format(BopLocalizationDefaults.LocaleStringResourcesAllCacheKey, languageId);
+            var key = BopLocalizationCachingDefaults.LocaleStringResourcesAllCacheKey.FillCacheKey(languageId);
 
             //get all locale string resources by language identifier
             if (!loadPublicLocales.HasValue || _cacheManager.IsSet(key))
@@ -269,7 +281,7 @@ namespace Bop.Services.Localization
                 {
                     //we use no tracking here for performance optimization
                     //anyway records are loaded only for read-only operations
-                    var query = from l in _lsrRepository.TableNoTracking
+                    var query = from l in _lsrRepository.Table
                                 orderby l.ResourceName
                                 where l.LanguageId == languageId
                                 select l;
@@ -278,20 +290,20 @@ namespace Bop.Services.Localization
                 });
 
                 //remove separated resource 
-                _cacheManager.Remove(string.Format(BopLocalizationDefaults.LocaleStringResourcesAllPublicCacheKey, languageId));
-                _cacheManager.Remove(string.Format(BopLocalizationDefaults.LocaleStringResourcesAllAdminCacheKey, languageId));
+                _cacheManager.Remove(BopLocalizationCachingDefaults.LocaleStringResourcesAllPublicCacheKey.FillCacheKey(languageId));
+                _cacheManager.Remove(BopLocalizationCachingDefaults.LocaleStringResourcesAllAdminCacheKey.FillCacheKey(languageId));
 
                 return rez;
             }
 
             //performance optimization of the site startup
-            key = string.Format(loadPublicLocales.Value ? BopLocalizationDefaults.LocaleStringResourcesAllPublicCacheKey : BopLocalizationDefaults.LocaleStringResourcesAllAdminCacheKey, languageId);
+            key = (loadPublicLocales.Value ? BopLocalizationCachingDefaults.LocaleStringResourcesAllPublicCacheKey : BopLocalizationCachingDefaults.LocaleStringResourcesAllAdminCacheKey).FillCacheKey(languageId);
 
             return _cacheManager.Get(key, () =>
             {
                 //we use no tracking here for performance optimization
                 //anyway records are loaded only for read-only operations
-                var query = from l in _lsrRepository.TableNoTracking
+                var query = from l in _lsrRepository.Table
                             orderby l.ResourceName
                             where l.LanguageId == languageId
                             select l;
@@ -341,15 +353,15 @@ namespace Bop.Services.Localization
             else
             {
                 //gradual loading
-                var key = string.Format(BopLocalizationDefaults.LocaleStringResourcesByResourceNameCacheKey, languageId, resourceKey);
-                var lsr = _cacheManager.Get(key, () =>
-                {
-                    var query = from l in _lsrRepository.Table
-                                where l.ResourceName == resourceKey
-                                && l.LanguageId == languageId
-                                select l.ResourceValue;
-                    return query.FirstOrDefault();
-                });
+                var key = BopLocalizationCachingDefaults.LocaleStringResourcesByResourceNameCacheKey
+                    .FillCacheKey(languageId, resourceKey);
+
+                var query = from l in _lsrRepository.Table
+                    where l.ResourceName == resourceKey
+                          && l.LanguageId == languageId
+                    select l.ResourceValue;
+
+                var lsr = query.ToCachedFirstOrDefault(key);
 
                 if (lsr != null)
                     result = lsr;
@@ -374,59 +386,88 @@ namespace Bop.Services.Localization
             return result;
         }
 
-        public string ExportResourcesToJson(Language language)
+        /// <summary>
+        /// Export language resources to XML
+        /// </summary>
+        /// <param name="language">Language</param>
+        /// <returns>Result in XML format</returns>
+        public virtual string ExportResourcesToXml(Language language)
+        {
+            if (language == null)
+                throw new ArgumentNullException(nameof(language));
+            using var stream = new MemoryStream();
+            using (var xmlWriter = new XmlTextWriter(stream, Encoding.UTF8))
+            {
+                xmlWriter.WriteStartDocument();
+                xmlWriter.WriteStartElement("Language");
+                xmlWriter.WriteAttributeString("Name", language.Name);
+                xmlWriter.WriteAttributeString("SupportedVersion", BopVersion.CurrentVersion);
+
+                var resources = GetAllResources(language.Id);
+                foreach (var resource in resources)
+                {
+                    xmlWriter.WriteStartElement("LocaleResource");
+                    xmlWriter.WriteAttributeString("Name", resource.ResourceName);
+                    xmlWriter.WriteElementString("Value", null, resource.ResourceValue);
+                    xmlWriter.WriteEndElement();
+                }
+
+                xmlWriter.WriteEndElement();
+                xmlWriter.WriteEndDocument();
+            }
+
+            return Encoding.UTF8.GetString(stream.ToArray());
+        }
+
+        /// <summary>
+        /// Import language resources from XML file
+        /// </summary>
+        /// <param name="language">Language</param>
+        /// <param name="xmlStreamReader">Stream reader of XML file</param>
+        /// <param name="updateExistingResources">A value indicating whether to update existing resources</param>
+        public virtual void ImportResourcesFromXml(Language language, StreamReader xmlStreamReader, bool updateExistingResources = true)
         {
             if (language == null)
                 throw new ArgumentNullException(nameof(language));
 
-            var resources = GetAllResources(language.Id);
+            if (xmlStreamReader.EndOfStream)
+                return;
 
-            var exportLanguage = new ExportLanguage
+            var lsNamesList = _lsrRepository.Table
+                .Where(lsr => lsr.LanguageId == language.Id)
+                .ToDictionary(lsr => lsr.ResourceName, lsr => lsr);
+
+            var lrsToUpdateList = new List<LocaleStringResource>();
+            var lrsToInsertList = new List<LocaleStringResource>();
+
+            foreach (var (name, value) in LoadLocaleResourcesFromStream(xmlStreamReader, language.Name))
             {
-                Resources =  new Dictionary<string, string>(),
-                Configuration = new LocalizationConfiguration
+                if (lsNamesList.ContainsKey(name))
                 {
-                    LanguageCode = language.LanguageCulture
-                }
-            };
-
-            foreach (var item in resources)
-            {
-                exportLanguage.Resources.Add(item.ResourceName, item.ResourceValue);
-            }
-
-            string json = JsonConvert.SerializeObject(exportLanguage).ToLower();
-
-            return json;
-        }
-
-        public void ImportResourcesFromJson(Language language, Dictionary<string, string> resources)
-        {
-
-            foreach (var resource in resources)
-            {
-                var resourceName = resource.Key;
-                var resourceValue = resource.Value;
-                var localResource = GetLocaleStringResourceByName(resourceName, language);
-                if (localResource is null)
-                {
-                    var newLocalResource = new LocaleStringResource
+                    if (updateExistingResources)
                     {
-                        LanguageId = language.Id,
-                        ResourceName = resourceName,
-                        ResourceValue = resourceValue
-                    };
-                    InsertLocaleStringResource(newLocalResource);
+                        var lsr = lsNamesList[name];
+                        lsr.ResourceValue = value;
+                        lrsToUpdateList.Add(lsr);
+                    }
                 }
                 else
                 {
-                    localResource.ResourceValue = resourceValue;
-                    UpdateLocaleStringResource(localResource);
+                    var lsr = new LocaleStringResource { LanguageId = language.Id, ResourceName = name, ResourceValue = value };
+                    lrsToInsertList.Add(lsr);
                 }
-
             }
-        }
 
+            foreach (var lrsToUpdate in lrsToUpdateList)
+            {
+                _lsrRepository.Update(lrsToUpdate);
+            }
+
+            _lsrRepository.Insert(lrsToInsertList);
+
+            //clear cache
+            _cacheManager.RemoveByPrefix(BopLocalizationCachingDefaults.LocaleStringResourcesPrefixCacheKey);
+        }
 
         /// <summary>
         /// Get localized property of an entity
@@ -455,7 +496,7 @@ namespace Bop.Services.Localization
             var result = default(TPropType);
             var resultStr = string.Empty;
 
-            var localeKeyGroup = entity.GetUnproxiedEntityType().Name;
+            var localeKeyGroup = entity.GetType().Name;
             var localeKey = propInfo.Name;
 
             if (!languageId.HasValue)
@@ -632,6 +673,63 @@ namespace Bop.Services.Localization
                     DeleteLocaleStringResource(lsr);
             }
         }
+
+
+        public string ExportResourcesToJson(Language language)
+        {
+            if (language == null)
+                throw new ArgumentNullException(nameof(language));
+
+            var resources = GetAllResources(language.Id);
+
+            var exportLanguage = new ExportLanguage
+            {
+                Resources = new Dictionary<string, string>(),
+                Configuration = new LocalizationConfiguration
+                {
+                    LanguageId = language.Id
+                }
+            };
+
+            foreach (var item in resources)
+            {
+                exportLanguage.Resources.Add(item.ResourceName, item.ResourceValue);
+            }
+
+            string json = JsonConvert.SerializeObject(exportLanguage).ToLower();
+
+            return json;
+        }
+
+
+
+        public void ImportResourcesFromJson(Language language, Dictionary<string, string> resources)
+        {
+
+            foreach (var resource in resources)
+            {
+                var resourceName = resource.Key;
+                var resourceValue = resource.Value;
+                var localResource = GetLocaleStringResourceByName(resourceName, language.Id);
+                if (localResource is null)
+                {
+                    var newLocalResource = new LocaleStringResource
+                    {
+                        LanguageId = language.Id,
+                        ResourceName = resourceName,
+                        ResourceValue = resourceValue
+                    };
+                    InsertLocaleStringResource(newLocalResource);
+                }
+                else
+                {
+                    localResource.ResourceValue = resourceValue;
+                    UpdateLocaleStringResource(localResource);
+                }
+
+            }
+        }
+
 
         #endregion
     }

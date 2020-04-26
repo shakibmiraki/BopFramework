@@ -1,7 +1,7 @@
 ﻿using System;
 using Bop.Core;
 using Bop.Core.Infrastructure;
-using Bop.Services;
+using Bop.Services.Logging;
 using Bop.Web.Framework.Mvc.Filters;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
