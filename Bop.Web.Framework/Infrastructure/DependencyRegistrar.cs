@@ -95,7 +95,7 @@ namespace Bop.Web.Framework.Infrastructure
             builder.RegisterType<LocalizedEntityService>().As<ILocalizedEntityService>().InstancePerLifetimeScope();
             builder.RegisterType<LanguageService>().As<ILanguageService>().InstancePerLifetimeScope();
             builder.RegisterType<EncryptionService>().As<IEncryptionService>().InstancePerLifetimeScope();
-            builder.RegisterType<CookieAuthenticationService>().As<IAuthenticationService>().InstancePerLifetimeScope();
+            builder.RegisterType<JwtAuthenticationService>().As<IAuthenticationService>().InstancePerLifetimeScope();
             builder.RegisterType<DefaultLogger>().As<ILogger>().InstancePerLifetimeScope();
             builder.RegisterType<EventPublisher>().As<IEventPublisher>().SingleInstance();
             builder.RegisterType<SettingService>().As<ISettingService>().InstancePerLifetimeScope();
@@ -104,7 +104,6 @@ namespace Bop.Web.Framework.Infrastructure
             builder.RegisterType<CustomerRegistrationService>().As<ICustomerRegistrationService>().InstancePerLifetimeScope();
             builder.RegisterType<GenericAttributeService>().As<IGenericAttributeService>().InstancePerLifetimeScope();
             builder.RegisterType<WorkflowMessageService>().As<IWorkflowMessageService>().InstancePerLifetimeScope();
-            builder.RegisterType<AntiForgeryCookieService>().As<IAntiForgeryCookieService>().InstancePerLifetimeScope();
             builder.RegisterType<TokenStoreService>().As<ITokenStoreService>().InstancePerLifetimeScope();
             builder.RegisterType<TokenValidatorService>().As<ITokenValidatorService>().InstancePerLifetimeScope();
             builder.RegisterType<TokenFactoryService>().As<ITokenFactoryService>().InstancePerLifetimeScope();

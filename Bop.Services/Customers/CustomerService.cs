@@ -164,33 +164,6 @@ namespace Bop.Services.Customers
             _eventPublisher.EntityDeleted(customer);
         }
 
-        public int DeleteGuestCustomers(DateTime? createdFromUtc, DateTime? createdToUtc)
-        {
-            var query = _customerRepository.Table.Where(customer =>
-                customer.CustomerRoles.FirstOrDefault(ur => ur.SystemName == BopCustomerDefaults.GuestsRoleName) != null
-            );
-            if (createdFromUtc != null)
-            {
-                query = query.Where(customer => customer.CreatedOnUtc > createdFromUtc);
-            }
-            if (createdToUtc != null)
-            {
-                query = query.Where(customer => customer.CreatedOnUtc <= createdToUtc);
-            }
-
-            var guestCustomers = query.ToList();
-
-            //count of customers that should be delete
-            var deletedCustomerCount = guestCustomers.Count;
-
-            foreach (var guestCustomer in guestCustomers)
-            {
-                _customerRepository.Delete(guestCustomer);
-            }
-
-            return deletedCustomerCount;
-        }
-
         /// <summary>
         /// Gets a customer
         /// </summary>
@@ -272,7 +245,7 @@ namespace Bop.Services.Customers
         /// </summary>
         /// <param name="customername">Customername</param>
         /// <returns>Customer</returns>
-        public virtual Customer GetCustomerByCustomername(string customername)
+        public virtual Customer GetCustomerByUsername(string customername)
         {
             if (string.IsNullOrWhiteSpace(customername))
                 return null;
@@ -282,28 +255,6 @@ namespace Bop.Services.Customers
                         where c.Username == customername
                         select c;
             var customer = query.FirstOrDefault();
-            return customer;
-        }
-
-        public Customer InsertGuestCustomer()
-        {
-            var customer = new Customer
-            {
-                CustomerGuid = Guid.NewGuid(),
-                Active = true,
-                CreatedOnUtc = DateTime.UtcNow,
-                LastActivityDateUtc = DateTime.UtcNow
-            };
-
-            //add to 'Guests' role
-            var guestRole = GetCustomerRoleBySystemName(BopCustomerDefaults.GuestsRoleName);
-            if (guestRole == null)
-                throw new BopException("'Guests' role could not be loaded");
-            //customer.CustomerRoles.Add(guestRole);
-            customer.AddCustomerRoleMapping(new CustomerCustomerRoleMapping { CustomerRole = guestRole });
-
-            _customerRepository.Insert(customer);
-
             return customer;
         }
 
@@ -360,18 +311,6 @@ namespace Bop.Services.Customers
         {
             return IsInCustomerRole(customer, BopCustomerDefaults.RegisteredRoleName, onlyActiveCustomerRoles);
         }
-
-        /// <summary>
-        /// Gets a value indicating whether customer is guest
-        /// </summary>
-        /// <param name="customer">Customer</param>
-        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
-        /// <returns>Result</returns>
-        public virtual bool IsGuest(Customer customer, bool onlyActiveCustomerRoles = true)
-        {
-            return IsInCustomerRole(customer, BopCustomerDefaults.GuestsRoleName, onlyActiveCustomerRoles);
-        }
-
 
         #endregion
 
@@ -651,10 +590,6 @@ namespace Bop.Services.Customers
         {
             if (customer == null)
                 throw new ArgumentNullException(nameof(customer));
-
-            //the guests don't have a password
-            if (IsGuest(customer))
-                return false;
 
             //password lifetime is disabled for user
             if (!GetCustomerRoles(customer).Any(role => role.Active && role.EnablePasswordLifetime))

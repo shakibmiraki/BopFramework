@@ -10,7 +10,7 @@ namespace Bop.Services.Authentication
         /// <summary>
         /// The default value used for authentication scheme
         /// </summary>
-        public static string AuthenticationScheme => "Authentication";
+        public static string AuthenticationScheme => "Bearer";
 
         /// <summary>
         /// The issuer that should be used for any claims that are created

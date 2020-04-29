@@ -28,14 +28,8 @@ namespace Bop.Web.Framework.Infrastructure
             //add distributed memory cache
             services.AddDistributedMemoryCache();
 
-            //add HTTP sesion state feature
-            services.AddHttpSession();
-
             //add default HTTP clients
             services.AddBopHttpClients();
-
-            //add anti-forgery
-            services.AddAntiForgery();
 
             //add localization
             services.AddLocalization();
@@ -52,9 +46,6 @@ namespace Bop.Web.Framework.Infrastructure
 
             //use static files feature
             application.UseBopStaticFiles();
-
-            //use HTTP session
-            application.UseSession();
 
             //use request localization
             application.UseBopRequestLocalization();

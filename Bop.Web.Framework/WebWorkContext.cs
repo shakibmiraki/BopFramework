@@ -57,7 +57,7 @@ namespace Bop.Web.Framework
         public WebWorkContext(IHttpContextAccessor httpContextAccessor,
             IAuthenticationService authenticationService,
             ICustomerService customerService,
-            IHostedSiteService hostedSiteService, ILanguageService languageService,LocalizationSettings localizationSettings)
+            IHostedSiteService hostedSiteService, ILanguageService languageService, LocalizationSettings localizationSettings)
         {
             _httpContextAccessor = httpContextAccessor;
             _authenticationService = authenticationService;
@@ -101,7 +101,7 @@ namespace Bop.Web.Framework
                 cookieExpiresDate = DateTime.Now.AddMonths(-1);
 
             //set new cookie value
-            var options = new Microsoft.AspNetCore.Http.CookieOptions
+            var options = new CookieOptions
             {
                 HttpOnly = true,
                 Expires = cookieExpiresDate
@@ -166,38 +166,16 @@ namespace Bop.Web.Framework
                 if (_cachedCustomer != null)
                     return _cachedCustomer;
 
-                Customer customer = _authenticationService.GetAuthenticatedCustomer();
-                
+                Customer customer = null;
 
-
-
-                if (customer == null || customer.Deleted || !customer.Active || customer.RequireReLogin)
+                if (customer is null || customer.Deleted || !customer.Active || customer.RequireReLogin)
                 {
-                    //get guest customer
-                    var customerCookie = GetCustomerCookie();
-                    if (!string.IsNullOrEmpty(customerCookie))
-                    {
-                        if (Guid.TryParse(customerCookie, out Guid customerGuid))
-                        {
-                            //get customer from cookie (should not be registered)
-                            var customerByCookie = _customerService.GetCustomerByGuid(customerGuid);
-                            if (customerByCookie != null && !customerByCookie.IsRegistered())
-                                customer = customerByCookie;
-                        }
-                    }
+                    //try to get registered user
+                    customer = _authenticationService.GetAuthenticatedCustomer();
                 }
 
-                if (customer == null || customer.Deleted || !customer.Active || customer.RequireReLogin)
+                if (customer != null && !customer.Deleted && customer.Active && !customer.RequireReLogin)
                 {
-                    //create guest if not exists
-                    customer = _customerService.InsertGuestCustomer();
-                }
-
-                if (!customer.Deleted && customer.Active && !customer.RequireReLogin)
-                {
-                    //set customer cookie
-                    SetCustomerCookie(customer.CustomerGuid);
-
                     //cache the found customer
                     _cachedCustomer = customer;
                 }
@@ -206,7 +184,6 @@ namespace Bop.Web.Framework
             }
             set
             {
-                SetCustomerCookie(value.CustomerGuid);
                 _cachedCustomer = value;
             }
         }
@@ -222,11 +199,7 @@ namespace Bop.Web.Framework
                 //whether there is a cached value
                 if (_cachedLanguage != null)
                     return _cachedLanguage;
-
-
-                Language customerLanguage = null;
-
-                customerLanguage = GetLanguageFromUrl();
+                Language customerLanguage = GetLanguageFromUrl();
 
                 //whether we should detect the language from the request
                 if (customerLanguage == null && _localizationSettings.AutomaticallyDetectLanguage)

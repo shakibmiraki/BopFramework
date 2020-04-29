@@ -21,21 +21,16 @@ namespace Bop.Web.Areas.Admin.Controllers
         private readonly ILocalizationService _localizationService;
         private readonly ITokenStoreService _tokenStoreService;
         private readonly ITokenFactoryService _tokenFactoryService;
-        private readonly IAntiForgeryCookieService _antiForgeryCookieService;
 
         public CustomerController(IPermissionService permissionService, 
             ILocalizationService localizationService, 
             ITokenStoreService tokenStoreService,
-            ITokenFactoryService tokenFactoryService, 
-            IAntiForgeryCookieService antiForgeryCookieService, 
-            IEventPublisher eventPublisher, 
-            IWorkContext workContext)
+            ITokenFactoryService tokenFactoryService)
         {
             _permissionService = permissionService;
             _localizationService = localizationService;
             _tokenStoreService = tokenStoreService;
             _tokenFactoryService = tokenFactoryService;
-            _antiForgeryCookieService = antiForgeryCookieService;
         }
 
         /// <summary>
@@ -93,7 +88,6 @@ namespace Bop.Web.Areas.Admin.Controllers
 
             var jwtToken = _tokenFactoryService.CreateJwtTokens(token.Customer);
             _tokenStoreService.AddCustomerToken(token.Customer, jwtToken.RefreshTokenSerial, jwtToken.AccessToken, _tokenFactoryService.GetRefreshTokenSerial(refreshTokenValue));
-            _antiForgeryCookieService.RegenerateAntiForgeryCookies(jwtToken.Claims);
 
             response.Result = ResultType.Success;
             response.AccessToken = jwtToken.AccessToken;

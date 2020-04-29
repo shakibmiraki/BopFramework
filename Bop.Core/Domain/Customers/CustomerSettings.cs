@@ -8,11 +8,6 @@ namespace Bop.Core.Domain.Customers
     /// </summary>
     public class CustomerSettings : ISettings
     {
-        /// <summary>
-        /// Gets or sets a value indicating whether Username are used instead of emails
-        /// </summary>
-        public bool UsernameEnabled { get; set; }
-
 
         /// <summary>
         /// Default password format for customers

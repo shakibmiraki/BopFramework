@@ -18,12 +18,6 @@ namespace Bop.Core.Domain.Customers
         /// </summary>
         public static string RegisteredRoleName => "Registered";
 
-        /// <summary>
-        /// Gets a system name of 'guests' customer role
-        /// </summary>
-        public static string GuestsRoleName => "Guests";
-
-
         #endregion
 
         #region Customer attributes

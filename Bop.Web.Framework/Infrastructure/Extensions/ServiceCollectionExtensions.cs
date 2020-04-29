@@ -20,7 +20,6 @@ using StackExchange.Profiling.Storage;
 using Bop.Services.Logging;
 using Bop.Core.Domain;
 using Bop.Services.Security;
-using Newtonsoft.Json.Serialization;
 using System.Net;
 using Bop.Core.Security;
 using Microsoft.AspNetCore.DataProtection;
@@ -130,38 +129,6 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 
-        /// <summary>
-        /// Adds services required for anti-forgery support
-        /// </summary>
-        /// <param name="services">Collection of service descriptors</param>
-        public static void AddAntiForgery(this IServiceCollection services)
-        {
-            //override cookie name
-            services.AddAntiforgery(options =>
-            {
-                options.Cookie.Name = $"{BopCookieDefaults.Prefix}{BopCookieDefaults.AntiforgeryCookie}";
-
-                //whether to allow the use of anti-forgery cookies from SSL protected page on the other store pages which are not
-                options.Cookie.SecurePolicy = CookieSecurePolicy.None;
-            });
-        }
-
-        /// <summary>
-        /// Adds services required for application session state
-        /// </summary>
-        /// <param name="services">Collection of service descriptors</param>
-        public static void AddHttpSession(this IServiceCollection services)
-        {
-            services.AddSession(options =>
-            {
-                options.Cookie.Name = $"{BopCookieDefaults.Prefix}{BopCookieDefaults.SessionCookie}";
-                options.Cookie.HttpOnly = true;
-
-                //whether to allow the use of session values from SSL protected page on the other store pages which are not
-                options.Cookie.SecurePolicy = CookieSecurePolicy.None;
-            });
-        }
-
 
         /// <summary>
         /// Adds data protection services
@@ -205,9 +172,9 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
             services
                 .AddAuthentication(options =>
                 {
-                    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
-                    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    options.DefaultChallengeScheme = BopAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultSignInScheme = BopAuthenticationDefaults.AuthenticationScheme;
+                    options.DefaultAuthenticateScheme = BopAuthenticationDefaults.AuthenticationScheme;
                 })
                 .AddJwtBearer(cfg =>
                 {

@@ -28,7 +28,7 @@ namespace Bop.Web.Controllers
         private readonly ITokenStoreService _tokenStoreService;
         private readonly ITokenFactoryService _tokenFactoryService;
         private readonly CustomerSettings _customerSettings;
-        private readonly IAntiForgeryCookieService _antiForgeryCookieService;
+        private readonly IAuthenticationService _authenticationService;
 
         public CustomerController(ICustomerService customerService,
             ICustomerRegistrationService customerRegistrationService,
@@ -40,7 +40,7 @@ namespace Bop.Web.Controllers
             ITokenStoreService tokenStoreService,
             ITokenFactoryService tokenFactoryService,
             CustomerSettings customerSettings,
-            IAntiForgeryCookieService antiForgeryCookieService)
+            IAuthenticationService authenticationService)
         {
             _customerService = customerService;
             _customerRegistrationService = customerRegistrationService;
@@ -52,9 +52,8 @@ namespace Bop.Web.Controllers
             _tokenStoreService = tokenStoreService;
             _tokenFactoryService = tokenFactoryService;
             _customerSettings = customerSettings;
-            _antiForgeryCookieService = antiForgeryCookieService;
+            _authenticationService = authenticationService;
         }
-
 
 
         #region Login / Logout
@@ -66,7 +65,7 @@ namespace Bop.Web.Controllers
 
             if (ModelState.IsValid)
             {
-                model.Phone = model.Phone.Trim();
+                model.Phone = model.Phone;
                 var loginResult = _customerRegistrationService.ValidateCustomer(model.Phone, model.Password);
 
                 switch (loginResult)
@@ -133,8 +132,6 @@ namespace Bop.Web.Controllers
             // Delete the customer's tokens from the database (revoke its bearer token)
             _tokenStoreService.RevokeCustomerBearerTokens(customerIdValue, refreshToken);
 
-            _antiForgeryCookieService.DeleteAntiForgeryCookies();
-
             _eventPublisher.Publish(new CustomerLoggedOutEvent(_workContext.CurrentCustomer));
 
             return true;
@@ -148,14 +145,18 @@ namespace Bop.Web.Controllers
         public virtual IActionResult Register([FromBody]RegisterRequest model)
         {
             var response = new RegisterResponse { Result = ResultType.Error };
-            if (_workContext.CurrentCustomer.IsRegistered())
+
+
+
+            if (_customerService.IsRegistered(_workContext.CurrentCustomer))
             {
+                //Already registered customer. 
+                _authenticationService.SignOut();
+
                 //raise logged out event       
                 _eventPublisher.Publish(new CustomerLoggedOutEvent(_workContext.CurrentCustomer));
-
-                //Save a new record
-                _workContext.CurrentCustomer = _customerService.InsertGuestCustomer();
             }
+
             var customer = _workContext.CurrentCustomer;
 
             if (ModelState.IsValid)

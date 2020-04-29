@@ -22,7 +22,6 @@ namespace Bop.Services.Customers
         private readonly ILocalizationService _localizationService;
         private readonly IWorkContext _workContext;
 
-
         #endregion
 
         #region Ctor
@@ -85,14 +84,12 @@ namespace Bop.Services.Customers
         /// <summary>
         /// Validate customer
         /// </summary>
-        /// <param name="customernameOrEmail">Customername or email</param>
+        /// <param name="phone">Username or email</param>
         /// <param name="password">Password</param>
         /// <returns>Result</returns>
-        public virtual CustomerLoginResults ValidateCustomer(string customernameOrEmail, string password)
+        public virtual CustomerLoginResults ValidateCustomer(string phone, string password)
         {
-            var customer = _customerSettings.UsernameEnabled ?
-                _customerService.GetCustomerByCustomername(customernameOrEmail) :
-                _customerService.GetCustomerByPhone(customernameOrEmail);
+            var customer = _customerService.GetCustomerByPhone(phone);
 
             if (customer == null)
                 return CustomerLoginResults.CustomerNotExist;
@@ -101,7 +98,7 @@ namespace Bop.Services.Customers
             if (!customer.Active)
                 return CustomerLoginResults.NotActive;
             //only registered can login
-            if (!customer.IsRegistered())
+            if (!_customerService.IsRegistered(customer))
                 return CustomerLoginResults.NotRegistered;
             //check whether a customer is locked out
             if (customer.CannotLoginUntilDateUtc.HasValue && customer.CannotLoginUntilDateUtc.Value > DateTime.UtcNow)
@@ -150,7 +147,7 @@ namespace Bop.Services.Customers
 
             var result = new CustomerRegistrationResult();
 
-            if (request.Customer.IsRegistered())
+            if (_customerService.IsRegistered(request.Customer))
             {
                 result.AddError("Current customer is already registered");
                 return result;
@@ -158,13 +155,13 @@ namespace Bop.Services.Customers
 
             if (string.IsNullOrEmpty(request.Phone))
             {
-                result.AddError(_localizationService.GetResource("Account.Register.Errors.PhoneIsNotProvided"));
+                result.AddError(_localizationService.GetResource("Account.Register.Errors.EmailIsNotProvided"));
                 return result;
             }
 
             if (!CommonHelper.IsValidPhone(request.Phone))
             {
-                result.AddError(_localizationService.GetResource("Common.WrongPhoneFormat"));
+                result.AddError(_localizationService.GetResource("Common.WrongEmail"));
                 return result;
             }
 
@@ -174,13 +171,12 @@ namespace Bop.Services.Customers
                 return result;
             }
 
-            //validate unique customer
+            //validate unique user
             if (_customerService.GetCustomerByPhone(request.Phone) != null)
             {
-                result.AddError(_localizationService.GetResource("Account.Register.Errors.PhoneAlreadyExists"));
+                result.AddError(_localizationService.GetResource("Account.Register.Errors.EmailAlreadyExists"));
                 return result;
             }
-
 
             //at this point request is valid
             request.Customer.Phone = request.Phone;
@@ -191,7 +187,6 @@ namespace Bop.Services.Customers
                 PasswordFormat = request.PasswordFormat,
                 CreatedOnUtc = DateTime.UtcNow
             };
-
             switch (request.PasswordFormat)
             {
                 case PasswordFormat.Clear:
@@ -209,7 +204,7 @@ namespace Bop.Services.Customers
 
             _customerService.InsertCustomerPassword(customerPassword);
 
-            //request.Customer.Active = request.IsApproved;
+            request.Customer.Active = request.IsApproved;
 
             //add to 'Registered' role
             var registeredRole = _customerService.GetCustomerRoleBySystemName(BopCustomerDefaults.RegisteredRoleName);
@@ -217,13 +212,6 @@ namespace Bop.Services.Customers
                 throw new BopException("'Registered' role could not be loaded");
 
             _customerService.AddCustomerRoleMapping(new CustomerCustomerRoleMapping { CustomerId = request.Customer.Id, CustomerRoleId = registeredRole.Id });
-
-            //remove from 'Guests' role            
-            if (_customerService.IsGuest(request.Customer))
-            {
-                var guestRole = _customerService.GetCustomerRoleBySystemName(BopCustomerDefaults.GuestsRoleName);
-                _customerService.RemoveCustomerRoleMapping(request.Customer, guestRole);
-            }
 
             _customerService.UpdateCustomer(request.Customer);
 
@@ -310,64 +298,6 @@ namespace Bop.Services.Customers
             _eventPublisher.Publish(new CustomerPasswordChangedEvent(customerPassword));
 
             return result;
-        }
-
-        /// <summary>
-        /// Sets a customer email
-        /// </summary>
-        /// <param name="customer">Customer</param>
-        /// <param name="newPhone">New email</param>
-        /// <param name="requireValidation">Require validation of new email address</param>
-        public virtual void SetPhone(Customer customer, string newPhone, bool requireValidation)
-        {
-            if (customer == null)
-                throw new ArgumentNullException(nameof(customer));
-
-            if (newPhone == null)
-                throw new BopException("Email cannot be null");
-
-            newPhone = newPhone.Trim();
-            var oldEmail = customer.Phone;
-
-            if (!CommonHelper.IsValidPhone(newPhone))
-                throw new BopException(_localizationService.GetResource("Account.EmailCustomernameErrors.NewEmailIsNotValid"));
-
-            if (newPhone.Length > 100)
-                throw new BopException(_localizationService.GetResource("Account.EmailCustomernameErrors.EmailTooLong"));
-
-            var customer2 = _customerService.GetCustomerByPhone(newPhone);
-            if (customer2 != null && customer.Id != customer2.Id)
-                throw new BopException(_localizationService.GetResource("Account.EmailCustomernameErrors.EmailAlreadyExists"));
-
-            customer.Phone = newPhone;
-            _customerService.UpdateCustomer(customer);
-
-        }
-
-        /// <summary>
-        /// Sets a customer customername
-        /// </summary>
-        /// <param name="customer">Customer</param>
-        /// <param name="newCustomername">New Customername</param>
-        public virtual void SetUsername(Customer customer, string newCustomername)
-        {
-            if (customer == null)
-                throw new ArgumentNullException(nameof(customer));
-
-            if (!_customerSettings.UsernameEnabled)
-                throw new BopException("Customernames are disabled");
-
-            newCustomername = newCustomername.Trim();
-
-            if (newCustomername.Length > BopCustomerServiceDefaults.CustomerCustomernameLength)
-                throw new BopException(_localizationService.GetResource("Account.EmailCustomernameErrors.CustomernameTooLong"));
-
-            var customer2 = _customerService.GetCustomerByCustomername(newCustomername);
-            if (customer2 != null && customer.Id != customer2.Id)
-                throw new BopException(_localizationService.GetResource("Account.EmailCustomernameErrors.CustomernameAlreadyExists"));
-
-            customer.Username = newCustomername;
-            _customerService.UpdateCustomer(customer);
         }
 
         #endregion

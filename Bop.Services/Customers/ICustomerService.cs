@@ -54,15 +54,6 @@ namespace Bop.Services.Customers
 
 
         /// <summary>
-        /// Delete guest customer records
-        /// </summary>
-        /// <param name="createdFromUtc">Created date from (UTC); null to load all records</param>
-        /// <param name="createdToUtc">Created date to (UTC); null to load all records</param>
-        /// <returns>Number of deleted customer</returns>
-        int DeleteGuestCustomers(DateTime? createdFromUtc, DateTime? createdToUtc);
-
-
-        /// <summary>
         /// Gets a customer
         /// </summary>
         /// <param name="customerId">Customer identifier</param>
@@ -95,13 +86,7 @@ namespace Bop.Services.Customers
         /// </summary>
         /// <param name="customername">Customername</param>
         /// <returns>Customer</returns>
-        Customer GetCustomerByCustomername(string customername);
-
-        /// <summary>
-        /// Insert a guest customer
-        /// </summary>
-        /// <returns>Customer</returns>
-        Customer InsertGuestCustomer();
+        Customer GetCustomerByUsername(string customername);
 
         /// <summary>
         /// Insert a customer
@@ -130,14 +115,6 @@ namespace Bop.Services.Customers
         /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
         /// <returns>Result</returns>
         bool IsRegistered(Customer customer, bool onlyActiveCustomerRoles = true);
-
-        /// <summary>
-        /// Gets a value indicating whether customer is guest
-        /// </summary>
-        /// <param name="customer">Customer</param>
-        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
-        /// <returns>Result</returns>
-        bool IsGuest(Customer customer, bool onlyActiveCustomerRoles = true);
 
         #endregion
 

@@ -40,7 +40,7 @@ namespace Bop.Services.Authentication
 
         public void AddCustomerToken(Customer customer, string refreshTokenSerial, string accessToken, string refreshTokenSourceSerial)
         {
-            var now = DateTimeOffset.UtcNow;
+            var now = DateTime.UtcNow;
             var token = new CustomerToken
             {
                 CustomerId = customer.Id,
@@ -143,7 +143,7 @@ namespace Bop.Services.Authentication
             var accessTokenHash = _encryptionService.GetSha256Hash(accessToken);
             var customerToken = _customerTokenRepository.Table.FirstOrDefault(
                 x => x.AccessTokenHash == accessTokenHash && x.CustomerId == customerId);
-            return customerToken?.AccessTokenExpiresDateTime >= DateTimeOffset.UtcNow;
+            return customerToken?.AccessTokenExpiresDateTime >= DateTime.UtcNow;
         }
     }
 }

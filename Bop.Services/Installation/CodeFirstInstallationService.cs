@@ -84,7 +84,7 @@ namespace Bop.Services.Installation
             {
                 new HostedSite
                 {
-                    Name = "Zeipt",
+                    Name = "Shakib Miraki",
                     Url = "",
                     SslEnabled = false,
                     Hosts = "shakib-miraki.com,www.shakib-mirak.com",
@@ -145,19 +145,10 @@ namespace Bop.Services.Installation
                 SystemName = BopCustomerDefaults.RegisteredRoleName
             };
 
-            var crGuests = new CustomerRole
-            {
-                Name = "Guests",
-                Active = true,
-                IsSystemRole = true,
-                SystemName = BopCustomerDefaults.GuestsRoleName
-            };
-
             var customerRoles = new List<CustomerRole>
             {
                 crAdministrators,
-                crRegistered,
-                crGuests
+                crRegistered
             };
             _customerRoleRepository.Insert(customerRoles);
 
@@ -180,7 +171,7 @@ namespace Bop.Services.Installation
             //set hashed admin password
             var customerRegistrationService = EngineContext.Current.Resolve<ICustomerRegistrationService>();
             customerRegistrationService.ChangePassword(new ChangePasswordRequest(defaultCustomerPhone, false,
-                 PasswordFormat.Hashed, defaultCustomerPhone, null, BopCustomerServiceDefaults.DefaultHashedPasswordFormat));
+                 PasswordFormat.Hashed, defaultCustomerPassword, null, BopCustomerServiceDefaults.DefaultHashedPasswordFormat));
         }
 
 
@@ -211,7 +202,6 @@ namespace Bop.Services.Installation
 
             settingService.SaveSetting(new CustomerSettings
             {
-                UsernameEnabled = false,
                 DefaultPasswordFormat = PasswordFormat.Hashed,
                 HashedPasswordFormat = BopCustomerServiceDefaults.DefaultHashedPasswordFormat,
                 PasswordMinLength = 6,
@@ -250,26 +240,18 @@ namespace Bop.Services.Installation
                 new ScheduleTask
                 {
                     Name = "Clear cache",
-                    Seconds = 3600,
-                    Type = "Bop.Services.Caching.ClearCacheTask, Bop.Services",
+                    Seconds = 600,
+                    Type = "Nop.Services.Caching.ClearCacheTask, Nop.Services",
                     Enabled = false,
                     StopOnError = false
                 },
-                //new ScheduleTask
-                //{
-                //    Name = "Clear log",
-                //    //60 minutes
-                //    Seconds = 3600,
-                //    Type = "Nop.Services.Logging.ClearLogTask, Nop.Services",
-                //    Enabled = false,
-                //    StopOnError = false
-                //},
                 new ScheduleTask
                 {
-                    Name = "Delete guests",
-                    Seconds = 43200,
-                    Type = "Bop.Services.Customers.DeleteGuestsTask, Bop.Services",
-                    Enabled = true,
+                    Name = "Clear log",
+                    //60 minutes
+                    Seconds = 3600,
+                    Type = "Nop.Services.Logging.ClearLogTask, Nop.Services",
+                    Enabled = false,
                     StopOnError = false
                 },
                 new ScheduleTask

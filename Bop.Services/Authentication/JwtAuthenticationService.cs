@@ -4,34 +4,27 @@ using System.Security.Claims;
 using Bop.Core.Domain.Customers;
 using Bop.Services.Customers;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 
 namespace Bop.Services.Authentication
 {
     /// <summary>
-    /// Represents service using cookie middleware for the authentication
+    /// Represents service using jwt middleware for the authentication
     /// </summary>
-    public partial class CookieAuthenticationService : IAuthenticationService
+    public partial class JwtAuthenticationService : IAuthenticationService
     {
         #region Fields
 
-
         private readonly ICustomerService _customerService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+
         private Customer _cachedCustomer;
 
         #endregion
 
         #region Ctor
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="customerService">Customer service</param>
-        /// <param name="httpContextAccessor">HTTP context accessor</param>
-        public CookieAuthenticationService(ICustomerService customerService,
-            IHttpContextAccessor httpContextAccessor)
+        public JwtAuthenticationService(ICustomerService customerService, IHttpContextAccessor httpContextAccessor)
         {
             _customerService = customerService;
             _httpContextAccessor = httpContextAccessor;
@@ -51,18 +44,18 @@ namespace Bop.Services.Authentication
             if (customer == null)
                 throw new ArgumentNullException(nameof(customer));
 
-            //create claims for customer's customername and email
+            //create claims for customer's username and email
             var claims = new List<Claim>();
 
             if (!string.IsNullOrEmpty(customer.Username))
                 claims.Add(new Claim(ClaimTypes.Name, customer.Username, ClaimValueTypes.String, BopAuthenticationDefaults.ClaimsIssuer));
 
             if (!string.IsNullOrEmpty(customer.Phone))
-                claims.Add(new Claim(ClaimTypes.MobilePhone, customer.Phone, ClaimValueTypes.Email, BopAuthenticationDefaults.ClaimsIssuer));
+                claims.Add(new Claim(ClaimTypes.MobilePhone, customer.Phone, ClaimValueTypes.String, BopAuthenticationDefaults.ClaimsIssuer));
 
             //create principal for the current authentication scheme
-            var customerIdentity = new ClaimsIdentity(claims, BopAuthenticationDefaults.AuthenticationScheme);
-            var customerPrincipal = new ClaimsPrincipal(customerIdentity);
+            var userIdentity = new ClaimsIdentity(claims, BopAuthenticationDefaults.AuthenticationScheme);
+            var userPrincipal = new ClaimsPrincipal(userIdentity);
 
             //set value indicating whether session is persisted and the time at which the authentication was issued
             var authenticationProperties = new AuthenticationProperties
@@ -72,7 +65,7 @@ namespace Bop.Services.Authentication
             };
 
             //sign in
-            await _httpContextAccessor.HttpContext.SignInAsync(BopAuthenticationDefaults.AuthenticationScheme, customerPrincipal, authenticationProperties);
+            await _httpContextAccessor.HttpContext.SignInAsync(BopAuthenticationDefaults.AuthenticationScheme, userPrincipal, authenticationProperties);
 
             //cache authenticated customer
             _cachedCustomer = customer;
@@ -100,8 +93,8 @@ namespace Bop.Services.Authentication
             if (_cachedCustomer != null)
                 return _cachedCustomer;
 
-            //try to get authenticated customer identity
-            var authenticateResult = _httpContextAccessor.HttpContext.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme).Result;
+            //try to get authenticated user identity
+            var authenticateResult = _httpContextAccessor.HttpContext.AuthenticateAsync(BopAuthenticationDefaults.AuthenticationScheme).Result;
             if (!authenticateResult.Succeeded)
                 return null;
 
@@ -114,7 +107,7 @@ namespace Bop.Services.Authentication
                 customer = _customerService.GetCustomerById(int.Parse(customerIdClaim.Value));
 
             //whether the found customer is available
-            if (customer == null || !customer.Active || customer.RequireReLogin || customer.Deleted || !customer.IsRegistered())
+            if (customer == null || !customer.Active || customer.RequireReLogin || customer.Deleted || !_customerService.IsRegistered(customer))
                 return null;
 
             //cache authenticated customer
