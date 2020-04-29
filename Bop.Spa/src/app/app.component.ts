@@ -15,9 +15,7 @@ export class AppComponent {
   constructor(private refreshTokenService: RefreshTokenService,private translate: TranslateService) {
     translate.addLangs(['en-US', 'fa-IR']);
     translate.setDefaultLang('fa-IR');
-
     const browserLang = translate.getBrowserLang();
-    // translate.use(browserLang.match(/en|fa/) ? browserLang : 'fa');
     translate.use('fa-IR');
   }
 

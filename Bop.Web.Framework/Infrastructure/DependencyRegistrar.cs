@@ -26,6 +26,7 @@ using Bop.Services.Customers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Nop.Web.Framework;
 using Bop.Services.Logging;
+using Bop.Web.Framework.Mvc.Routing;
 
 namespace Bop.Web.Framework.Infrastructure
 {
@@ -107,10 +108,11 @@ namespace Bop.Web.Framework.Infrastructure
             builder.RegisterType<TokenStoreService>().As<ITokenStoreService>().InstancePerLifetimeScope();
             builder.RegisterType<TokenValidatorService>().As<ITokenValidatorService>().InstancePerLifetimeScope();
             builder.RegisterType<TokenFactoryService>().As<ITokenFactoryService>().InstancePerLifetimeScope();
-            
+            builder.RegisterType<RoutePublisher>().As<IRoutePublisher>().SingleInstance();
+
 
             builder.RegisterType<ActionContextAccessor>().As<IActionContextAccessor>().InstancePerLifetimeScope();
-            
+
             //register all settings
             builder.RegisterSource(new SettingsSource());
 
@@ -148,7 +150,7 @@ namespace Bop.Web.Framework.Infrastructure
     public class SettingsSource : IRegistrationSource
     {
         private static readonly MethodInfo _buildMethod =
-            typeof(SettingsSource).GetMethod("BuildRegistration", BindingFlags.Static | BindingFlags.NonPublic);
+            typeof(SettingsSource).GetMethod(nameof(BuildRegistration), BindingFlags.Static | BindingFlags.NonPublic);
 
         /// <summary>
         /// Registrations for

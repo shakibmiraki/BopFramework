@@ -1,21 +1,19 @@
-import { Injectable } from '@angular/core';
-import * as jwt_decode from 'jwt-decode';
-
-import { AuthTokenType } from '../models/auth-token-type';
-import { ApiConfigService } from './api-config.service';
-import { BrowserStorageService } from './browser-storage.service';
-import { UtilsService } from './utils.service';
+import { Injectable, Inject } from "@angular/core";
+import * as jwt_decode from "jwt-decode";
+import { AuthTokenType } from "../models/auth-token-type";
+import { BrowserStorageService } from "./browser-storage.service";
+import { UtilsService } from "./utils.service";
+import { APP_CONFIG, IAppConfig } from "./app.config";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class TokenStoreService {
-  private rememberMeToken = 'rememberMe_token';
-
+  private rememberMeToken = "rememberMe_token";
   constructor(
     private browserStorageService: BrowserStorageService,
     private utilsService: UtilsService,
-    private apiConfigService: ApiConfigService
+    @Inject(APP_CONFIG) private appConfig: IAppConfig
   ) {}
 
   getRawAuthToken(tokenType: AuthTokenType): string {
@@ -97,28 +95,27 @@ export class TokenStoreService {
     const decodedToken = this.getDecodedAccessToken();
     const roles =
       decodedToken[
-        'http://schemas.microsoft.com/ws/2008/06/identity/claims/role'
+        "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
       ];
     if (!roles) {
       return null;
     }
 
     if (Array.isArray(roles)) {
-      return roles.map(role => role.toLowerCase());
+      return roles.map((role) => role.toLowerCase());
     } else {
       return [roles.toLowerCase()];
     }
   }
 
   storeLoginSession(response: any): void {
-
     this.setToken(
       AuthTokenType.AccessToken,
-      response[this.apiConfigService.configuration.accessTokenObjectKey]
+      response[this.appConfig.config.accessTokenObjectKey]
     );
     this.setToken(
       AuthTokenType.RefreshToken,
-      response[this.apiConfigService.configuration.refreshTokenObjectKey]
+      response[this.appConfig.config.refreshTokenObjectKey]
     );
   }
 

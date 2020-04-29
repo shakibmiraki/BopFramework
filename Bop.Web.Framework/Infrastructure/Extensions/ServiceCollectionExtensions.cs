@@ -51,9 +51,6 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
             var bopConfig = services.ConfigureStartupConfig<BopConfig>(configuration.GetSection("Bop"));
 
             //add spa configuration parameters
-            services.ConfigureStartupConfig<SpaConfig>(configuration.GetSection("Spa"));
-
-            //add spa configuration parameters
             services.ConfigureStartupConfig<JwtConfig>(configuration.GetSection("Jwt"));
 
             //add hosting configuration parameters
@@ -174,6 +171,7 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
         {
             //check whether to persist data protection in Redis
             var bopConfig = services.BuildServiceProvider().GetRequiredService<BopConfig>();
+
             if (bopConfig.RedisEnabled && bopConfig.UseRedisToStoreDataProtectionKeys)
             {
                 //store keys in Redis
@@ -270,7 +268,7 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
             services.AddRazorPages();
 
             //MVC now serializes JSON with camel case names by default, use this code to avoid it
-            mvcBuilder.AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
+            //mvcBuilder.AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
 
 
             //add fluent validation
@@ -302,12 +300,12 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
         public static IServiceCollection AddBopCors(this IServiceCollection services)
         {
 
-            var spaConfig = services.BuildServiceProvider().GetRequiredService<SpaConfig>();
+            var hostingConfig = services.BuildServiceProvider().GetRequiredService<HostingConfig>();
             var cors = services.AddCors(options =>
             {
                 options.AddPolicy(BopInfrastructureDefaults.BopCorsPolicyName,
                     builder => builder
-                        .WithOrigins(spaConfig.CorsPath) //Note:  The URL must be specified without a trailing slash (/).
+                        .WithOrigins(hostingConfig.CorsPath) //Note:  The URL must be specified without a trailing slash (/).
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials());

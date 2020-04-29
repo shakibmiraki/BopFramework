@@ -1,7 +1,6 @@
 import { NgModule, APP_INITIALIZER, Optional, SkipSelf } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { ApiConfigService } from './services/api-config.service';
 import { APP_CONFIG, AppConfig } from './services/app.config';
 import { HttpErrorInterceptor } from './services/intercept/http-error.interceptor';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -32,16 +31,6 @@ import { CultureInterceptor } from './services/intercept/culture.interceptor';
     {
       provide: HTTP_INTERCEPTORS,
       useClass: CultureInterceptor,
-      multi: true
-    },
-    // {
-    //   provide: MAT_SNACK_BAR_DEFAULT_OPTIONS,
-    //   useValue: {duration: 8000}
-    // },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: (config: ApiConfigService) => () => config.loadApiConfig(),
-      deps: [ApiConfigService],
       multi: true
     }
   ]

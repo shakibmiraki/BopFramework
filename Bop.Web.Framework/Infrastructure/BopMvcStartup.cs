@@ -39,12 +39,8 @@ namespace Bop.Web.Framework.Infrastructure
             //use MiniProfiler
             application.UseMiniProfiler();
 
-            
-            //use cors policy
-            application.UseBopCors();
-
             //Endpoints routing
-            application.UseBopEndpoints();
+            application.UseBopEndpointsWithCors();
         }
 
         /// <summary>

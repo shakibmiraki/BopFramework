@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Bop.Core;
 using Bop.Core.Caching;
+using Bop.Core.Domain.Common;
 using Bop.Core.Domain.Customers;
 using Bop.Data;
 using Bop.Services.Caching.CachingDefaults;
@@ -338,6 +339,40 @@ namespace Bop.Services.Customers
         }
 
 
+        /// <summary>
+        /// Gets a value indicating whether customer is administrator
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
+        /// <returns>Result</returns>
+        public virtual bool IsAdmin(Customer customer, bool onlyActiveCustomerRoles = true)
+        {
+            return IsInCustomerRole(customer, BopCustomerDefaults.AdministratorsRoleName, onlyActiveCustomerRoles);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether customer is registered
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
+        /// <returns>Result</returns>
+        public virtual bool IsRegistered(Customer customer, bool onlyActiveCustomerRoles = true)
+        {
+            return IsInCustomerRole(customer, BopCustomerDefaults.RegisteredRoleName, onlyActiveCustomerRoles);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether customer is guest
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
+        /// <returns>Result</returns>
+        public virtual bool IsGuest(Customer customer, bool onlyActiveCustomerRoles = true)
+        {
+            return IsInCustomerRole(customer, BopCustomerDefaults.GuestsRoleName, onlyActiveCustomerRoles);
+        }
+
+
         #endregion
 
         #region Customer roles
@@ -471,6 +506,66 @@ namespace Bop.Services.Customers
             _eventPublisher.EntityUpdated(customerRole);
         }
 
+        /// <summary>
+        /// Add a customer-customer role mapping
+        /// </summary>
+        /// <param name="roleMapping">Customer-customer role mapping</param>
+        public void AddCustomerRoleMapping(CustomerCustomerRoleMapping roleMapping)
+        {
+            if (roleMapping is null)
+                throw new ArgumentNullException(nameof(roleMapping));
+
+            _customerCustomerRoleMappingRepository.Insert(roleMapping);
+
+            _eventPublisher.EntityInserted(roleMapping);
+        }
+
+        /// <summary>
+        /// Remove a customer-customer role mapping
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="role">Customer role</param>
+        public void RemoveCustomerRoleMapping(Customer customer, CustomerRole role)
+        {
+            if (customer is null)
+                throw new ArgumentNullException(nameof(customer));
+
+            if (role is null)
+                throw new ArgumentNullException(nameof(role));
+
+            var mapping = _customerCustomerRoleMappingRepository.Table.SingleOrDefault(ccrm => ccrm.CustomerId == customer.Id && ccrm.CustomerRoleId == role.Id);
+
+            if (mapping != null)
+            {
+                _customerCustomerRoleMappingRepository.Delete(mapping);
+
+                //event notification
+                _eventPublisher.EntityDeleted(mapping);
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether customer is in a certain customer role
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="customerRoleSystemName">Customer role system name</param>
+        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
+        /// <returns>Result</returns>
+        public virtual bool IsInCustomerRole(Customer customer,
+            string customerRoleSystemName, bool onlyActiveCustomerRoles = true)
+        {
+            if (customer == null)
+                throw new ArgumentNullException(nameof(customer));
+
+            if (string.IsNullOrEmpty(customerRoleSystemName))
+                throw new ArgumentNullException(nameof(customerRoleSystemName));
+
+            var customerRoles = GetCustomerRoles(customer, !onlyActiveCustomerRoles);
+
+            return customerRoles?.Any(cr => cr.SystemName == customerRoleSystemName) ?? false;
+        }
+
+
         #endregion
 
         #region Customer passwords
@@ -533,27 +628,6 @@ namespace Bop.Services.Customers
 
 
         /// <summary>
-        /// Gets a value indicating whether customer is in a certain customer role
-        /// </summary>
-        /// <param name="customer">Customer</param>
-        /// <param name="customerRoleSystemName">Customer role system name</param>
-        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
-        /// <returns>Result</returns>
-        public virtual bool IsInCustomerRole(Customer customer,
-            string customerRoleSystemName, bool onlyActiveCustomerRoles = true)
-        {
-            if (customer == null)
-                throw new ArgumentNullException(nameof(customer));
-
-            if (string.IsNullOrEmpty(customerRoleSystemName))
-                throw new ArgumentNullException(nameof(customerRoleSystemName));
-
-            var customerRoles = GetCustomerRoles(customer, !onlyActiveCustomerRoles);
-
-            return customerRoles?.Any(cr => cr.SystemName == customerRoleSystemName) ?? false;
-        }
-
-        /// <summary>
         /// Update a customer password
         /// </summary>
         /// <param name="customerPassword">Customer password</param>
@@ -566,17 +640,6 @@ namespace Bop.Services.Customers
 
             //event notification
             _eventPublisher.EntityUpdated(customerPassword);
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether customer is guest
-        /// </summary>
-        /// <param name="customer">Customer</param>
-        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
-        /// <returns>Result</returns>
-        public virtual bool IsGuest(Customer customer, bool onlyActiveCustomerRoles = true)
-        {
-            return IsInCustomerRole(customer, BopCustomerDefaults.GuestsRoleName, onlyActiveCustomerRoles);
         }
 
         /// <summary>

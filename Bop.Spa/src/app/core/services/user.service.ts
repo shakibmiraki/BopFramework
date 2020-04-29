@@ -1,27 +1,23 @@
-
 import {
   HttpClient,
   HttpErrorResponse,
-  HttpHeaders
-} from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
-import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, throwError } from 'rxjs';
-import { catchError, finalize, map, retry } from 'rxjs/operators';
-
-import { AuthTokenType } from './../models/auth-token-type';
-import { AuthUser } from './../models/auth-user';
-import { Credentials } from './../models/credentials';
-import { ApiConfigService } from './api-config.service';
-import { APP_CONFIG, IAppConfig } from './app.config';
-import { RefreshTokenService } from './refresh-token.service';
-import { TokenStoreService } from './token-store.service';
-import { RegistrationModel } from '../models/account-register';
-import { AccountActivate } from '../models/account-activate';
-
+  HttpHeaders,
+} from "@angular/common/http";
+import { Inject, Injectable } from "@angular/core";
+import { Router } from "@angular/router";
+import { BehaviorSubject, Observable, throwError } from "rxjs";
+import { catchError, finalize, map, retry } from "rxjs/operators";
+import { AuthTokenType } from "./../models/auth-token-type";
+import { AuthUser } from "./../models/auth-user";
+import { Credentials } from "./../models/credentials";
+import { APP_CONFIG, IAppConfig } from "./app.config";
+import { RefreshTokenService } from "./refresh-token.service";
+import { TokenStoreService } from "./token-store.service";
+import { RegistrationModel } from "../models/account-register";
+import { AccountActivate } from "../models/account-activate";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class UserService {
   private authStatusSource = new BehaviorSubject<boolean>(false);
@@ -31,7 +27,6 @@ export class UserService {
     private http: HttpClient,
     private router: Router,
     @Inject(APP_CONFIG) private appConfig: IAppConfig,
-    private apiConfigService: ApiConfigService,
     private tokenStoreService: TokenStoreService,
     private refreshTokenService: RefreshTokenService
   ) {
@@ -43,16 +38,10 @@ export class UserService {
   }
 
   login(model: Credentials): Observable<boolean> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const headers = new HttpHeaders({ "Content-Type": "application/json" });
 
     return this.http
-      .post(
-        `${this.appConfig.apiEndpoint}/${
-          this.apiConfigService.configuration.loginPath
-        }`,
-        model,
-        { headers }
-      )
+      .post(`${this.appConfig.paths.loginPath}`, model, { headers })
       .pipe(
         map((response: any) => {
           this.tokenStoreService.setRememberMe(model.rememberMe);
@@ -70,82 +59,61 @@ export class UserService {
   }
 
   register(model: RegistrationModel): Observable<boolean> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const headers = new HttpHeaders({ "Content-Type": "application/json" });
 
     return this.http
-      .post(
-        `${this.appConfig.apiEndpoint}/${
-          this.apiConfigService.configuration.registerPath
-        }`,
-        model,
-        { headers }
-      )
+      .post(`${this.appConfig.paths.registerPath}`, model, { headers })
       .pipe(map((response: any) => true));
   }
 
   activate(model: AccountActivate): Observable<boolean> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const headers = new HttpHeaders({ "Content-Type": "application/json" });
 
     return this.http
-      .post(
-        `${this.appConfig.apiEndpoint}/${
-          this.apiConfigService.configuration.activatePath
-        }`,
-        model,
-        { headers }
-      )
+      .post(`${this.appConfig.paths.activatePath}`, model, { headers })
       .pipe(map((response: any) => true));
   }
 
   resend(model: AccountActivate): Observable<boolean> {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const headers = new HttpHeaders({ "Content-Type": "application/json" });
 
     return this.http
-      .post(
-        `${this.appConfig.apiEndpoint}/${
-          this.apiConfigService.configuration.resendPath
-        }`,
-        model,
-        { headers }
-      )
+      .post(`${this.appConfig.paths.resendPath}`, model, { headers })
       .pipe(map((response: any) => true));
   }
 
   getBearerAuthHeader(): HttpHeaders {
     return new HttpHeaders({
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${this.tokenStoreService.getRawAuthToken(
         AuthTokenType.AccessToken
-      )}`
+      )}`,
     });
   }
 
   logout(navigateToHome: boolean): void {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const headers = new HttpHeaders({ "Content-Type": "application/json" });
     const refreshToken = encodeURIComponent(
       this.tokenStoreService.getRawAuthToken(AuthTokenType.RefreshToken)
     );
     this.http
-      .get(
-        `${this.appConfig.apiEndpoint}/${
-          this.apiConfigService.configuration.logoutPath
-        }?refreshToken=${refreshToken}`,
-        { headers }
-      )
+      .get(`${this.appConfig.paths.logoutPath}?refreshToken=${refreshToken}`, {
+        headers,
+      })
       .pipe(
-        map(response => response || {}),
+        map((response) => response || {}),
         catchError((error: HttpErrorResponse) => throwError(error)),
         finalize(() => {
           this.tokenStoreService.deleteAuthTokens();
           this.refreshTokenService.unscheduleRefreshToken(true);
           this.authStatusSource.next(false);
           if (navigateToHome) {
-            this.router.navigate(['/']);
-            location.href = '/';
+            this.router.navigate(["/"]);
+            location.href = "/";
           }
         })
       )
-      .subscribe(result => {});
+      .subscribe((result) => {});
   }
 
   isAuthUserLoggedIn(): boolean {
@@ -165,14 +133,14 @@ export class UserService {
     return Object.freeze({
       userId:
         decodedToken[
-          'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'
+          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
         ],
       userName:
         decodedToken[
-          'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'
+          "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
         ],
-      displayName: decodedToken['DisplayName'],
-      roles: roles
+      displayName: decodedToken["DisplayName"],
+      roles: roles,
     });
   }
 
@@ -184,14 +152,12 @@ export class UserService {
     }
 
     if (
-      user.roles.indexOf(
-        this.apiConfigService.configuration.adminRoleName.toLowerCase()
-      ) >= 0
+      user.roles.indexOf(this.appConfig.config.adminRoleName.toLowerCase()) >= 0
     ) {
       return true; // The `Admin` role has full access to every pages.
     }
 
-    return requiredRoles.some(requiredRole => {
+    return requiredRoles.some((requiredRole) => {
       if (user.roles) {
         return user.roles.indexOf(requiredRole.toLowerCase()) >= 0;
       } else {

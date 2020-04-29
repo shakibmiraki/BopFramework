@@ -18,6 +18,7 @@ using Bop.Services.Logging;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Net.Http.Headers;
 using Bop.Web.Framework.Globalization;
+using Bop.Web.Framework.Mvc.Routing;
 
 namespace Bop.Web.Framework.Infrastructure.Extensions
 {
@@ -225,17 +226,20 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
         /// Configure Endpoints routing
         /// </summary>
         /// <param name="application">Builder for configuring an application's request pipeline</param>
-        public static void UseBopEndpoints(this IApplicationBuilder application)
+        public static void UseBopEndpointsWithCors(this IApplicationBuilder application)
         {
             //Add the EndpointRoutingMiddleware
             application.UseRouting();
+
+            //use cors policy
+            application.UseBopCors();
+
 
             //Execute the endpoint selected by the routing middleware
             application.UseEndpoints(endpoints =>
             {
                 //register all routes
-                endpoints.MapRazorPages();
-                //EngineContext.Current.Resolve<IRoutePublisher>().RegisterRoutes(endpoints);
+                EngineContext.Current.Resolve<IRoutePublisher>().RegisterRoutes(endpoints);
             });
         }
 

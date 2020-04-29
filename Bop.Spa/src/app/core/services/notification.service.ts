@@ -7,7 +7,7 @@ import { TranslateService } from '@ngx-translate/core';
 })
 export class NotificationService {
   private messageQueue: Array<string> = Array<string>();
-  private duration = 5000;
+  private duration = 7000;
 
   constructor(
     public snackBar: MatSnackBar,

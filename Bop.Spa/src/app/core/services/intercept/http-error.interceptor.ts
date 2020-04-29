@@ -23,6 +23,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
       tap(evt => {
         if (evt instanceof HttpResponse) {
           const response: ResponseModel = evt.body;
+          console.log(response);
 
           if (response && response.messages) {
             this.notifier.showMessage(response.messages);

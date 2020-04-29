@@ -187,10 +187,11 @@ namespace Bop.Services.Customers
 
             var customerPassword = new CustomerPassword
             {
-                Customer = request.Customer,
+                CustomerId = request.Customer.Id,
                 PasswordFormat = request.PasswordFormat,
                 CreatedOnUtc = DateTime.UtcNow
             };
+
             switch (request.PasswordFormat)
             {
                 case PasswordFormat.Clear:
@@ -208,15 +209,21 @@ namespace Bop.Services.Customers
 
             _customerService.InsertCustomerPassword(customerPassword);
 
-            request.Customer.Active = request.IsApproved;
+            //request.Customer.Active = request.IsApproved;
 
             //add to 'Registered' role
             var registeredRole = _customerService.GetCustomerRoleBySystemName(BopCustomerDefaults.RegisteredRoleName);
             if (registeredRole == null)
                 throw new BopException("'Registered' role could not be loaded");
-            //request.Customer.CustomerRoles.Add(registeredRole);
-            request.Customer.AddCustomerRoleMapping(new CustomerCustomerRoleMapping { CustomerRole = registeredRole });
 
+            _customerService.AddCustomerRoleMapping(new CustomerCustomerRoleMapping { CustomerId = request.Customer.Id, CustomerRoleId = registeredRole.Id });
+
+            //remove from 'Guests' role            
+            if (_customerService.IsGuest(request.Customer))
+            {
+                var guestRole = _customerService.GetCustomerRoleBySystemName(BopCustomerDefaults.GuestsRoleName);
+                _customerService.RemoveCustomerRoleMapping(request.Customer, guestRole);
+            }
 
             _customerService.UpdateCustomer(request.Customer);
 

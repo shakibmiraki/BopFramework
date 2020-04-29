@@ -20,7 +20,6 @@ namespace Bop.Web.Controllers
     {
         private readonly ICustomerService _customerService;
         private readonly ICustomerRegistrationService _customerRegistrationService;
-        private readonly IAuthenticationService _authenticationService;
         private readonly IEventPublisher _eventPublisher;
         private readonly ILocalizationService _localizationService;
         private readonly IWorkContext _workContext;
@@ -33,7 +32,6 @@ namespace Bop.Web.Controllers
 
         public CustomerController(ICustomerService customerService,
             ICustomerRegistrationService customerRegistrationService,
-            IAuthenticationService authenticationService,
             IEventPublisher eventPublisher,
             ILocalizationService localizationService,
             IWorkContext workContext,
@@ -41,11 +39,11 @@ namespace Bop.Web.Controllers
             IWorkflowMessageService workflowMessageService,
             ITokenStoreService tokenStoreService,
             ITokenFactoryService tokenFactoryService,
-            CustomerSettings customerSettings, IAntiForgeryCookieService antiForgeryCookieService)
+            CustomerSettings customerSettings,
+            IAntiForgeryCookieService antiForgeryCookieService)
         {
             _customerService = customerService;
             _customerRegistrationService = customerRegistrationService;
-            _authenticationService = authenticationService;
             _eventPublisher = eventPublisher;
             _localizationService = localizationService;
             _workContext = workContext;
@@ -169,6 +167,7 @@ namespace Bop.Web.Controllers
                     model.Password,
                     _customerSettings.DefaultPasswordFormat);
                 var registrationResult = _customerRegistrationService.RegisterCustomer(registrationRequest);
+
                 if (registrationResult.Success)
                 {
                     //email validation message
@@ -206,18 +205,10 @@ namespace Bop.Web.Controllers
                 return BadRequest(response);
             }
 
-            //var cToken = _genericAttributeService.GetAttribute<string>(customer, BopcustomerDefaults.AccountActivationTokenAttribute);
-
-            var cToken = _genericAttributeService.GetAttributesForEntity(customer.Id, customer.GetType().Name)
+            var customerToken = _genericAttributeService.GetAttributesForEntity(customer.Id, customer.GetType().Name)
                 .SingleOrDefault(a => a.Key == BopCustomerDefaults.AccountActivationTokenAttribute);
 
-            if (cToken is null || string.IsNullOrEmpty(cToken.Value) || cToken.CreatedOrUpdatedDateUTC < DateTime.Now.AddMinutes(-2))
-            {
-                response.Messages.Add(_localizationService.GetResource("Account.AccountActivation.TokenExpired"));
-                return BadRequest(response);
-            }
-
-            if (!cToken.Value.Equals(model.Token, StringComparison.InvariantCultureIgnoreCase))
+            if (customer.IsValidToken(customerToken, model.Token))
             {
                 response.Messages.Add(_localizationService.GetResource("Account.AccountActivation.WrongToken"));
                 return BadRequest(response);

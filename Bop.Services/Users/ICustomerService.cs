@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Bop.Core;
+using Bop.Core.Domain.Common;
 using Bop.Core.Domain.Customers;
 
 
@@ -114,6 +115,29 @@ namespace Bop.Services.Customers
         /// <param name="customer">Customer</param>
         void UpdateCustomer(Customer customer);
 
+        /// <summary>
+        /// Gets a value indicating whether customer is administrator
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
+        /// <returns>Result</returns>
+        bool IsAdmin(Customer customer, bool onlyActiveCustomerRoles = true);
+
+        /// <summary>
+        /// Gets a value indicating whether customer is registered
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
+        /// <returns>Result</returns>
+        bool IsRegistered(Customer customer, bool onlyActiveCustomerRoles = true);
+
+        /// <summary>
+        /// Gets a value indicating whether customer is guest
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
+        /// <returns>Result</returns>
+        bool IsGuest(Customer customer, bool onlyActiveCustomerRoles = true);
 
         #endregion
 
@@ -158,6 +182,28 @@ namespace Bop.Services.Customers
         /// <param name="customerRole">Customer role</param>
         void UpdateCustomerRole(CustomerRole customerRole);
 
+        /// <summary>
+        /// Add a customer-customer role mapping
+        /// </summary>
+        /// <param name="roleMapping">Customer-customer role mapping</param>
+        void AddCustomerRoleMapping(CustomerCustomerRoleMapping roleMapping);
+
+        /// <summary>
+        /// Remove a customer-customer role mapping
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="role">Customer role</param>
+        void RemoveCustomerRoleMapping(Customer customer, CustomerRole role);
+
+        /// <summary>
+        /// Gets a value indicating whether customer is in a certain customer role
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="customerRoleSystemName">Customer role system name</param>
+        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
+        /// <returns>Result</returns>
+        bool IsInCustomerRole(Customer customer,
+            string customerRoleSystemName, bool onlyActiveCustomerRoles = true);
         #endregion
 
         #region Customer passwords

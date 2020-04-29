@@ -44,7 +44,7 @@ export class RegistrationFormComponent implements OnInit {
       .subscribe(
         result => {
           if (result) {
-            localStorage.setItem(this.appConfig.tokenKey, this.model.phone);
+            localStorage.setItem(this.appConfig.config.tokenKey, this.model.phone);
             this.router.navigate(['/activate']);
           }
         },

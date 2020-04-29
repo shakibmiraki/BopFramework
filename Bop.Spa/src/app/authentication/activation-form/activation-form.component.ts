@@ -16,7 +16,7 @@ export class ActivationFormComponent {
   @ViewChild(CountdownComponent,{static:false}) counter: CountdownComponent;
   
   model: AccountActivate = {
-    phone: localStorage.getItem(this.appConfig.tokenKey),
+    phone: localStorage.getItem(this.appConfig.config.tokenKey),
     token: ''
   };
 
@@ -49,7 +49,7 @@ export class ActivationFormComponent {
             this.router.navigate(['/login'], {
               queryParams: {
                 isActivatedUser: true,
-                phone: localStorage.getItem(this.appConfig.tokenKey)
+                phone: localStorage.getItem(this.appConfig.config.tokenKey)
               }
             });
           }
@@ -76,7 +76,7 @@ export class ActivationFormComponent {
           //   this.router.navigate(['/login'], {
           //     queryParams: {
           //       isActivatedUser: true,
-          //       phone: localStorage.getItem(this.appConfig.tokenKey)
+          //       phone: localStorage.getItem(this.appConfig.config.tokenKey)
           //     }
           //   });
           // }

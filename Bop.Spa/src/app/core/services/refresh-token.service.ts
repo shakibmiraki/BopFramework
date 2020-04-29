@@ -1,30 +1,27 @@
 import {
   HttpClient,
   HttpErrorResponse,
-  HttpHeaders
-} from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
-import { Subscription, throwError, timer } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-
-import { AuthTokenType } from './../models/auth-token-type';
-import { ApiConfigService } from './api-config.service';
-import { APP_CONFIG, IAppConfig } from './app.config';
-import { BrowserStorageService } from './browser-storage.service';
-import { TokenStoreService } from './token-store.service';
-import { UtilsService } from './utils.service';
+  HttpHeaders,
+} from "@angular/common/http";
+import { Inject, Injectable } from "@angular/core";
+import { Subscription, throwError, timer } from "rxjs";
+import { catchError, map } from "rxjs/operators";
+import { AuthTokenType } from "./../models/auth-token-type";
+import { APP_CONFIG, IAppConfig } from "./app.config";
+import { BrowserStorageService } from "./browser-storage.service";
+import { TokenStoreService } from "./token-store.service";
+import { UtilsService } from "./utils.service";
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class RefreshTokenService {
-  private refreshTokenTimerCheckId = 'is_refreshToken_timer_started';
+  private refreshTokenTimerCheckId = "is_refreshToken_timer_started";
   private refreshTokenSubscription: Subscription | null = null;
 
   constructor(
     private tokenStoreService: TokenStoreService,
     @Inject(APP_CONFIG) private appConfig: IAppConfig,
-    private apiConfigService: ApiConfigService,
     private http: HttpClient,
     private browserStorageService: BrowserStorageService,
     private utilsService: UtilsService
@@ -39,7 +36,7 @@ export class RefreshTokenService {
 
     const expDateUtc = this.tokenStoreService.getAccessTokenExpirationDateUtc();
     if (!expDateUtc) {
-      throw new Error('This access token has not the `exp` property.');
+      throw new Error("This access token has not the `exp` property.");
     }
     const expiresAtUtc = expDateUtc.valueOf();
     const nowUtc = new Date().valueOf();
@@ -89,25 +86,21 @@ export class RefreshTokenService {
   }
 
   private refreshToken(isAuthUserLoggedIn: boolean) {
-    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+    const headers = new HttpHeaders({ "Content-Type": "application/json" });
     const model = {
       refreshToken: this.tokenStoreService.getRawAuthToken(
         AuthTokenType.RefreshToken
-      )
+      ),
     };
     return this.http
-      .post(
-        `${this.appConfig.apiEndpoint}/${
-          this.apiConfigService.configuration.refreshTokenPath
-        }`,
-        model,
-        { headers: headers }
-      )
+      .post(`${this.appConfig.paths.refreshTokenPath}`, model, {
+        headers: headers,
+      })
       .pipe(
-        map(response => response || {}),
+        map((response) => response || {}),
         catchError((error: HttpErrorResponse) => throwError(error))
       )
-      .subscribe(result => {
+      .subscribe((result) => {
         this.tokenStoreService.storeLoginSession(result);
         // this.deleteRefreshTokenTimerCheckId();
         this.scheduleRefreshToken(isAuthUserLoggedIn, false);
@@ -133,7 +126,7 @@ export class RefreshTokenService {
   private setRefreshTokenTimerStarted(): void {
     this.browserStorageService.setLocal(this.refreshTokenTimerCheckId, {
       isStarted: true,
-      tabId: this.utilsService.getCurrentTabId()
+      tabId: this.utilsService.getCurrentTabId(),
     });
   }
 
@@ -144,7 +137,7 @@ export class RefreshTokenService {
   private setRefreshTokenTimerStopped(): void {
     this.browserStorageService.setLocal(this.refreshTokenTimerCheckId, {
       isStarted: false,
-      tabId: -1
+      tabId: -1,
     });
   }
 }
