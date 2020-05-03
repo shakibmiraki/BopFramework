@@ -13,7 +13,7 @@ import { CountdownComponent } from 'ngx-countdown';
 })
 export class ActivationFormComponent {
 
-  @ViewChild(CountdownComponent,{static:false}) counter: CountdownComponent;
+  @ViewChild(CountdownComponent) counter: CountdownComponent;
   
   model: AccountActivate = {
     phone: localStorage.getItem(this.appConfig.config.tokenKey),

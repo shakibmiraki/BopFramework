@@ -25,7 +25,6 @@ import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { UploadComponent } from '../upload/upload.component';
 import { ConfirmationDialogComponent } from './dialog/confirmation.dialog.component';
-import { CountdownModule } from 'ngx-countdown';
 import { SpinnerComponent } from '../spinner/spinner.component';
 import { InfiniteScrollComponent } from '../infinite-scroll/infinite-scroll.component';
 import { toJalaaliPipe, formatJalaaliPipe } from './pipes/moment-jalaali.pipe';
@@ -43,7 +42,6 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     MaterialModule,
     MDBBootstrapModule,
     MatProgressButtonsModule,
-    CountdownModule,
     DpDatePickerModule,
     TranslateModule.forChild({
       loader: {
@@ -87,7 +85,6 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     SpinnerComponent,
     UploadComponent,
     ConfirmationDialogComponent,
-    CountdownModule,
     InfiniteScrollComponent,
     toJalaaliPipe,
     formatJalaaliPipe,
@@ -99,7 +96,7 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class SharedModule {
-  static forRoot(): ModuleWithProviders {
+  static forRoot(): ModuleWithProviders<SharedModule> {
     // Forcing the whole app to use the returned providers from the AppModule only.
     return {
       ngModule: SharedModule,
