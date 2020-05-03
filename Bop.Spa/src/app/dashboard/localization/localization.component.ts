@@ -4,7 +4,7 @@ import { Component, OnInit } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { finalize } from 'rxjs/operators';
 import { MatSelectChange } from '@angular/material/select';
-import { MatOption } from '@angular/material';
+import { MatOption } from '@angular/material/core';
 import * as AOS from 'aos';
 
 @Component({

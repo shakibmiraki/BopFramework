@@ -14,7 +14,6 @@ import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 
 /* Account Imports */
 import { AuthenticationModule } from './authentication/authentication.module';
-import 'hammerjs';
 import { HeaderComponent } from './header/header.component';
 import { SidenavListComponent } from './dashboard/navigation/sidenav-list/sidenav-list.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
