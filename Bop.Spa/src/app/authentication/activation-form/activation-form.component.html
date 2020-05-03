@@ -1,7 +1,7 @@
 <div class="container-fluid">
   <div class="row justify-content-center mt-4">
     <div class="col-md-5">
-      <mdb-card class="testimonial-card text-center">
+      <mat-card class="testimonial-card text-center">
         <div class="card-up bank-gradient"></div>
 
         <div class="avatar mx-auto">
@@ -14,12 +14,12 @@
           <a class="green-text" (click)="resend()">{{ 'resources.account.activation.resend.button' | translate }}</a>
         </div>
 
-        <mdb-card-body>
-          <mdb-card-title>
+        <mat-card-content>
+          <mat-card-title>
             <p class="h4 mb-4">
               {{ 'resources.account.activation.form.title' | translate }}
             </p>
-          </mdb-card-title>
+          </mat-card-title>
 
           <form
             class="ltr"
@@ -37,7 +37,7 @@
                   [(ngModel)]="model.token"
                   #token="ngModel"
                   [ngClass]="{ 'is-invalid': f.submitted && token.invalid }"
-                  mdbInput
+                  matInput
                   required
                   [textMask]="{ mask: tokenMask }"
                   pattern="^[0-9]{5}$"
@@ -75,8 +75,8 @@
               ></app-button-spinner>
             </div>
           </form>
-        </mdb-card-body>
-      </mdb-card>
+        </mat-card-content>
+      </mat-card>
     </div>
   </div>
 </div>

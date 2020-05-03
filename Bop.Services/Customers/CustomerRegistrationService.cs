@@ -151,24 +151,15 @@ namespace Bop.Services.Customers
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            if (request.Customer == null)
-                throw new ArgumentException("Can't load current customer");
-
             var result = new CustomerRegistrationResult();
 
-            if (_customerService.IsRegistered(request.Customer))
-            {
-                result.AddError("Current customer is already registered");
-                return result;
-            }
-
-            if (string.IsNullOrEmpty(request.Email))
+            if (string.IsNullOrEmpty(request.Phone))
             {
                 result.AddError(_localizationService.GetResource("Account.Register.Errors.EmailIsNotProvided"));
                 return result;
             }
 
-            if (!CommonHelper.IsValidEmail(request.Email))
+            if (!CommonHelper.IsValidPhone(request.Phone))
             {
                 result.AddError(_localizationService.GetResource("Common.WrongEmail"));
                 return result;
@@ -181,16 +172,14 @@ namespace Bop.Services.Customers
             }
 
             //validate unique user
-            if (_customerService.GetCustomerByPhone(request.Email) != null)
+            if (_customerService.GetCustomerByPhone(request.Phone) != null)
             {
                 result.AddError(_localizationService.GetResource("Account.Register.Errors.EmailAlreadyExists"));
                 return result;
             }
 
 
-            //at this point request is valid
-            request.Customer.Username = request.Username;
-            request.Customer.Phone = request.Email;
+            _customerService.InsertCustomer(request.Customer);
 
             var customerPassword = new CustomerPassword
             {
@@ -215,16 +204,12 @@ namespace Bop.Services.Customers
 
             _customerService.InsertCustomerPassword(customerPassword);
 
-            request.Customer.Active = request.IsApproved;
-
             //add to 'Registered' role
             var registeredRole = _customerService.GetCustomerRoleBySystemName(BopCustomerDefaults.RegisteredRoleName);
             if (registeredRole == null)
                 throw new BopException("'Registered' role could not be loaded");
 
             _customerService.AddCustomerRoleMapping(new CustomerCustomerRoleMapping { CustomerId = request.Customer.Id, CustomerRoleId = registeredRole.Id });
-
-            _customerService.UpdateCustomer(request.Customer);
 
             return result;
         }

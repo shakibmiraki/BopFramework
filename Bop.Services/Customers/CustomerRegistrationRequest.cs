@@ -15,13 +15,18 @@ namespace Bop.Services.Customers
         /// <param name="password">Password</param>
         /// <param name="passwordFormat">Password format</param>
         /// <param name="isActive">Is approved</param>
-        public CustomerRegistrationRequest(Customer customer, string phone,
+        public CustomerRegistrationRequest(string phone,
             string password,
             PasswordFormat passwordFormat,
             bool isActive = false)
         {
-            Customer = customer;
-            Email = phone;
+            Customer = new Customer
+            {
+                Phone = phone,
+                Username = phone,
+                Active = isActive,
+            };
+            Phone = phone;
             Password = password;
             PasswordFormat = passwordFormat;
             IsApproved = isActive;
@@ -35,7 +40,7 @@ namespace Bop.Services.Customers
         /// <summary>
         /// Email
         /// </summary>
-        public string Email { get; set; }
+        public string Phone { get; set; }
 
         /// <summary>
         /// Username

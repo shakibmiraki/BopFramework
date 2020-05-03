@@ -146,24 +146,11 @@ namespace Bop.Web.Controllers
         {
             var response = new RegisterResponse { Result = ResultType.Error };
 
-
-
-            if (_customerService.IsRegistered(_workContext.CurrentCustomer))
-            {
-                //Already registered customer. 
-                _authenticationService.SignOut();
-
-                //raise logged out event       
-                _eventPublisher.Publish(new CustomerLoggedOutEvent(_workContext.CurrentCustomer));
-            }
-
-            var customer = _workContext.CurrentCustomer;
-
             if (ModelState.IsValid)
             {
                 model.Phone = model.Phone.Trim();
 
-                var registrationRequest = new CustomerRegistrationRequest(customer,
+                var registrationRequest = new CustomerRegistrationRequest(
                     model.Phone,
                     model.Password,
                     _customerSettings.DefaultPasswordFormat);
@@ -173,7 +160,7 @@ namespace Bop.Web.Controllers
                 {
                     //email validation message
                     var verifyCode = CommonHelper.GenerateSmsVerificationCode();
-                    _genericAttributeService.SaveAttribute(customer, BopCustomerDefaults.AccountActivationTokenAttribute,
+                    _genericAttributeService.SaveAttribute(registrationRequest.Customer, BopCustomerDefaults.AccountActivationTokenAttribute,
                         verifyCode);
                     //_workflowMessageService.SendcustomerPhoneValidationMessage(customer, _workContext.WorkingLanguage.Id);
 
@@ -182,7 +169,7 @@ namespace Bop.Web.Controllers
 
                     response.Messages.Add($"{_localizationService.GetResource("account.accountactivation.activation.code")} : {verifyCode}");
                     //raise event       
-                    _eventPublisher.Publish(new CustomerRegisteredEvent(customer));
+                    _eventPublisher.Publish(new CustomerRegisteredEvent(registrationRequest.Customer));
                     return Ok(response);
                 }
 

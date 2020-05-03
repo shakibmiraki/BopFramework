@@ -19,17 +19,15 @@ import {
   IsAuthorizedDirective,
   ShowToAuthUserDirective
 } from './directives/user.validator.directive';
-import { MDBBootstrapModule } from 'angular-bootstrap-md';
 import { MatProgressButtonsModule } from 'mat-progress-buttons';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { UploadComponent } from '../upload/upload.component';
-import { ConfirmationDialogComponent } from './dialog/confirmation.dialog.component';
 import { SpinnerComponent } from '../spinner/spinner.component';
 import { InfiniteScrollComponent } from '../infinite-scroll/infinite-scroll.component';
 import { toJalaaliPipe, formatJalaaliPipe } from './pipes/moment-jalaali.pipe';
 import { formatTimePipe } from './pipes/time.pipe';
-import { DpDatePickerModule } from 'ng2-jalali-date-picker';
+import { CountdownModule } from 'ngx-countdown';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(httpClient: HttpClient) {
@@ -37,12 +35,12 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
 }
 @NgModule({
   imports: [
-    CommonModule,
+
+  CommonModule,
     HttpClientModule,
     MaterialModule,
-    MDBBootstrapModule,
     MatProgressButtonsModule,
-    DpDatePickerModule,
+    CountdownModule,
     TranslateModule.forChild({
       loader: {
         provide: TranslateLoader,
@@ -64,7 +62,6 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     SpinnerComponent,
     UploadComponent,
     InfiniteScrollComponent,
-    ConfirmationDialogComponent,
     toJalaaliPipe,
     formatJalaaliPipe,
     formatTimePipe
@@ -77,22 +74,19 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     MaterialModule,
     IsAuthorizedDirective,
     ShowToAuthUserDirective,
-    MDBBootstrapModule,
     MinValueDirective,
     MaxValueDirective,
     MatProgressButtonsModule,
     ButtonSpinnerComponent,
     SpinnerComponent,
     UploadComponent,
-    ConfirmationDialogComponent,
     InfiniteScrollComponent,
     toJalaaliPipe,
     formatJalaaliPipe,
     formatTimePipe,
-    DpDatePickerModule,
+    CountdownModule,
     TranslateModule
   ],
-  entryComponents: [ConfirmationDialogComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class SharedModule {
