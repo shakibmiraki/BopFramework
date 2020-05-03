@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Bop.Core.Domain.Security;
 
-
 namespace Bop.Services.Security
 {
     /// <summary>
@@ -19,6 +18,6 @@ namespace Bop.Services.Security
         /// Get default permissions
         /// </summary>
         /// <returns>Default permissions</returns>
-        IEnumerable<DefaultPermissionRecord> GetDefaultPermissions();
+        HashSet<(string systemRoleName, PermissionRecord[] permissions)> GetDefaultPermissions();
     }
 }

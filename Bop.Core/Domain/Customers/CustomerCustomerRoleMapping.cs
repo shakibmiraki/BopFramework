@@ -1,9 +1,9 @@
-namespace Bop.Core.Domain.Customers
+﻿namespace Bop.Core.Domain.Customers
 {
     /// <summary>
     /// Represents a customer-customer role mapping class
     /// </summary>
-    public class CustomerCustomerRoleMapping : BaseEntity
+    public partial class CustomerCustomerRoleMapping : BaseEntity
     {
         /// <summary>
         /// Gets or sets the customer identifier
@@ -14,15 +14,5 @@ namespace Bop.Core.Domain.Customers
         /// Gets or sets the customer role identifier
         /// </summary>
         public int CustomerRoleId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the customer
-        /// </summary>
-        public virtual Customer Customer { get; set; }
-
-        /// <summary>
-        /// Gets or sets the customer role
-        /// </summary>
-        public virtual CustomerRole CustomerRole { get; set; }
     }
 }

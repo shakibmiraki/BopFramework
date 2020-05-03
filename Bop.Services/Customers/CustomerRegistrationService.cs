@@ -1,10 +1,14 @@
-using System;
+﻿using System;
 using System.Linq;
 using Bop.Core;
 using Bop.Core.Domain.Customers;
+using Bop.Services.Common;
+using Bop.Services.Defaults;
 using Bop.Services.Events;
 using Bop.Services.Localization;
+using Bop.Services.Messages;
 using Bop.Services.Security;
+
 
 namespace Bop.Services.Customers
 {
@@ -19,8 +23,10 @@ namespace Bop.Services.Customers
         private readonly ICustomerService _customerService;
         private readonly IEncryptionService _encryptionService;
         private readonly IEventPublisher _eventPublisher;
+        private readonly IGenericAttributeService _genericAttributeService;
         private readonly ILocalizationService _localizationService;
         private readonly IWorkContext _workContext;
+        private readonly IWorkflowMessageService _workflowMessageService;
 
         #endregion
 
@@ -30,16 +36,19 @@ namespace Bop.Services.Customers
             ICustomerService customerService,
             IEncryptionService encryptionService,
             IEventPublisher eventPublisher,
+            IGenericAttributeService genericAttributeService,
             ILocalizationService localizationService,
-            IWorkContext workContext)
+            IWorkContext workContext,
+            IWorkflowMessageService workflowMessageService)
         {
             _customerSettings = customerSettings;
             _customerService = customerService;
             _encryptionService = encryptionService;
             _eventPublisher = eventPublisher;
+            _genericAttributeService = genericAttributeService;
             _localizationService = localizationService;
             _workContext = workContext;
-
+            _workflowMessageService = workflowMessageService;
         }
 
         #endregion
@@ -84,12 +93,12 @@ namespace Bop.Services.Customers
         /// <summary>
         /// Validate customer
         /// </summary>
-        /// <param name="phone">Username or email</param>
+        /// <param name="phone">Phone</param>
         /// <param name="password">Password</param>
         /// <returns>Result</returns>
         public virtual CustomerLoginResults ValidateCustomer(string phone, string password)
         {
-            var customer = _customerService.GetCustomerByPhone(phone);
+            var customer =  _customerService.GetCustomerByPhone(phone);
 
             if (customer == null)
                 return CustomerLoginResults.CustomerNotExist;
@@ -153,13 +162,13 @@ namespace Bop.Services.Customers
                 return result;
             }
 
-            if (string.IsNullOrEmpty(request.Phone))
+            if (string.IsNullOrEmpty(request.Email))
             {
                 result.AddError(_localizationService.GetResource("Account.Register.Errors.EmailIsNotProvided"));
                 return result;
             }
 
-            if (!CommonHelper.IsValidPhone(request.Phone))
+            if (!CommonHelper.IsValidEmail(request.Email))
             {
                 result.AddError(_localizationService.GetResource("Common.WrongEmail"));
                 return result;
@@ -172,14 +181,16 @@ namespace Bop.Services.Customers
             }
 
             //validate unique user
-            if (_customerService.GetCustomerByPhone(request.Phone) != null)
+            if (_customerService.GetCustomerByPhone(request.Email) != null)
             {
                 result.AddError(_localizationService.GetResource("Account.Register.Errors.EmailAlreadyExists"));
                 return result;
             }
 
+
             //at this point request is valid
-            request.Customer.Phone = request.Phone;
+            request.Customer.Username = request.Username;
+            request.Customer.Phone = request.Email;
 
             var customerPassword = new CustomerPassword
             {
@@ -229,7 +240,7 @@ namespace Bop.Services.Customers
                 throw new ArgumentNullException(nameof(request));
 
             var result = new ChangePasswordResult();
-            if (string.IsNullOrWhiteSpace(request.Phone))
+            if (string.IsNullOrWhiteSpace(request.Email))
             {
                 result.AddError(_localizationService.GetResource("Account.ChangePassword.Errors.EmailIsNotProvided"));
                 return result;
@@ -241,7 +252,7 @@ namespace Bop.Services.Customers
                 return result;
             }
 
-            var customer = _customerService.GetCustomerByPhone(request.Phone);
+            var customer = _customerService.GetCustomerByPhone(request.Email);
             if (customer == null)
             {
                 result.AddError(_localizationService.GetResource("Account.ChangePassword.Errors.EmailNotFound"));

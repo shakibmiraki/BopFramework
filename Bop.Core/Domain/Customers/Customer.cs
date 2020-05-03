@@ -1,24 +1,15 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 
 namespace Bop.Core.Domain.Customers
 {
     /// <summary>
     /// Represents a customer
     /// </summary>
-    public class Customer : BaseEntity
+    public partial class Customer : BaseEntity
     {
-
-        private ICollection<CustomerCustomerRoleMapping> _customerCustomerRoleMappings;
-        private IList<CustomerRole> _customerRoles;
-
-        /// <summary>
-        /// Ctor
-        /// </summary>
         public Customer()
         {
-            this.CustomerGuid = Guid.NewGuid();
+            CustomerGuid = Guid.NewGuid();
         }
 
         /// <summary>
@@ -27,20 +18,19 @@ namespace Bop.Core.Domain.Customers
         public Guid CustomerGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the customername
+        /// Gets or sets the username
         /// </summary>
         public string Username { get; set; }
 
         /// <summary>
-        /// Gets or sets the phone
+        /// Gets or sets the email
         /// </summary>
         public string Phone { get; set; }
 
         /// <summary>
-        /// Gets or sets the phone that should be re-validated. Used in scenarios when a customer is already registered and wants to change an email address.
+        /// Gets or sets the email that should be re-validated. Used in scenarios when a customer is already registered and wants to change an email address.
         /// </summary>
         public string PhoneToRevalidate { get; set; }
-
 
         /// <summary>
         /// Gets or sets a value indicating whether the customer is required to re-login
@@ -97,55 +87,5 @@ namespace Bop.Core.Domain.Customers
         /// </summary>
         public DateTime LastActivityDateUtc { get; set; }
 
-        #region Navigation properties
-
-
-
-        /// <summary>
-        /// Gets or sets customer roles
-        /// </summary>
-        public virtual IList<CustomerRole> CustomerRoles => _customerRoles ?? (_customerRoles = CustomerCustomerRoleMappings.Select(mapping => mapping.CustomerRole).ToList());
-
-
-        /// <summary>
-        /// Gets or sets customer tokens
-        /// </summary>
-        public virtual ICollection<CustomerToken> CustomerTokens { get; set; }
-
-        /// <summary>
-        /// Gets or sets customer-customer role mappings
-        /// </summary>
-        public virtual ICollection<CustomerCustomerRoleMapping> CustomerCustomerRoleMappings
-        {
-            get => _customerCustomerRoleMappings ?? (_customerCustomerRoleMappings = new List<CustomerCustomerRoleMapping>());
-            protected set => _customerCustomerRoleMappings = value;
-        }
-
-        #endregion
-
-
-        #region Methods
-
-        /// <summary>
-        /// Add customer role and reset customer roles cache
-        /// </summary>
-        /// <param name="role">Role</param>
-        public void AddCustomerRoleMapping(CustomerCustomerRoleMapping role)
-        {
-            CustomerCustomerRoleMappings.Add(role);
-            _customerRoles = null;
-        }
-
-        /// <summary>
-        /// Remove customer role and reset customer roles cache
-        /// </summary>
-        /// <param name="role">Role</param>
-        public void RemoveCustomerRoleMapping(CustomerCustomerRoleMapping role)
-        {
-            CustomerCustomerRoleMappings.Remove(role);
-            _customerRoles = null;
-        }
-
-        #endregion
     }
 }

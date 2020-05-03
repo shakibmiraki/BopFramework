@@ -1,6 +1,5 @@
 ﻿using Bop.Core.Domain.Customers;
 
-
 namespace Bop.Services.Customers
 {
     /// <summary>
@@ -11,7 +10,7 @@ namespace Bop.Services.Customers
         /// <summary>
         /// Email
         /// </summary>
-        public string Phone { get; set; }
+        public string Email { get; set; }
 
         /// <summary>
         /// A value indicating whether we should validate request
@@ -41,17 +40,17 @@ namespace Bop.Services.Customers
         /// <summary>
         /// Ctor
         /// </summary>
-        /// <param name="phone">Email</param>
+        /// <param name="email">Email</param>
         /// <param name="validateRequest">A value indicating whether we should validate request</param>
         /// <param name="newPasswordFormat">Password format</param>
         /// <param name="newPassword">New password</param>
         /// <param name="oldPassword">Old password</param>
         /// <param name="hashedPasswordFormat">Hashed password format</param>
-        public ChangePasswordRequest(string phone, bool validateRequest,
+        public ChangePasswordRequest(string email, bool validateRequest,
             PasswordFormat newPasswordFormat, string newPassword, string oldPassword = "",
             string hashedPasswordFormat = null)
         {
-            Phone = phone;
+            Email = email;
             ValidateRequest = validateRequest;
             NewPasswordFormat = newPasswordFormat;
             NewPassword = newPassword;

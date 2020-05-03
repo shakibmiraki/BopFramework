@@ -1,6 +1,5 @@
 ﻿using Bop.Core.Domain.Customers;
 
-
 namespace Bop.Services.Customers
 {
     /// <summary>
@@ -15,14 +14,17 @@ namespace Bop.Services.Customers
         /// <param name="phone">Email</param>
         /// <param name="password">Password</param>
         /// <param name="passwordFormat">Password format</param>
-        public CustomerRegistrationRequest(Customer customer,string phone ,
+        /// <param name="isActive">Is approved</param>
+        public CustomerRegistrationRequest(Customer customer, string phone,
             string password,
-            PasswordFormat passwordFormat)
+            PasswordFormat passwordFormat,
+            bool isActive = false)
         {
             Customer = customer;
+            Email = phone;
             Password = password;
             PasswordFormat = passwordFormat;
-            Phone = phone;
+            IsApproved = isActive;
         }
 
         /// <summary>
@@ -33,8 +35,12 @@ namespace Bop.Services.Customers
         /// <summary>
         /// Email
         /// </summary>
-        public string Phone { get; set; }
+        public string Email { get; set; }
 
+        /// <summary>
+        /// Username
+        /// </summary>
+        public string Username { get; set; }
 
         /// <summary>
         /// Password
@@ -45,6 +51,11 @@ namespace Bop.Services.Customers
         /// Password format
         /// </summary>
         public PasswordFormat PasswordFormat { get; set; }
+
+        /// <summary>
+        /// Store identifier
+        /// </summary>
+        public int StoreId { get; set; }
 
         /// <summary>
         /// Is approved

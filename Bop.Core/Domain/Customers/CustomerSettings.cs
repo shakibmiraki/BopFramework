@@ -1,6 +1,5 @@
 ﻿using Bop.Core.Configuration;
 
-
 namespace Bop.Core.Domain.Customers
 {
     /// <summary>
@@ -8,6 +7,28 @@ namespace Bop.Core.Domain.Customers
     /// </summary>
     public class CustomerSettings : ISettings
     {
+
+
+
+        /// <summary>
+        /// Gets or sets a value indicating whether users are allowed to change their usernames
+        /// </summary>
+        public bool AllowUsersToChangeUsernames { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether username will be validated (when registering or changing on the 'My Account' page)
+        /// </summary>
+        public bool UsernameValidationEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether username will be validated using regex (when registering or changing on the 'My Account' page)
+        /// </summary>
+        public bool UsernameValidationUseRegex { get; set; }
+
+        /// <summary>
+        /// Gets or sets a username validation rule
+        /// </summary>
+        public string UsernameValidationRule { get; set; }
 
         /// <summary>
         /// Default password format for customers
@@ -65,22 +86,66 @@ namespace Bop.Core.Domain.Customers
         public int FailedPasswordAllowedAttempts { get; set; }
 
         /// <summary>
-        /// Gets or sets a number of minutes to lockout customers (for login failures).
+        /// Gets or sets a number of minutes to lockout users (for login failures).
         /// </summary>
         public int FailedPasswordLockoutMinutes { get; set; }
 
 
         /// <summary>
-        /// Gets or sets a value indicating whether deleted customer records should be prefixed suffixed with "-DELETED"
+        /// Gets or sets a value indicating whether customers are allowed to upload avatars.
         /// </summary>
-        public bool SuffixDeletedCustomers { get; set; }
+        public bool AllowCustomersToUploadAvatars { get; set; }
+
+        /// <summary>
+        /// Gets or sets a maximum avatar size (in bytes)
+        /// </summary>
+        public int AvatarMaximumSizeBytes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to display default user avatar.
+        /// </summary>
+        public bool DefaultAvatarEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether customers location is shown
+        /// </summary>
+        public bool ShowCustomersLocation { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to show customers join date
+        /// </summary>
+        public bool ShowCustomersJoinDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether customers are allowed to view profiles of other customers
+        /// </summary>
+        public bool AllowViewingProfiles { get; set; }
 
 
         /// <summary>
-        /// Gets or sets interval (in minutes) with which the Delete Guest Task runs
+        /// Gets or sets a value indicating the number of minutes for 'online customers' module
         /// </summary>
-        public int DeleteGuestTaskOlderThanMinutes { get; set; }
+        public int OnlineCustomerMinutes { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating we should store last visited page URL for each customer
+        /// </summary>
+        public bool StoreLastVisitedPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating we should store IP addresses of customers
+        /// </summary>
+        public bool StoreIpAddresses { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating the number of minutes for 'last activity' module
+        /// </summary>
+        public int LastActivityMinutes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether deleted customer records should be prefixed suffixed with "-DELETED"
+        /// </summary>
+        public bool SuffixDeletedCustomers { get; set; }
 
     }
 }

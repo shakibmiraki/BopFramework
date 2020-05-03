@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Bop.Core;
-using Bop.Core.Domain.Common;
 using Bop.Core.Domain.Customers;
-
 
 namespace Bop.Services.Customers
 {
@@ -19,19 +17,25 @@ namespace Bop.Services.Customers
         /// </summary>
         /// <param name="createdFromUtc">Created date from (UTC); null to load all records</param>
         /// <param name="createdToUtc">Created date to (UTC); null to load all records</param>
+        /// <param name="affiliateId">Affiliate identifier</param>
+        /// <param name="vendorId">Vendor identifier</param>
         /// <param name="customerRoleIds">A list of customer role identifiers to filter by (at least one match); pass null or empty list in order to load all customers; </param>
         /// <param name="email">Email; null to load all customers</param>
-        /// <param name="customername">Customername; null to load all customers</param>
+        /// <param name="username">Username; null to load all customers</param>
         /// <param name="firstName">First name; null to load all customers</param>
         /// <param name="lastName">Last name; null to load all customers</param>
+        /// <param name="dayOfBirth">Day of birth; 0 to load all customers</param>
+        /// <param name="monthOfBirth">Month of birth; 0 to load all customers</param>
+        /// <param name="company">Company; null to load all customers</param>
+        /// <param name="phone">Phone; null to load all customers</param>
+        /// <param name="zipPostalCode">Phone; null to load all customers</param>
         /// <param name="ipAddress">IP address; null to load all customers</param>
         /// <param name="pageIndex">Page index</param>
         /// <param name="pageSize">Page size</param>
         /// <param name="getOnlyTotalCount">A value in indicating whether you want to load only total number of records. Set to "true" if you don't want to load data from database</param>
         /// <returns>Customers</returns>
         IPagedList<Customer> GetAllCustomers(DateTime? createdFromUtc = null, DateTime? createdToUtc = null,
-            int[] customerRoleIds = null,
-            string email = null, string customername = null, string firstName = null, string lastName = null, string ipAddress = null,
+            int[] customerRoleIds = null,string username = null, string phone = null,
             int pageIndex = 0, int pageSize = int.MaxValue, bool getOnlyTotalCount = false);
 
         /// <summary>
@@ -51,7 +55,6 @@ namespace Bop.Services.Customers
         /// </summary>
         /// <param name="customer">Customer</param>
         void DeleteCustomer(Customer customer);
-
 
         /// <summary>
         /// Gets a customer
@@ -77,16 +80,23 @@ namespace Bop.Services.Customers
         /// <summary>
         /// Get customer by email
         /// </summary>
-        /// <param name="phone">Email</param>
+        /// <param name="email">Email</param>
         /// <returns>Customer</returns>
-        Customer GetCustomerByPhone(string phone);
+        Customer GetCustomerByPhone(string email);
 
         /// <summary>
-        /// Get customer by customername
+        /// Get customer by system role
         /// </summary>
-        /// <param name="customername">Customername</param>
+        /// <param name="systemName">System name</param>
         /// <returns>Customer</returns>
-        Customer GetCustomerByUsername(string customername);
+        Customer GetCustomerBySystemName(string systemName);
+
+        /// <summary>
+        /// Get customer by username
+        /// </summary>
+        /// <param name="username">Username</param>
+        /// <returns>Customer</returns>
+        Customer GetCustomerByUsername(string username);
 
         /// <summary>
         /// Insert a customer
@@ -100,25 +110,22 @@ namespace Bop.Services.Customers
         /// <param name="customer">Customer</param>
         void UpdateCustomer(Customer customer);
 
-        /// <summary>
-        /// Gets a value indicating whether customer is administrator
-        /// </summary>
-        /// <param name="customer">Customer</param>
-        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
-        /// <returns>Result</returns>
-        bool IsAdmin(Customer customer, bool onlyActiveCustomerRoles = true);
-
-        /// <summary>
-        /// Gets a value indicating whether customer is registered
-        /// </summary>
-        /// <param name="customer">Customer</param>
-        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
-        /// <returns>Result</returns>
-        bool IsRegistered(Customer customer, bool onlyActiveCustomerRoles = true);
-
         #endregion
 
         #region Customer roles
+
+        /// <summary>
+        /// Add a customer-customer role mapping
+        /// </summary>
+        /// <param name="roleMapping">Customer-customer role mapping</param>
+        void AddCustomerRoleMapping(CustomerCustomerRoleMapping roleMapping);
+
+        /// <summary>
+        /// Remove a customer-customer role mapping
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="role">Customer role</param>
+        void RemoveCustomerRoleMapping(Customer customer, CustomerRole role);
 
         /// <summary>
         /// Delete a customer role
@@ -141,6 +148,22 @@ namespace Bop.Services.Customers
         CustomerRole GetCustomerRoleBySystemName(string systemName);
 
         /// <summary>
+        /// Get customer role identifiers
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="showHidden">A value indicating whether to load hidden records</param>
+        /// <returns>Customer role identifiers</returns>
+        int[] GetCustomerRoleIds(Customer customer, bool showHidden = false);
+
+        /// <summary>
+        /// Gets list of customer roles
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="showHidden">A value indicating whether to load hidden records</param>
+        /// <returns>Result</returns>
+        IList<CustomerRole> GetCustomerRoles(Customer customer, bool showHidden = false);
+
+        /// <summary>
         /// Gets all customer roles
         /// </summary>
         /// <param name="showHidden">A value indicating whether to show hidden records</param>
@@ -154,33 +177,36 @@ namespace Bop.Services.Customers
         void InsertCustomerRole(CustomerRole customerRole);
 
         /// <summary>
-        /// Updates the customer role
-        /// </summary>
-        /// <param name="customerRole">Customer role</param>
-        void UpdateCustomerRole(CustomerRole customerRole);
-
-        /// <summary>
-        /// Add a customer-customer role mapping
-        /// </summary>
-        /// <param name="roleMapping">Customer-customer role mapping</param>
-        void AddCustomerRoleMapping(CustomerCustomerRoleMapping roleMapping);
-
-        /// <summary>
-        /// Remove a customer-customer role mapping
-        /// </summary>
-        /// <param name="customer">Customer</param>
-        /// <param name="role">Customer role</param>
-        void RemoveCustomerRoleMapping(Customer customer, CustomerRole role);
-
-        /// <summary>
         /// Gets a value indicating whether customer is in a certain customer role
         /// </summary>
         /// <param name="customer">Customer</param>
         /// <param name="customerRoleSystemName">Customer role system name</param>
         /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
         /// <returns>Result</returns>
-        bool IsInCustomerRole(Customer customer,
-            string customerRoleSystemName, bool onlyActiveCustomerRoles = true);
+        bool IsInCustomerRole(Customer customer, string customerRoleSystemName, bool onlyActiveCustomerRoles = true);
+
+        /// <summary>
+        /// Gets a value indicating whether customer is administrator
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
+        /// <returns>Result</returns>
+        bool IsAdmin(Customer customer, bool onlyActiveCustomerRoles = true);
+
+        /// <summary>
+        /// Gets a value indicating whether customer is registered
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
+        /// <returns>Result</returns>
+        bool IsRegistered(Customer customer, bool onlyActiveCustomerRoles = true);
+
+        /// <summary>
+        /// Updates the customer role
+        /// </summary>
+        /// <param name="customerRole">Customer role</param>
+        void UpdateCustomerRole(CustomerRole customerRole);
+
         #endregion
 
         #region Customer passwords
@@ -214,7 +240,6 @@ namespace Bop.Services.Customers
         /// <param name="customerPassword">Customer password</param>
         void UpdateCustomerPassword(CustomerPassword customerPassword);
 
-
         /// <summary>
         /// Check whether customer password is expired 
         /// </summary>
@@ -223,5 +248,6 @@ namespace Bop.Services.Customers
         bool PasswordIsExpired(Customer customer);
 
         #endregion
+
     }
 }

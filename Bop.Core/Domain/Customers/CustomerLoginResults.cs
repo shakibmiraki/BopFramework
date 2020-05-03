@@ -11,7 +11,7 @@ namespace Bop.Core.Domain.Customers
         Successful = 1,
 
         /// <summary>
-        /// Customer does not exist (email or customername)
+        /// Customer does not exist (email or username)
         /// </summary>
         CustomerNotExist = 2,
 

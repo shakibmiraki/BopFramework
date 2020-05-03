@@ -1,10 +1,9 @@
-
-namespace Bop.Core.Domain.Customers
+﻿namespace Bop.Core.Domain.Customers
 {
     /// <summary>
     /// Represents default values related to customers data
     /// </summary>
-    public static class BopCustomerDefaults
+    public static partial class BopCustomerDefaults
     {
         #region System customer roles
 
@@ -18,7 +17,9 @@ namespace Bop.Core.Domain.Customers
         /// </summary>
         public static string RegisteredRoleName => "Registered";
 
+
         #endregion
+
 
         #region Customer attributes
 
@@ -28,5 +29,6 @@ namespace Bop.Core.Domain.Customers
         public static string AccountActivationTokenAttribute => "AccountActivationToken";
 
         #endregion
+
     }
 }

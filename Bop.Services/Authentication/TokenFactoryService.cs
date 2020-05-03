@@ -146,7 +146,7 @@ namespace Bop.Services.Authentication
             };
 
             // add roles
-            var customerRoles = _customerService.GetCustomerById(customer.Id).CustomerRoles;
+            var customerRoles = _customerService.GetCustomerRoles(customer);
             foreach (var customerRole in customerRoles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, customerRole.SystemName, ClaimValueTypes.String, _jwtConfig.Issuer));

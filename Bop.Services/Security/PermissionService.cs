@@ -1,14 +1,16 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bop.Core;
 using Bop.Core.Caching;
-using Bop.Core.Domain.Security;
 using Bop.Core.Domain.Customers;
-using Bop.Services.Customers;
+using Bop.Core.Domain.Security;
 using Bop.Data;
 using Bop.Services.Caching.CachingDefaults;
 using Bop.Services.Caching.Extensions;
+using Bop.Services.Customers;
+using Bop.Services.Events;
+using Bop.Services.Localization;
 
 namespace Bop.Services.Security
 {
@@ -19,37 +21,31 @@ namespace Bop.Services.Security
     {
         #region Fields
 
+        private readonly ICustomerService _customerService;
+        private readonly IEventPublisher _eventPublisher;
+        private readonly ILocalizationService _localizationService;
         private readonly IRepository<PermissionRecord> _permissionRecordRepository;
         private readonly IRepository<PermissionRecordCustomerRoleMapping> _permissionRecordCustomerRoleMappingRepository;
-        private readonly ICustomerService _customerService;
-        private readonly ICacheManager _cacheManager;
-        private readonly IWorkContext _workContext;
         private readonly IStaticCacheManager _staticCacheManager;
+        private readonly IWorkContext _workContext;
 
         #endregion
 
         #region Ctor
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="permissionRecordRepository">Permission repository</param>
-        /// <param name="permissionRecordCustomerRoleMappingRepository">Permission -customer role mapping repository</param>
-        /// <param name="customerService">Customer service</param>
-        /// <param name="cacheManager">Cache manager</param>
-        /// <param name="staticCacheManager">Static cache manager</param>
-        /// <param name="workContext"></param>
-        public PermissionService(IRepository<PermissionRecord> permissionRecordRepository,
+        public PermissionService(ICustomerService customerService,
+            IEventPublisher eventPublisher,
+            ILocalizationService localizationService,
+            IRepository<PermissionRecord> permissionRecordRepository,
             IRepository<PermissionRecordCustomerRoleMapping> permissionRecordCustomerRoleMappingRepository,
-            ICustomerService customerService,
-            ICacheManager cacheManager,
-            IStaticCacheManager staticCacheManager, 
+            IStaticCacheManager staticCacheManager,
             IWorkContext workContext)
         {
+            _customerService = customerService;
+            _eventPublisher = eventPublisher;
+            _localizationService = localizationService;
             _permissionRecordRepository = permissionRecordRepository;
             _permissionRecordCustomerRoleMappingRepository = permissionRecordCustomerRoleMappingRepository;
-            _customerService = customerService;
-            _cacheManager = cacheManager;
             _staticCacheManager = staticCacheManager;
             _workContext = workContext;
         }
@@ -63,45 +59,19 @@ namespace Bop.Services.Security
         /// </summary>
         /// <param name="customerRoleId">Customer role identifier</param>
         /// <returns>Permissions</returns>
-
         protected virtual IList<PermissionRecord> GetPermissionRecordsByCustomerRoleId(int customerRoleId)
         {
             var key = BopSecurityCachingDefaults.PermissionsAllByCustomerRoleIdCacheKey.FillCacheKey(customerRoleId);
 
             var query = from pr in _permissionRecordRepository.Table
-                        join prcrm in _permissionRecordCustomerRoleMappingRepository.Table on pr.Id equals prcrm
-                            .PermissionRecordId
-                        where prcrm.CustomerRoleId == customerRoleId
-                        orderby pr.Id
-                        select pr;
+                join prcrm in _permissionRecordCustomerRoleMappingRepository.Table on pr.Id equals prcrm
+                    .PermissionRecordId
+                where prcrm.CustomerRoleId == customerRoleId
+                orderby pr.Id
+                select pr;
 
             return query.ToCachedList(key);
         }
-
-
-        /// <summary>
-        /// Authorize permission
-        /// </summary>
-        /// <param name="permissionRecordSystemName">Permission record system name</param>
-        /// <param name="customerRoleId">Customer role identifier</param>
-        /// <returns>true - authorized; otherwise, false</returns>
-        public virtual bool Authorize(string permissionRecordSystemName, int customerRoleId)
-        {
-            if (string.IsNullOrEmpty(permissionRecordSystemName))
-                return false;
-
-            var key = BopSecurityCachingDefaults.PermissionsAllowedCacheKey.FillCacheKey(permissionRecordSystemName, customerRoleId);
-            return _staticCacheManager.Get(key, () =>
-            {
-                var permissions = GetPermissionRecordsByCustomerRoleId(customerRoleId);
-                foreach (var permission in permissions)
-                    if (permission.SystemName.Equals(permissionRecordSystemName, StringComparison.InvariantCultureIgnoreCase))
-                        return true;
-
-                return false;
-            });
-        }
-
 
         #endregion
 
@@ -118,8 +88,8 @@ namespace Bop.Services.Security
 
             _permissionRecordRepository.Delete(permission);
 
-            _cacheManager.RemoveByPrefix(BopSecurityDefaults.PermissionsPatternCacheKey);
-            _staticCacheManager.RemoveByPrefix(BopSecurityDefaults.PermissionsPatternCacheKey);
+            //event notification
+            _eventPublisher.EntityDeleted(permission);
         }
 
         /// <summary>
@@ -132,7 +102,7 @@ namespace Bop.Services.Security
             if (permissionId == 0)
                 return null;
 
-            return _permissionRecordRepository.GetById(permissionId);
+            return _permissionRecordRepository.ToCachedGetById(permissionId);
         }
 
         /// <summary>
@@ -146,7 +116,7 @@ namespace Bop.Services.Security
                 return null;
 
             var query = from pr in _permissionRecordRepository.Table
-                        where  pr.SystemName == systemName
+                        where pr.SystemName == systemName
                         orderby pr.Id
                         select pr;
 
@@ -178,8 +148,8 @@ namespace Bop.Services.Security
 
             _permissionRecordRepository.Insert(permission);
 
-            _cacheManager.RemoveByPrefix(BopSecurityDefaults.PermissionsPatternCacheKey);
-            _staticCacheManager.RemoveByPrefix(BopSecurityDefaults.PermissionsPatternCacheKey);
+            //event notification
+            _eventPublisher.EntityInserted(permission);
         }
 
         /// <summary>
@@ -193,8 +163,8 @@ namespace Bop.Services.Security
 
             _permissionRecordRepository.Update(permission);
 
-            _cacheManager.RemoveByPrefix(BopSecurityDefaults.PermissionsPatternCacheKey);
-            _staticCacheManager.RemoveByPrefix(BopSecurityDefaults.PermissionsPatternCacheKey);
+            //event notification
+            _eventPublisher.EntityUpdated(permission);
         }
 
         /// <summary>
@@ -219,39 +189,37 @@ namespace Bop.Services.Security
                 {
                     Name = permission.Name,
                     SystemName = permission.SystemName,
-                    Category = permission.Category,
+                    Category = permission.Category
                 };
-                    
+
+                //save new permission
+                InsertPermissionRecord(permission1);
+
                 foreach (var defaultPermission in defaultPermissions)
                 {
-                    var customerRole = _customerService.GetCustomerRoleBySystemName(defaultPermission.CustomerRoleSystemName);
+                    var customerRole = _customerService.GetCustomerRoleBySystemName(defaultPermission.systemRoleName);
                     if (customerRole == null)
                     {
                         //new role (save it)
                         customerRole = new CustomerRole
                         {
-                            Name = defaultPermission.CustomerRoleSystemName,
+                            Name = defaultPermission.systemRoleName,
                             Active = true,
-                            SystemName = defaultPermission.CustomerRoleSystemName
+                            SystemName = defaultPermission.systemRoleName
                         };
                         _customerService.InsertCustomerRole(customerRole);
                     }
 
-                    var defaultMappingProvided = (from p in defaultPermission.PermissionRecords
-                        where p.SystemName == permission1.SystemName
-                        select p).Any();
-                    var mappingExists = (from mapping in customerRole.PermissionRecordCustomerRoleMappings
-                        where mapping.PermissionRecord.SystemName == permission1.SystemName
-                        select mapping.PermissionRecord).Any();
-                    if (defaultMappingProvided && !mappingExists)
-                    {
-                        //permission1.CustomerRoles.Add(customerRole);
-                        permission1.PermissionRecordCustomerRoleMappings.Add(new PermissionRecordCustomerRoleMapping { CustomerRole = customerRole });
-                    }
+                    var defaultMappingProvided = defaultPermission.permissions.Any(p => p.SystemName == permission1.SystemName);
+                                        
+                    if (!defaultMappingProvided)
+                        continue;
+
+                    InsertPermissionRecordCustomerRoleMapping(new PermissionRecordCustomerRoleMapping { CustomerRoleId = customerRole.Id, PermissionRecordId = permission1.Id });
                 }
 
-                //save new permission
-                InsertPermissionRecord(permission1);
+                //save localization
+                _localizationService.SaveLocalizedPermissionName(permission1);
             }
         }
 
@@ -265,13 +233,16 @@ namespace Bop.Services.Security
             foreach (var permission in permissions)
             {
                 var permission1 = GetPermissionRecordBySystemName(permission.SystemName);
-                if (permission1 != null)
-                {
-                    DeletePermissionRecord(permission1);
-                }
+                if (permission1 == null)
+                    continue;
+
+                DeletePermissionRecord(permission1);
+
+                //delete permission locales
+                _localizationService.DeleteLocalizedPermissionName(permission1);
             }
         }
-        
+
         /// <summary>
         /// Authorize permission
         /// </summary>
@@ -302,7 +273,6 @@ namespace Bop.Services.Security
             //    foreach (var permission1 in role.PermissionRecords)
             //        if (permission1.SystemName.Equals(permission.SystemName, StringComparison.InvariantCultureIgnoreCase))
             //            return true;
-
             //return false;
 
             return Authorize(permission.SystemName, customer);
@@ -329,14 +299,83 @@ namespace Bop.Services.Security
             if (string.IsNullOrEmpty(permissionRecordSystemName))
                 return false;
 
-            var customerRoles = customer.CustomerRoles.Where(cr => cr.Active);
+            var customerRoles = _customerService.GetCustomerRoles(customer);
             foreach (var role in customerRoles)
                 if (Authorize(permissionRecordSystemName, role.Id))
                     //yes, we have such permission
                     return true;
-            
+
             //no permission found
             return false;
+        }
+
+        /// <summary>
+        /// Authorize permission
+        /// </summary>
+        /// <param name="permissionRecordSystemName">Permission record system name</param>
+        /// <param name="customerRoleId">Customer role identifier</param>
+        /// <returns>true - authorized; otherwise, false</returns>
+        public virtual bool Authorize(string permissionRecordSystemName, int customerRoleId)
+        {
+            if (string.IsNullOrEmpty(permissionRecordSystemName))
+                return false;
+
+            var key = BopSecurityCachingDefaults.PermissionsAllowedCacheKey.FillCacheKey(permissionRecordSystemName, customerRoleId);
+            return _staticCacheManager.Get(key, () =>
+            {
+                var permissions = GetPermissionRecordsByCustomerRoleId(customerRoleId);
+                foreach (var permission in permissions)
+                    if (permission.SystemName.Equals(permissionRecordSystemName, StringComparison.InvariantCultureIgnoreCase))
+                        return true;
+
+                return false;
+            });
+        }
+
+        /// <summary>
+        /// Gets a permission record-customer role mapping
+        /// </summary>
+        /// <param name="permissionId">Permission identifier</param>
+        public virtual IList<PermissionRecordCustomerRoleMapping> GetMappingByPermissionRecordId(int permissionId)
+        {
+            var query = _permissionRecordCustomerRoleMappingRepository.Table;
+
+            query = query.Where(x => x.PermissionRecordId == permissionId);
+
+            return query.ToList();
+        }
+
+        /// <summary>
+        /// Delete a permission record-customer role mapping
+        /// </summary>
+        /// <param name="permissionId">Permission identifier</param>
+        /// <param name="customerRoleId">Customer role identifier</param>
+        public virtual void DeletePermissionRecordCustomerRoleMapping(int permissionId, int customerRoleId)
+        {
+            var mapping = _permissionRecordCustomerRoleMappingRepository.Table.FirstOrDefault(prcm => prcm.CustomerRoleId == customerRoleId && prcm.PermissionRecordId == permissionId);
+
+            if (mapping is null)
+                throw new Exception(string.Empty);
+
+            _permissionRecordCustomerRoleMappingRepository.Delete(mapping);
+
+            //event notification
+            _eventPublisher.EntityDeleted(mapping);
+        }
+
+        /// <summary>
+        /// Inserts a permission record-customer role mapping
+        /// </summary>
+        /// <param name="permissionRecordCustomerRoleMapping">Permission record-customer role mapping</param>
+        public virtual void InsertPermissionRecordCustomerRoleMapping(PermissionRecordCustomerRoleMapping permissionRecordCustomerRoleMapping)
+        {
+            if (permissionRecordCustomerRoleMapping is null)
+                throw new ArgumentNullException(nameof(permissionRecordCustomerRoleMapping));
+
+            _permissionRecordCustomerRoleMappingRepository.Insert(permissionRecordCustomerRoleMapping);
+
+            //event notification
+            _eventPublisher.EntityInserted(permissionRecordCustomerRoleMapping);
         }
 
         #endregion

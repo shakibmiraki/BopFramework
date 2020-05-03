@@ -1,5 +1,3 @@
-using Bop.Core.Domain.Customers;
-
 namespace Bop.Core.Domain.Customers
 {
     /// <summary>

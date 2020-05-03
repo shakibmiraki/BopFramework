@@ -1,7 +1,6 @@
-using System.Collections.Generic;
-using Bop.Core.Domain.Security;
+﻿using System.Collections.Generic;
 using Bop.Core.Domain.Customers;
-
+using Bop.Core.Domain.Security;
 
 namespace Bop.Services.Security
 {
@@ -13,10 +12,7 @@ namespace Bop.Services.Security
         //admin area permissions
         public static readonly PermissionRecord AccessAdminPanel = new PermissionRecord { Name = "Access admin area", SystemName = "AccessAdminPanel", Category = "Standard" };
         public static readonly PermissionRecord ManageCustomers = new PermissionRecord { Name = "Admin area. Manage Customers", SystemName = "ManageCustomers", Category = "Customers" };
-        public static readonly PermissionRecord ManageLanguages = new PermissionRecord { Name = "Admin area. Manage Languages", SystemName = "ManageLanguages", Category = "Configuration" };
-        public static readonly PermissionRecord ManageSettings = new PermissionRecord { Name = "Admin area. Manage Settings", SystemName = "ManageSettings", Category = "Configuration" };
-        public static readonly PermissionRecord ManageScheduleTasks = new PermissionRecord { Name = "Admin area. Manage Schedule Tasks", SystemName = "ManageScheduleTasks", Category = "Configuration" };
-
+        public static readonly PermissionRecord ManageLanguages = new PermissionRecord { Name = "Admin area. Manage Languages", SystemName = "ManageLanguages", Category = "Localization" };
 
         /// <summary>
         /// Get permissions
@@ -24,13 +20,11 @@ namespace Bop.Services.Security
         /// <returns>Permissions</returns>
         public virtual IEnumerable<PermissionRecord> GetPermissions()
         {
-            return new[] 
+            return new[]
             {
                 AccessAdminPanel,
                 ManageCustomers,
-                ManageLanguages,
-                ManageSettings,
-                ManageScheduleTasks
+                ManageLanguages
             };
         }
 
@@ -38,30 +32,26 @@ namespace Bop.Services.Security
         /// Get default permissions
         /// </summary>
         /// <returns>Permissions</returns>
-        public virtual IEnumerable<DefaultPermissionRecord> GetDefaultPermissions()
+        public virtual HashSet<(string systemRoleName, PermissionRecord[] permissions)> GetDefaultPermissions()
         {
-            return new[] 
+            return new HashSet<(string, PermissionRecord[])>
             {
-                new DefaultPermissionRecord 
-                {
-                    CustomerRoleSystemName = BopCustomerDefaults.AdministratorsRoleName,
-                    PermissionRecords = new[] 
+                (
+                    BopCustomerDefaults.AdministratorsRoleName,
+                    new[]
                     {
                         AccessAdminPanel,
                         ManageCustomers,
-                        ManageLanguages,
-                        ManageSettings,
-                        ManageScheduleTasks
+                        ManageLanguages
                     }
-                },
-                new DefaultPermissionRecord 
-                {
-                    CustomerRoleSystemName = BopCustomerDefaults.RegisteredRoleName,
-                    PermissionRecords = new[] 
+                ),
+                (
+                    BopCustomerDefaults.RegisteredRoleName,
+                    new[]
                     {
                         AccessAdminPanel
                     }
-                }
+                )
             };
         }
     }

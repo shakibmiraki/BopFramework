@@ -8,6 +8,7 @@ using Bop.Core.Domain.Customers;
 using Bop.Data;
 using Bop.Services.Caching.CachingDefaults;
 using Bop.Services.Caching.Extensions;
+using Bop.Services.Common;
 using Bop.Services.Events;
 
 
@@ -22,12 +23,16 @@ namespace Bop.Services.Customers
 
         private readonly CustomerSettings _customerSettings;
         private readonly ICacheManager _cacheManager;
+        private readonly IBopDataProvider _dataProvider;
         private readonly IEventPublisher _eventPublisher;
+        private readonly IGenericAttributeService _genericAttributeService;
         private readonly IRepository<Customer> _customerRepository;
         private readonly IRepository<CustomerCustomerRoleMapping> _customerCustomerRoleMappingRepository;
         private readonly IRepository<CustomerPassword> _customerPasswordRepository;
         private readonly IRepository<CustomerRole> _customerRoleRepository;
+        private readonly IRepository<GenericAttribute> _gaRepository;
         private readonly IStaticCacheManager _staticCacheManager;
+        private readonly IHostedSiteContext _hostedSiteContext;
 
 
         #endregion
@@ -36,21 +41,29 @@ namespace Bop.Services.Customers
 
         public CustomerService(CustomerSettings customerSettings,
             ICacheManager cacheManager,
+            IBopDataProvider dataProvider,
             IEventPublisher eventPublisher,
+            IGenericAttributeService genericAttributeService,
             IRepository<Customer> customerRepository,
             IRepository<CustomerCustomerRoleMapping> customerCustomerRoleMappingRepository,
             IRepository<CustomerPassword> customerPasswordRepository,
             IRepository<CustomerRole> customerRoleRepository,
-            IStaticCacheManager staticCacheManager)
+            IRepository<GenericAttribute> gaRepository,
+            IStaticCacheManager staticCacheManager,
+            IHostedSiteContext hostedSiteContext)
         {
             _customerSettings = customerSettings;
             _cacheManager = cacheManager;
+            _dataProvider = dataProvider;
             _eventPublisher = eventPublisher;
+            _genericAttributeService = genericAttributeService;
             _customerRepository = customerRepository;
             _customerCustomerRoleMappingRepository = customerCustomerRoleMappingRepository;
             _customerPasswordRepository = customerPasswordRepository;
             _customerRoleRepository = customerRoleRepository;
+            _gaRepository = gaRepository;
             _staticCacheManager = staticCacheManager;
+            _hostedSiteContext = hostedSiteContext;
         }
 
         #endregion
@@ -64,19 +77,25 @@ namespace Bop.Services.Customers
         /// </summary>
         /// <param name="createdFromUtc">Created date from (UTC); null to load all records</param>
         /// <param name="createdToUtc">Created date to (UTC); null to load all records</param>
+        /// <param name="affiliateId">Affiliate identifier</param>
+        /// <param name="vendorId">Vendor identifier</param>
         /// <param name="customerRoleIds">A list of customer role identifiers to filter by (at least one match); pass null or empty list in order to load all customers; </param>
-        /// <param name="phone">Email; null to load all customers</param>
-        /// <param name="customername">Customername; null to load all customers</param>
+        /// <param name="email">Email; null to load all customers</param>
+        /// <param name="username">Username; null to load all customers</param>
         /// <param name="firstName">First name; null to load all customers</param>
         /// <param name="lastName">Last name; null to load all customers</param>
+        /// <param name="dayOfBirth">Day of birth; 0 to load all customers</param>
+        /// <param name="monthOfBirth">Month of birth; 0 to load all customers</param>
+        /// <param name="company">Company; null to load all customers</param>
+        /// <param name="phone">Phone; null to load all customers</param>
+        /// <param name="zipPostalCode">Phone; null to load all customers</param>
         /// <param name="ipAddress">IP address; null to load all customers</param>
         /// <param name="pageIndex">Page index</param>
         /// <param name="pageSize">Page size</param>
         /// <param name="getOnlyTotalCount">A value in indicating whether you want to load only total number of records. Set to "true" if you don't want to load data from database</param>
         /// <returns>Customers</returns>
         public virtual IPagedList<Customer> GetAllCustomers(DateTime? createdFromUtc = null, DateTime? createdToUtc = null,
-            int[] customerRoleIds = null,
-            string phone = null, string customername = null, string firstName = null, string lastName = null, string ipAddress = null,
+            int[] customerRoleIds = null, string username = null, string phone = null,
             int pageIndex = 0, int pageSize = int.MaxValue, bool getOnlyTotalCount = false)
         {
             var query = _customerRepository.Table;
@@ -84,6 +103,7 @@ namespace Bop.Services.Customers
                 query = query.Where(c => createdFromUtc.Value <= c.CreatedOnUtc);
             if (createdToUtc.HasValue)
                 query = query.Where(c => createdToUtc.Value >= c.CreatedOnUtc);
+
             query = query.Where(c => !c.Deleted);
 
             if (customerRoleIds != null && customerRoleIds.Length > 0)
@@ -95,16 +115,13 @@ namespace Bop.Services.Customers
                     .Distinct();
             }
 
+
+            if (!string.IsNullOrWhiteSpace(username))
+                query = query.Where(c => c.Username.Contains(username));
+
+            //search by phone
             if (!string.IsNullOrWhiteSpace(phone))
                 query = query.Where(c => c.Phone.Contains(phone));
-            if (!string.IsNullOrWhiteSpace(customername))
-                query = query.Where(c => c.Username.Contains(customername));
-
-            //search by IpAddress
-            if (!string.IsNullOrWhiteSpace(ipAddress) && CommonHelper.IsValidIpAddress(ipAddress))
-            {
-                query = query.Where(w => w.LastIpAddress == ipAddress);
-            }
 
             query = query.OrderByDescending(c => c.CreatedOnUtc);
 
@@ -126,14 +143,15 @@ namespace Bop.Services.Customers
             var query = _customerRepository.Table;
             query = query.Where(c => lastActivityFromUtc <= c.LastActivityDateUtc);
             query = query.Where(c => !c.Deleted);
+
             if (customerRoleIds != null && customerRoleIds.Length > 0)
-                query = query.Where(c => c.CustomerCustomerRoleMappings.Select(mapping => mapping.CustomerRoleId).Intersect(customerRoleIds).Any());
+                query = query.Where(c => _customerCustomerRoleMappingRepository.Table.Any(ccrm => ccrm.CustomerId == c.Id && customerRoleIds.Contains(ccrm.CustomerRoleId)));
 
             query = query.OrderByDescending(c => c.LastActivityDateUtc);
             var customers = new PagedList<Customer>(query, pageIndex, pageSize);
+
             return customers;
         }
-
 
 
         /// <summary>
@@ -174,7 +192,7 @@ namespace Bop.Services.Customers
             if (customerId == 0)
                 return null;
 
-            return _customerRepository.GetById(customerId);
+            return _customerRepository.ToCachedGetById(customerId);
         }
 
         /// <summary>
@@ -239,25 +257,42 @@ namespace Bop.Services.Customers
             return customer;
         }
 
-
         /// <summary>
-        /// Get customer by customername
+        /// Get customer by system name
         /// </summary>
-        /// <param name="customername">Customername</param>
+        /// <param name="systemName">System name</param>
         /// <returns>Customer</returns>
-        public virtual Customer GetCustomerByUsername(string customername)
+        public virtual Customer GetCustomerBySystemName(string systemName)
         {
-            if (string.IsNullOrWhiteSpace(customername))
+            if (string.IsNullOrWhiteSpace(systemName))
                 return null;
 
             var query = from c in _customerRepository.Table
                         orderby c.Id
-                        where c.Username == customername
+                        where c.SystemName == systemName
                         select c;
             var customer = query.FirstOrDefault();
             return customer;
         }
 
+
+        /// <summary>
+        /// Get customer by username
+        /// </summary>
+        /// <param name="username">Username</param>
+        /// <returns>Customer</returns>
+        public virtual Customer GetCustomerByUsername(string username)
+        {
+            if (string.IsNullOrWhiteSpace(username))
+                return null;
+
+            var query = from c in _customerRepository.Table
+                        orderby c.Id
+                        where c.Username == username
+                        select c;
+            var customer = query.FirstOrDefault();
+            return customer;
+        }
 
         /// <summary>
         /// Insert a customer
@@ -289,32 +324,47 @@ namespace Bop.Services.Customers
             _eventPublisher.EntityUpdated(customer);
         }
 
-
-        /// <summary>
-        /// Gets a value indicating whether customer is administrator
-        /// </summary>
-        /// <param name="customer">Customer</param>
-        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
-        /// <returns>Result</returns>
-        public virtual bool IsAdmin(Customer customer, bool onlyActiveCustomerRoles = true)
-        {
-            return IsInCustomerRole(customer, BopCustomerDefaults.AdministratorsRoleName, onlyActiveCustomerRoles);
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether customer is registered
-        /// </summary>
-        /// <param name="customer">Customer</param>
-        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
-        /// <returns>Result</returns>
-        public virtual bool IsRegistered(Customer customer, bool onlyActiveCustomerRoles = true)
-        {
-            return IsInCustomerRole(customer, BopCustomerDefaults.RegisteredRoleName, onlyActiveCustomerRoles);
-        }
-
         #endregion
 
         #region Customer roles
+
+        /// <summary>
+        /// Add a customer-customer role mapping
+        /// </summary>
+        /// <param name="roleMapping">Customer-customer role mapping</param>
+        public void AddCustomerRoleMapping(CustomerCustomerRoleMapping roleMapping)
+        {
+            if (roleMapping is null)
+                throw new ArgumentNullException(nameof(roleMapping));
+
+            _customerCustomerRoleMappingRepository.Insert(roleMapping);
+
+            _eventPublisher.EntityInserted(roleMapping);
+        }
+
+        /// <summary>
+        /// Remove a customer-customer role mapping
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="role">Customer role</param>
+        public void RemoveCustomerRoleMapping(Customer customer, CustomerRole role)
+        {
+            if (customer is null)
+                throw new ArgumentNullException(nameof(customer));
+
+            if (role is null)
+                throw new ArgumentNullException(nameof(role));
+
+            var mapping = _customerCustomerRoleMappingRepository.Table.SingleOrDefault(ccrm => ccrm.CustomerId == customer.Id && ccrm.CustomerRoleId == role.Id);
+
+            if (mapping != null)
+            {
+                _customerCustomerRoleMappingRepository.Delete(mapping);
+
+                //event notification
+                _eventPublisher.EntityDeleted(mapping);
+            }
+        }
 
         /// <summary>
         /// Delete a customer role
@@ -330,8 +380,6 @@ namespace Bop.Services.Customers
 
             _customerRoleRepository.Delete(customerRole);
 
-            _cacheManager.RemoveByPrefix(BopCustomerServiceDefaults.CustomerRolesPrefixCacheKey);
-
             //event notification
             _eventPublisher.EntityDeleted(customerRole);
         }
@@ -346,7 +394,7 @@ namespace Bop.Services.Customers
             if (customerRoleId == 0)
                 return null;
 
-            return _customerRoleRepository.GetById(customerRoleId);
+            return _customerRoleRepository.ToCachedGetById(customerRoleId);
         }
 
         /// <summary>
@@ -368,6 +416,28 @@ namespace Bop.Services.Customers
             var customerRole = query.ToCachedFirstOrDefault(key);
 
             return customerRole;
+        }
+
+        /// <summary>
+        /// Get customer role identifiers
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="showHidden">A value indicating whether to load hidden records</param>
+        /// <returns>Customer role identifiers</returns>
+        public virtual int[] GetCustomerRoleIds(Customer customer, bool showHidden = false)
+        {
+            if (customer == null)
+                throw new ArgumentNullException(nameof(customer));
+
+            var query = from cr in _customerRoleRepository.Table
+                        join crm in _customerCustomerRoleMappingRepository.Table on cr.Id equals crm.CustomerRoleId
+                        where crm.CustomerId == customer.Id &&
+                        (showHidden || cr.Active)
+                        select cr.Id;
+
+            var key = BopCustomerServiceCachingDefaults.CustomerRoleIdsCacheKey.FillCacheKey(customer.Id, showHidden);
+
+            return _cacheManager.Get(key, () => query.ToArray());
         }
 
         /// <summary>
@@ -422,65 +492,8 @@ namespace Bop.Services.Customers
 
             _customerRoleRepository.Insert(customerRole);
 
-            _cacheManager.RemoveByPrefix(BopCustomerServiceDefaults.CustomerRolesPrefixCacheKey);
-
             //event notification
             _eventPublisher.EntityInserted(customerRole);
-        }
-
-        /// <summary>
-        /// Updates the customer role
-        /// </summary>
-        /// <param name="customerRole">Customer role</param>
-        public virtual void UpdateCustomerRole(CustomerRole customerRole)
-        {
-            if (customerRole == null)
-                throw new ArgumentNullException(nameof(customerRole));
-
-            _customerRoleRepository.Update(customerRole);
-
-            _cacheManager.RemoveByPrefix(BopCustomerServiceDefaults.CustomerRolesPrefixCacheKey);
-
-            //event notification
-            _eventPublisher.EntityUpdated(customerRole);
-        }
-
-        /// <summary>
-        /// Add a customer-customer role mapping
-        /// </summary>
-        /// <param name="roleMapping">Customer-customer role mapping</param>
-        public void AddCustomerRoleMapping(CustomerCustomerRoleMapping roleMapping)
-        {
-            if (roleMapping is null)
-                throw new ArgumentNullException(nameof(roleMapping));
-
-            _customerCustomerRoleMappingRepository.Insert(roleMapping);
-
-            _eventPublisher.EntityInserted(roleMapping);
-        }
-
-        /// <summary>
-        /// Remove a customer-customer role mapping
-        /// </summary>
-        /// <param name="customer">Customer</param>
-        /// <param name="role">Customer role</param>
-        public void RemoveCustomerRoleMapping(Customer customer, CustomerRole role)
-        {
-            if (customer is null)
-                throw new ArgumentNullException(nameof(customer));
-
-            if (role is null)
-                throw new ArgumentNullException(nameof(role));
-
-            var mapping = _customerCustomerRoleMappingRepository.Table.SingleOrDefault(ccrm => ccrm.CustomerId == customer.Id && ccrm.CustomerRoleId == role.Id);
-
-            if (mapping != null)
-            {
-                _customerCustomerRoleMappingRepository.Delete(mapping);
-
-                //event notification
-                _eventPublisher.EntityDeleted(mapping);
-            }
         }
 
         /// <summary>
@@ -504,6 +517,42 @@ namespace Bop.Services.Customers
             return customerRoles?.Any(cr => cr.SystemName == customerRoleSystemName) ?? false;
         }
 
+        /// <summary>
+        /// Gets a value indicating whether customer is administrator
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
+        /// <returns>Result</returns>
+        public virtual bool IsAdmin(Customer customer, bool onlyActiveCustomerRoles = true)
+        {
+            return IsInCustomerRole(customer, BopCustomerDefaults.AdministratorsRoleName, onlyActiveCustomerRoles);
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether customer is registered
+        /// </summary>
+        /// <param name="customer">Customer</param>
+        /// <param name="onlyActiveCustomerRoles">A value indicating whether we should look only in active customer roles</param>
+        /// <returns>Result</returns>
+        public virtual bool IsRegistered(Customer customer, bool onlyActiveCustomerRoles = true)
+        {
+            return IsInCustomerRole(customer, BopCustomerDefaults.RegisteredRoleName, onlyActiveCustomerRoles);
+        }
+
+        /// <summary>
+        /// Updates the customer role
+        /// </summary>
+        /// <param name="customerRole">Customer role</param>
+        public virtual void UpdateCustomerRole(CustomerRole customerRole)
+        {
+            if (customerRole == null)
+                throw new ArgumentNullException(nameof(customerRole));
+
+            _customerRoleRepository.Update(customerRole);
+
+            //event notification
+            _eventPublisher.EntityUpdated(customerRole);
+        }
 
         #endregion
 
@@ -565,7 +614,6 @@ namespace Bop.Services.Customers
             _eventPublisher.EntityInserted(customerPassword);
         }
 
-
         /// <summary>
         /// Update a customer password
         /// </summary>
@@ -616,8 +664,8 @@ namespace Bop.Services.Customers
             return currentLifetime >= _customerSettings.PasswordLifetime;
         }
 
-
         #endregion
+
 
         #endregion
     }

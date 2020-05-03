@@ -1,6 +1,5 @@
 using Bop.Core.Domain.Customers;
 
-
 namespace Bop.Services.Customers
 {
     /// <summary>
@@ -11,7 +10,7 @@ namespace Bop.Services.Customers
         /// <summary>
         /// Validate customer
         /// </summary>
-        /// <param name="phone">Username or phone</param>
+        /// <param name="phone">Phone</param>
         /// <param name="password">Password</param>
         /// <returns>Result</returns>
         CustomerLoginResults ValidateCustomer(string phone, string password);

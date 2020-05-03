@@ -13,6 +13,7 @@ using Bop.Core.Infrastructure;
 using Bop.Services.Configuration;
 using Bop.Services.Security;
 using Bop.Services.Customers;
+using Bop.Services.Defaults;
 
 namespace Bop.Services.Installation
 {
@@ -213,8 +214,7 @@ namespace Bop.Services.Installation
                 PasswordRecoveryLinkDaysValid = 7,
                 PasswordLifetime = 90,
                 FailedPasswordAllowedAttempts = 0,
-                FailedPasswordLockoutMinutes = 30,
-                DeleteGuestTaskOlderThanMinutes = 1440
+                FailedPasswordLockoutMinutes = 30
             });
 
 
