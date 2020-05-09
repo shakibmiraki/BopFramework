@@ -7,7 +7,6 @@
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
-          "style": "scss",
           "style": "scss"
         }
       },
@@ -24,10 +23,7 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "aot": true,
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ],
+            "assets": ["src/favicon.ico", "src/assets"],
             "styles": [
               "node_modules/material-design-icons/iconfont/material-icons.css",
               "node_modules/@fortawesome/fontawesome-free/scss/fontawesome.scss",
@@ -35,10 +31,13 @@
               "node_modules/@fortawesome/fontawesome-free/scss/regular.scss",
               "node_modules/@fortawesome/fontawesome-free/scss/brands.scss",
               "node_modules/aos/dist/aos.css",
+              "node_modules/bootstrap/dist/css/bootstrap.css",
               "src/styles.scss"
             ],
             "scripts": [
-              "node_modules/aos/dist/aos.js"
+              "node_modules/aos/dist/aos.js",
+              "./node_modules/jquery/dist/jquery.js",
+              "node_modules/bootstrap/dist/js/bootstrap.js"
             ]
           },
           "configurations": {
@@ -96,13 +95,8 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ],
-            "styles": [
-              "src/styles.scss"
-            ],
+            "assets": ["src/favicon.ico", "src/assets"],
+            "styles": ["src/styles.scss"],
             "scripts": []
           }
         },
@@ -114,9 +108,7 @@
               "tsconfig.spec.json",
               "e2e/tsconfig.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         },
         "e2e": {
