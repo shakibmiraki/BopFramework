@@ -1,14 +1,14 @@
 <mat-drawer-container class="example-container" [hasBackdrop]="true">
-    <mat-drawer #drawer [mode]="'over'">
-        <app-sidenav-list (drawerClose)="drawer.close()"></app-sidenav-list>
-    </mat-drawer>
-    <mat-drawer-content>
-        <div class="full-background-image"></div>
-        <app-header (drawerToggle)="drawer.toggle()"></app-header>
-        <main>
-          <div [@fadeAnimation]="getRouterOutletState(o)">
-            <router-outlet #o="outlet"></router-outlet>
-          </div>
-        </main>
-    </mat-drawer-content>
-  </mat-drawer-container>
+  <mat-drawer #drawer [mode]="'over'">
+    <app-sidenav-list (drawerClose)="drawer.close()"></app-sidenav-list>
+  </mat-drawer>
+  <mat-drawer-content>
+    <app-header class="d-block" (drawerToggle)="drawer.toggle()"></app-header>
+    <main>
+      <div class="full-background-image"></div>
+      <div [@fadeAnimation]="getRouterOutletState(o)">
+        <router-outlet #o="outlet"></router-outlet>
+      </div>
+    </main>
+  </mat-drawer-content>
+</mat-drawer-container>

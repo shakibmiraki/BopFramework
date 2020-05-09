@@ -2,7 +2,7 @@
   <div class="row justify-content-center mt-4" data-aos="fade-up">
     <div class="col-md-5">
       <mat-card class="testimonial-card text-center">
-        <div class="card-up bank-gradient"></div>
+        <div class="card-up peach-gradient"></div>
 
         <div class="avatar mx-auto">
           <img src="/assets/register-logo.png" class="rounded-circle" />
@@ -11,7 +11,7 @@
         <mat-card-content>
           <mat-card-title>
             <p class="h4 mb-4">
-              {{ 'resources.account.register.form.title' | translate }}
+              {{ "resources.account.register.form.title" | translate }}
             </p>
           </mat-card-title>
 
@@ -25,6 +25,9 @@
           >
             <div class="form-group">
               <div class="md-form">
+                <label for="phone">
+                  {{ "resources.account.register.field.phone" | translate }}
+                </label>
                 <input
                   type="text"
                   name="phone"
@@ -36,18 +39,22 @@
                   required
                   validatePhone
                 />
-                <label for="phone">
-                  {{ 'resources.account.register.field.phone' | translate }}
-                </label>
+
                 <div
                   *ngIf="phone.touched && phone.invalid"
                   class="invalid-feedback"
                 >
                   <div *ngIf="phone.errors.required">
-                      {{ 'resources.account.share.validation.phone.required' | translate }}
+                    {{
+                      "resources.account.share.validation.phone.required"
+                        | translate
+                    }}
                   </div>
                   <div *ngIf="phone.errors.validatePhone">
-                      {{ 'resources.account.share.validation.phone.wrongformat' | translate }}
+                    {{
+                      "resources.account.share.validation.phone.wrongformat"
+                        | translate
+                    }}
                   </div>
                 </div>
               </div>
@@ -55,6 +62,9 @@
 
             <div class="form-group">
               <div class="md-form">
+                <label for="password">
+                  {{ "resources.account.register.field.password" | translate }}
+                </label>
                 <input
                   type="password"
                   name="password"
@@ -68,18 +78,22 @@
                   required
                   minlength="6"
                 />
-                <label for="password">
-                  {{ 'resources.account.register.field.password' | translate }}
-                </label>
+
                 <div
                   *ngIf="password.touched && password.invalid"
                   class="invalid-feedback"
                 >
                   <div *ngIf="password.errors.required">
-                    {{ 'resources.account.share.validation.password.required' | translate }}
+                    {{
+                      "resources.account.share.validation.password.required"
+                        | translate
+                    }}
                   </div>
                   <div *ngIf="password.errors.minlength">
-                    {{ 'resources.account.share.validation.password.minlength' | translate }}
+                    {{
+                      "resources.account.share.validation.password.minlength"
+                        | translate
+                    }}
                   </div>
                 </div>
               </div>
@@ -87,6 +101,12 @@
 
             <div class="form-group">
               <div class="md-form">
+                <label for="confirmPassword">
+                  {{
+                    "resources.account.register.field.confirmpassword"
+                      | translate
+                  }}
+                </label>
                 <input
                   type="password"
                   name="confirmPassword"
@@ -101,21 +121,28 @@
                   required
                   minlength="6"
                 />
-                <label for="confirmPassword">
-                  {{ 'resources.account.register.field.confirmpassword' | translate }}
-                </label>
+
                 <div
                   *ngIf="confirmPassword.touched && confirmPassword.invalid"
                   class="invalid-feedback"
                 >
                   <div *ngIf="confirmPassword.errors.required">
-                    {{ 'resources.account.share.validation.confirmpassword.required' | translate }}
+                    {{
+                      "resources.account.share.validation.confirmpassword.required"
+                        | translate
+                    }}
                   </div>
                   <div *ngIf="confirmPassword.errors.minlength">
-                    {{ 'resources.account.share.validation.confirmpassword.minlength' | translate }}
+                    {{
+                      "resources.account.share.validation.confirmpassword.minlength"
+                        | translate
+                    }}
                   </div>
                   <div *ngIf="confirmPassword.errors.mustMatch">
-                    {{ 'resources.account.share.validation.confirmpassword.notequal' | translate }}
+                    {{
+                      "resources.account.share.validation.confirmpassword.notequal"
+                        | translate
+                    }}
                   </div>
                 </div>
               </div>

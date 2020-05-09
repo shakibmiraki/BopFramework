@@ -1,69 +1,69 @@
 /* You can add global styles to this file, and also import other style files */
-@import '~@angular/material/prebuilt-themes/indigo-pink.css';
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
 
 @font-face {
   font-family: Vazir;
-  src: url('../node_modules/vazir-font/dist/Vazir.eot');
-  src: url('../node_modules/vazir-font/dist/Vazir.eot?#iefix')
-      format('embedded-opentype'),
-    url('../node_modules/vazir-font/dist/Vazir.woff2') format('woff2'),
-    url('../node_modules/vazir-font/dist/Vazir.woff') format('woff'),
-    url('../node_modules/vazir-font/dist/Vazir.ttf') format('truetype');
+  src: url("../node_modules/vazir-font/dist/Vazir.eot");
+  src: url("../node_modules/vazir-font/dist/Vazir.eot?#iefix")
+      format("embedded-opentype"),
+    url("../node_modules/vazir-font/dist/Vazir.woff2") format("woff2"),
+    url("../node_modules/vazir-font/dist/Vazir.woff") format("woff"),
+    url("../node_modules/vazir-font/dist/Vazir.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
   font-family: Vazir;
-  src: url('../node_modules/vazir-font/dist/Vazir-Bold.eot');
-  src: url('../node_modules/vazir-font/dist/Vazir-Bold.eot?#iefix')
-      format('embedded-opentype'),
-    url('../node_modules/vazir-font/dist/Vazir-Bold.woff2') format('woff2'),
-    url('../node_modules/vazir-font/dist/Vazir-Bold.woff') format('woff'),
-    url('../node_modules/vazir-font/dist/Vazir-Bold.ttf') format('truetype');
+  src: url("../node_modules/vazir-font/dist/Vazir-Bold.eot");
+  src: url("../node_modules/vazir-font/dist/Vazir-Bold.eot?#iefix")
+      format("embedded-opentype"),
+    url("../node_modules/vazir-font/dist/Vazir-Bold.woff2") format("woff2"),
+    url("../node_modules/vazir-font/dist/Vazir-Bold.woff") format("woff"),
+    url("../node_modules/vazir-font/dist/Vazir-Bold.ttf") format("truetype");
   font-weight: bold;
   font-style: normal;
 }
 @font-face {
   font-family: Vazir;
-  src: url('../node_modules/vazir-font/dist/Vazir-Black.eot');
-  src: url('../node_modules/vazir-font/dist/Vazir-Black.eot?#iefix')
-      format('embedded-opentype'),
-    url('../node_modules/vazir-font/dist/Vazir-Black.woff2') format('woff2'),
-    url('../node_modules/vazir-font/dist/Vazir-Black.woff') format('woff'),
-    url('../node_modules/vazir-font/dist/Vazir-Black.ttf') format('truetype');
+  src: url("../node_modules/vazir-font/dist/Vazir-Black.eot");
+  src: url("../node_modules/vazir-font/dist/Vazir-Black.eot?#iefix")
+      format("embedded-opentype"),
+    url("../node_modules/vazir-font/dist/Vazir-Black.woff2") format("woff2"),
+    url("../node_modules/vazir-font/dist/Vazir-Black.woff") format("woff"),
+    url("../node_modules/vazir-font/dist/Vazir-Black.ttf") format("truetype");
   font-weight: 900;
   font-style: normal;
 }
 @font-face {
   font-family: Vazir;
-  src: url('../node_modules/vazir-font/dist/Vazir-Medium.eot');
-  src: url('../node_modules/vazir-font/dist/Vazir-Medium.eot?#iefix')
-      format('embedded-opentype'),
-    url('../node_modules/vazir-font/dist/Vazir-Medium.woff2') format('woff2'),
-    url('../node_modules/vazir-font/dist/Vazir-Medium.woff') format('woff'),
-    url('../node_modules/vazir-font/dist/Vazir-Medium.ttf') format('truetype');
+  src: url("../node_modules/vazir-font/dist/Vazir-Medium.eot");
+  src: url("../node_modules/vazir-font/dist/Vazir-Medium.eot?#iefix")
+      format("embedded-opentype"),
+    url("../node_modules/vazir-font/dist/Vazir-Medium.woff2") format("woff2"),
+    url("../node_modules/vazir-font/dist/Vazir-Medium.woff") format("woff"),
+    url("../node_modules/vazir-font/dist/Vazir-Medium.ttf") format("truetype");
   font-weight: 500;
   font-style: normal;
 }
 @font-face {
   font-family: Vazir;
-  src: url('../node_modules/vazir-font/dist/Vazir-Light.eot');
-  src: url('../node_modules/vazir-font/dist/Vazir-Light.eot?#iefix')
-      format('embedded-opentype'),
-    url('../node_modules/vazir-font/dist/Vazir-Light.woff2') format('woff2'),
-    url('../node_modules/vazir-font/dist/Vazir-Light.woff') format('woff'),
-    url('../node_modules/vazir-font/dist/Vazir-Light.ttf') format('truetype');
+  src: url("../node_modules/vazir-font/dist/Vazir-Light.eot");
+  src: url("../node_modules/vazir-font/dist/Vazir-Light.eot?#iefix")
+      format("embedded-opentype"),
+    url("../node_modules/vazir-font/dist/Vazir-Light.woff2") format("woff2"),
+    url("../node_modules/vazir-font/dist/Vazir-Light.woff") format("woff"),
+    url("../node_modules/vazir-font/dist/Vazir-Light.ttf") format("truetype");
   font-weight: 300;
   font-style: normal;
 }
 @font-face {
   font-family: Vazir;
-  src: url('../node_modules/vazir-font/dist/Vazir-Thin.eot');
-  src: url('../node_modules/vazir-font/dist/Vazir-Thin.eot?#iefix')
-      format('embedded-opentype'),
-    url('../node_modules/vazir-font/dist/Vazir-Thin.woff2') format('woff2'),
-    url('../node_modules/vazir-font/dist/Vazir-Thin.woff') format('woff'),
-    url('../node_modules/vazir-font/dist/Vazir-Thin.ttf') format('truetype');
+  src: url("../node_modules/vazir-font/dist/Vazir-Thin.eot");
+  src: url("../node_modules/vazir-font/dist/Vazir-Thin.eot?#iefix")
+      format("embedded-opentype"),
+    url("../node_modules/vazir-font/dist/Vazir-Thin.woff2") format("woff2"),
+    url("../node_modules/vazir-font/dist/Vazir-Thin.woff") format("woff"),
+    url("../node_modules/vazir-font/dist/Vazir-Thin.ttf") format("truetype");
   font-weight: 100;
   font-style: normal;
 }
@@ -84,7 +84,7 @@ label,
 div,
 input,
 th {
-  font-family: 'Vazir' !important;
+  font-family: "Vazir" !important;
 }
 
 button:focus {
@@ -138,12 +138,12 @@ input:-webkit-autofill:focus {
   direction: ltr;
 }
 
-[dir='rtl'] .md-form label {
+[dir="rtl"] .md-form label {
   left: unset !important;
   right: 0 !important;
 }
 
-[dir='rtl'] .mat-dialog-title {
+[dir="rtl"] .mat-dialog-title {
   text-align: right;
 }
 .btn-rounded {
@@ -166,50 +166,11 @@ input:-webkit-autofill:focus {
   color: #3a3a3a !important;
 }
 
-.paper-background {
-  background: rgb(255, 255, 255) url(./assets/paper_texture.png) repeat scroll
-    0px 0px / auto padding-box border-box !important;
-}
-.paper-background .card {
-  background-color: #ffffff17 !important;
-}
-
-.paper-background::after {
-  background-position: 0px 0px;
-  bottom: -8px;
-  color: rgb(102, 102, 102);
-  height: 10px;
-  left: 0px;
-  position: absolute;
-  width: 100%;
-  perspective-origin: 144px 5px;
-  transform-origin: 144px 5px;
-  content: ' ';
-  background: rgba(0, 0, 0, 0)
-    url(https://static.licdn.com/scds/common/u/images/apps/payments/textures/texture_paper_zigzag_288x18_v1.png)
-    repeat-x scroll 0px 0px / auto padding-box border-box;
-}
-.paper-background::before {
-  background-position: 0px 0px;
-  bottom: -8px;
-  color: rgb(102, 102, 102);
-  height: 10px;
-  left: 0px;
-  position: absolute;
-  width: 100%;
-  perspective-origin: 144px 5px;
-  transform-origin: 144px 5px;
-  content: ' ';
-  background: rgba(0, 0, 0, 0)
-    url(https://static.licdn.com/scds/common/u/images/apps/payments/textures/texture_paper_zigzag_288x18_v1.png)
-    repeat-x scroll 0px 0px / auto padding-box border-box;
-}
-
 dp-date-picker {
   width: 100%;
 }
-dp-date-picker.dp-material .dp-picker-input{
-  width:100% !important;
+dp-date-picker.dp-material .dp-picker-input {
+  width: 100% !important;
 }
 
 // sepah custom colors
@@ -220,8 +181,8 @@ dp-date-picker.dp-material .dp-picker-input{
 .mat-drawer-container app-header .active {
   background-color: #353434;
 }
-.bank-gradient {
-  background: linear-gradient(40deg, #fdc830, #f37335) !important;
+.peach-gradient {
+  background: linear-gradient(40deg, #ffc00c, #f37335) !important;
 }
 .mat-fab.mat-primary,
 .mat-flat-button.mat-primary,
