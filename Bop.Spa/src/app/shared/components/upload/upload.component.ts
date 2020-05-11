@@ -1,4 +1,4 @@
-import { FileService } from './../core/services/file.service';
+import { FileService } from '../../../core/services/file.service';
 import { Component, OnInit, Input } from '@angular/core';
 import { HttpEventType, HttpClient } from '@angular/common/http';
 import { finalize } from 'rxjs/operators';

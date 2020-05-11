@@ -22,8 +22,8 @@ import {
 import { MatProgressButtonsModule } from 'mat-progress-buttons';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { UploadComponent } from '../upload/upload.component';
-import { SpinnerComponent } from '../spinner/spinner.component';
+import { UploadComponent } from './components/upload/upload.component';
+import { SpinnerComponent } from './components/spinner/spinner.component';
 import { toJalaaliPipe, formatJalaaliPipe } from './pipes/moment-jalaali.pipe';
 import { formatTimePipe } from './pipes/time.pipe';
 import { CountdownModule } from 'ngx-countdown';
