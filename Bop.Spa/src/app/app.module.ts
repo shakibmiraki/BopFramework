@@ -12,9 +12,9 @@ import { AppRoutes } from "./app-routing";
 import { AppComponent } from "./app.component";
 import { TranslateModule, TranslateLoader } from "@ngx-translate/core";
 import { AuthenticationModule } from "./authentication/authentication.module";
-import { HeaderComponent } from "./header/header.component";
+import { HeaderComponent } from "./shared/components/header/header.component";
 import { SidenavListComponent } from "./dashboard/navigation/sidenav-list/sidenav-list.component";
-import { PageNotFoundComponent } from './shared/components/page-not-found/page-not-found.component';
+import { PageNotFoundComponent } from "./shared/components/page-not-found/page-not-found.component";
 
 import { RouterModule } from "@angular/router";
 
@@ -27,7 +27,7 @@ import { RouterModule } from "@angular/router";
     PageNotFoundComponent,
   ],
   imports: [
-  BrowserModule,
+    BrowserModule,
     BrowserAnimationsModule,
     FormsModule,
     HttpClientModule,

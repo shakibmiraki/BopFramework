@@ -6,7 +6,7 @@
   </div>
   <!-- <button mat-button routerLink="/home">Home</button> -->
   <button mat-button routerLink="/home" routerLinkActive="active">
-    {{ 'resources.app.header.menu.home' | translate }}
+    {{ "resources.app.header.menu.home" | translate }}
   </button>
   <button
     mat-button
@@ -14,7 +14,7 @@
     routerLink="/login"
     routerLinkActive="active"
   >
-    {{ 'resources.app.header.menu.login' | translate }}
+    {{ "resources.app.header.menu.login" | translate }}
   </button>
   <button
     mat-button
@@ -22,7 +22,15 @@
     routerLink="/register"
     routerLinkActive="active"
   >
-    {{ 'resources.app.header.menu.register' | translate }}
+    {{ "resources.app.header.menu.register" | translate }}
+  </button>
+  <button
+    mat-button
+    *ShowToAuthUser="true"
+    routerLink="/dashboard"
+    routerLinkActive="active"
+  >
+    {{ "resources.app.header.menu.dashboard" | translate }}
   </button>
   <button
     mat-button
@@ -30,6 +38,6 @@
     (click)="logout()"
     routerLinkActive="active"
   >
-    {{ 'resources.app.header.menu.logout' | translate }}
+    {{ "resources.app.header.menu.logout" | translate }}
   </button>
 </mat-toolbar>

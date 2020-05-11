@@ -42,6 +42,7 @@
     "app.header.menu.home": "خانه",
     "app.header.menu.login": "ورود",
     "app.header.menu.logout": "خروج",
+    "app.header.menu.dashboard": "داشبورد",
     "app.header.menu.register": "عضویت",
     "app.home.field.loginbutton": "ورود",
     "app.home.field.registerbutton": "عضویت",
