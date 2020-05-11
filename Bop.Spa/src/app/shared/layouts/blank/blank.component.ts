@@ -3,10 +3,10 @@ import * as AOS from 'aos';
 
 @Component({
   selector: 'app-home',
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+  templateUrl: './blank.component.html',
+  styleUrls: ['./blank.component.scss']
 })
-export class HomeComponent implements OnInit {
+export class BlankComponent implements OnInit {
   ngOnInit(): void {
     AOS.init({
       duration: 900,

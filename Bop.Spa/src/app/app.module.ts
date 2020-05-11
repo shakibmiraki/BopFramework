@@ -3,7 +3,7 @@ import { AuthGuard } from "./core/services/auth.guard";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { CoreModule } from "./core/core.module";
 import { SharedModule, HttpLoaderFactory } from "./shared/shared.module";
-import { HomeComponent } from "./home/home.component";
+import { BlankComponent } from "./shared/layouts/blank/blank.component";
 import { BrowserModule } from "@angular/platform-browser";
 import { NgModule } from "@angular/core";
 import { FormsModule } from "@angular/forms";
@@ -14,19 +14,20 @@ import { TranslateModule, TranslateLoader } from "@ngx-translate/core";
 import { AuthenticationModule } from "./authentication/authentication.module";
 import { HeaderComponent } from "./header/header.component";
 import { SidenavListComponent } from "./dashboard/navigation/sidenav-list/sidenav-list.component";
-import { PageNotFoundComponent } from "./page-not-found/page-not-found.component";
+import { PageNotFoundComponent } from './shared/components/page-not-found/page-not-found.component';
+
 import { RouterModule } from "@angular/router";
 
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent,
+    BlankComponent,
     HeaderComponent,
     SidenavListComponent,
     PageNotFoundComponent,
   ],
   imports: [
-    BrowserModule,
+  BrowserModule,
     BrowserAnimationsModule,
     FormsModule,
     HttpClientModule,

@@ -1,21 +1,21 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { HomeComponent } from './home/home.component';
-import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
+import { BlankComponent } from './shared/layouts/blank/blank.component';
+import { PageNotFoundComponent } from './shared/components/page-not-found/page-not-found.component';
+
 
 
 export const AppRoutes: Routes = [
 
   {
     path: 'home',
-    component: HomeComponent
+    component: BlankComponent
   },
   {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full'
   },
-
   // {
   //   path: '',
   //   component: FullComponent,
