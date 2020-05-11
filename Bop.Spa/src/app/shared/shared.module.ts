@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule, HttpClient } from '@angular/common/http';
 
 import { myFocus } from './directives/focus.directive';
-import { ButtonSpinnerComponent } from '../button-spinner/button-spinner.component';
+import { ButtonSpinnerComponent } from './components/button-spinner/button-spinner.component';
 import { PhoneValidator } from './directives/phone.validator.directive';
 import { MustMatchValidator } from './directives/must-match.directive';
 import { EmailValidator } from './directives/email.validator.directive';
@@ -24,7 +24,6 @@ import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { UploadComponent } from '../upload/upload.component';
 import { SpinnerComponent } from '../spinner/spinner.component';
-import { InfiniteScrollComponent } from '../infinite-scroll/infinite-scroll.component';
 import { toJalaaliPipe, formatJalaaliPipe } from './pipes/moment-jalaali.pipe';
 import { formatTimePipe } from './pipes/time.pipe';
 import { CountdownModule } from 'ngx-countdown';
@@ -61,7 +60,6 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     ButtonSpinnerComponent,
     SpinnerComponent,
     UploadComponent,
-    InfiniteScrollComponent,
     toJalaaliPipe,
     formatJalaaliPipe,
     formatTimePipe
@@ -80,7 +78,6 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     ButtonSpinnerComponent,
     SpinnerComponent,
     UploadComponent,
-    InfiniteScrollComponent,
     toJalaaliPipe,
     formatJalaaliPipe,
     formatTimePipe,
