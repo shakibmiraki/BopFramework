@@ -1,52 +1,51 @@
-import { LocalizationComponent } from './localization/localization.component';
-import { RouterModule } from '@angular/router';
-import { ModuleWithProviders } from '@angular/core';
-import { HomeComponent } from './home/home.component';
-import { AuthGuard } from '../core/services/auth.guard';
-import { RootComponent } from './root/root.component';
-import { AuthGuardPermission } from '../core/models/auth-guard-permission';
+import { LocalizationComponent } from "./localization/localization.component";
+import { Routes } from "@angular/router";
+import { HomeComponent } from "./home/home.component";
+import { AuthGuard } from "../core/services/auth.guard";
+import { RootComponent } from "./root/root.component";
+import { AuthGuardPermission } from "../core/models/auth-guard-permission";
 
-export const routing: ModuleWithProviders = RouterModule.forChild([
+export const DashboardRoutes: Routes = [
   {
-    path: 'dashboard',
+    path: "dashboard",
     component: RootComponent,
     data: {
       permission: {
-        permittedRoles: ['Registered']
-      } as AuthGuardPermission
+        permittedRoles: ["Registered"],
+      } as AuthGuardPermission,
     },
     canActivate: [AuthGuard],
     children: [
       {
-        path: '',
+        path: "",
         component: HomeComponent,
         data: {
           permission: {
-            permittedRoles: ['Registered']
-          } as AuthGuardPermission
+            permittedRoles: ["Registered"],
+          } as AuthGuardPermission,
         },
-        canActivate: [AuthGuard]
+        canActivate: [AuthGuard],
       },
       {
-        path: 'home',
+        path: "home",
         component: HomeComponent,
         data: {
           permission: {
-            permittedRoles: ['Registered']
-          } as AuthGuardPermission
+            permittedRoles: ["Registered"],
+          } as AuthGuardPermission,
         },
-        canActivate: [AuthGuard]
+        canActivate: [AuthGuard],
       },
       {
-        path: 'localization',
+        path: "localization",
         component: LocalizationComponent,
         data: {
           permission: {
-            permittedRoles: ['Administrators']
-          } as AuthGuardPermission
+            permittedRoles: ["Administrators"],
+          } as AuthGuardPermission,
         },
-        canActivate: [AuthGuard]
-      }
-    ]
-  }
-]);
+        canActivate: [AuthGuard],
+      },
+    ],
+  },
+];
