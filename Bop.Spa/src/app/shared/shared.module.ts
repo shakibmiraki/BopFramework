@@ -1,52 +1,57 @@
-import { MaxValueDirective } from './directives/max-value.validator.directive';
-import { MinValueDirective } from './directives/min-value.validator.directive';
-
-import { MaterialModule } from './material-module';
-import {
-  NgModule,
-  ModuleWithProviders,
-  CUSTOM_ELEMENTS_SCHEMA
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
-
-import { myFocus } from './directives/focus.directive';
-import { ButtonSpinnerComponent } from './components/button-spinner/button-spinner.component';
-import { PhoneValidator } from './directives/phone.validator.directive';
-import { MustMatchValidator } from './directives/must-match.directive';
-import { EmailValidator } from './directives/email.validator.directive';
+import { MaxValueDirective } from "./directives/max-value.validator.directive";
+import { MinValueDirective } from "./directives/min-value.validator.directive";
+import { MaterialModule } from "./material-module";
+import { NgModule } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { HttpClientModule, HttpClient } from "@angular/common/http";
+import { myFocus } from "./directives/focus.directive";
+import { ButtonSpinnerComponent } from "./components/button-spinner/button-spinner.component";
+import { PhoneValidator } from "./directives/phone.validator.directive";
+import { MustMatchValidator } from "./directives/must-match.directive";
+import { EmailValidator } from "./directives/email.validator.directive";
 import {
   IsAuthorizedDirective,
-  ShowToAuthUserDirective
-} from './directives/user.validator.directive';
-import { MatProgressButtonsModule } from 'mat-progress-buttons';
-import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
-import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { UploadComponent } from './components/upload/upload.component';
-import { SpinnerComponent } from './components/spinner/spinner.component';
-import { toJalaaliPipe, formatJalaaliPipe } from './pipes/moment-jalaali.pipe';
-import { formatTimePipe } from './pipes/time.pipe';
-import { CountdownModule } from 'ngx-countdown';
+  ShowToAuthUserDirective,
+} from "./directives/user.validator.directive";
+import { MatProgressButtonsModule } from "mat-progress-buttons";
+import { TranslateModule, TranslateLoader } from "@ngx-translate/core";
+import { TranslateHttpLoader } from "@ngx-translate/http-loader";
+import { UploadComponent } from "./components/upload/upload.component";
+import { SpinnerComponent } from "./components/spinner/spinner.component";
+import { toJalaaliPipe, formatJalaaliPipe } from "./pipes/moment-jalaali.pipe";
+import { formatTimePipe } from "./pipes/time.pipe";
+import { CountdownModule } from "ngx-countdown";
+import { TextMaskModule } from "angular2-text-mask";
+import { FullComponent } from "./layouts/full/full.component";
+import { BlankComponent } from "./layouts/blank/blank.component";
+import { HeaderComponent } from "./components/header/header.component";
+import { PageNotFoundComponent } from "./components/page-not-found/page-not-found.component";
+import { FormsModule } from "@angular/forms";
+import { RouterModule } from "@angular/router";
+import { SidenavListComponent } from "./components/sidenav-list/sidenav-list.component";
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(httpClient: HttpClient) {
   return new TranslateHttpLoader(httpClient);
 }
+
 @NgModule({
   imports: [
-
-  CommonModule,
+    CommonModule,
     HttpClientModule,
+    FormsModule,
+    RouterModule,
     MaterialModule,
     MatProgressButtonsModule,
+    TextMaskModule,
     CountdownModule,
-    TranslateModule.forChild({
+    TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
         useFactory: HttpLoaderFactory,
-        deps: [HttpClient]
-      }
-    })
+        deps: [HttpClient],
+      },
+    }),
   ],
   declarations: [
     myFocus,
@@ -62,7 +67,12 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     UploadComponent,
     toJalaaliPipe,
     formatJalaaliPipe,
-    formatTimePipe
+    formatTimePipe,
+    FullComponent,
+    BlankComponent,
+    HeaderComponent,
+    PageNotFoundComponent,
+    SidenavListComponent,
   ],
   exports: [
     myFocus,
@@ -82,18 +92,14 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     formatJalaaliPipe,
     formatTimePipe,
     CountdownModule,
-    TranslateModule
+    TextMaskModule,
+    FullComponent,
+    BlankComponent,
+    HeaderComponent,
+    TranslateModule,
+    PageNotFoundComponent,
+    FormsModule,
   ],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  // schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
-export class SharedModule {
-  static forRoot(): ModuleWithProviders<SharedModule> {
-    // Forcing the whole app to use the returned providers from the AppModule only.
-    return {
-      ngModule: SharedModule,
-      providers: [
-        /* All of your services here. It will hold the services needed by `itself`. */
-      ]
-    };
-  }
-}
+export class SharedModule {}

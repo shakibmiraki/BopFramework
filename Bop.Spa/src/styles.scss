@@ -195,3 +195,19 @@ td.mat-cell:last-of-type img {
   width: 43px;
   padding: 7px;
 }
+
+.mat-drawer-container{
+  height: 100%;
+}
+
+.full-background-image{
+  background-image: url(./assets/bg-pattern.jpg);
+  background-size: cover;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: inline-block;
+  z-index: -1;
+}

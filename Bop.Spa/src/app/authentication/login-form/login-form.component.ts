@@ -28,6 +28,8 @@ export class LoginFormComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
 
+    console.log('login component loaded');
+    
     AOS.init({
       duration: 900,
       delay: 100,

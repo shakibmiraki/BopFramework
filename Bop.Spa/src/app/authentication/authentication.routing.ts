@@ -7,19 +7,24 @@ import { LoginFormComponent } from "./login-form/login-form.component";
 
 export const AuthenticationRoutes: Routes = [
   {
-    path: "register",
-    component: RegistrationFormComponent,
-  },
-  {
-    path: "login",
-    component: LoginFormComponent,
-  },
-  {
-    path: "activate",
-    component: ActivationFormComponent,
-  },
-  {
-    path: "access-denied",
-    component: AccessDeniedComponent,
+    path: "",
+    children: [
+      {
+        path: "login",
+        component: LoginFormComponent,
+      },
+      {
+        path: "register",
+        component: RegistrationFormComponent,
+      },
+      {
+        path: "activate",
+        component: ActivationFormComponent,
+      },
+      {
+        path: "access-denied",
+        component: AccessDeniedComponent,
+      },
+    ],
   },
 ];

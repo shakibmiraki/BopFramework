@@ -1,0 +1,16 @@
+.bg {
+  background-size: cover;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: inline-block;
+  z-index: -1;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url("/assets/bg-sepah.svg");
+}
+.mat-drawer {
+  width: 230px;
+}
