@@ -13,7 +13,7 @@
 - FluentMigration with data provider manager to implement multiple database easyly (mysql and mssql already have implemented)
 - IRoutePublisher to register routes dynamically
 
-## Front-End (Angular8,AngularMaterial) : 
+## Front-End (Angular9,AngularMaterial) : 
 - Login component
 - Register component
 - Account-Activation component
