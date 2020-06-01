@@ -108,7 +108,6 @@ export class UserService {
           this.refreshTokenService.unscheduleRefreshToken(true);
           this.authStatusSource.next(false);
           if (navigateToHome) {
-            this.router.navigate(["/"]);
             location.href = "/";
           }
         })

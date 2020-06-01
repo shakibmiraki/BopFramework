@@ -60,8 +60,7 @@ export class LoginFormComponent implements OnInit, OnDestroy {
       .pipe(finalize(() => (this.isRequesting = false)))
       .subscribe(isLoggedIn => {
         if (isLoggedIn) {
-          this.router.navigate(['/dashboard/home']);
-          // window.location.href = '/dashboard/home';
+          window.location.href = '/dashboard/home';
         }
       });
   }

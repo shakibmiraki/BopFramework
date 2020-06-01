@@ -3,7 +3,7 @@ import { MinValueDirective } from "./directives/min-value.validator.directive";
 import { MaterialModule } from "./material-module";
 import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { HttpClientModule, HttpClient } from "@angular/common/http";
+import { HttpClientModule } from "@angular/common/http";
 import { myFocus } from "./directives/focus.directive";
 import { ButtonSpinnerComponent } from "./components/button-spinner/button-spinner.component";
 import { PhoneValidator } from "./directives/phone.validator.directive";
@@ -14,8 +14,7 @@ import {
   ShowToAuthUserDirective,
 } from "./directives/user.validator.directive";
 import { MatProgressButtonsModule } from "mat-progress-buttons";
-import { TranslateModule, TranslateLoader } from "@ngx-translate/core";
-import { TranslateHttpLoader } from "@ngx-translate/http-loader";
+import { TranslateModule } from "@ngx-translate/core";
 import { UploadComponent } from "./components/upload/upload.component";
 import { SpinnerComponent } from "./components/spinner/spinner.component";
 import { toJalaaliPipe, formatJalaaliPipe } from "./pipes/moment-jalaali.pipe";
@@ -30,10 +29,6 @@ import { FormsModule } from "@angular/forms";
 import { RouterModule } from "@angular/router";
 import { SidenavListComponent } from "./components/sidenav-list/sidenav-list.component";
 
-// AoT requires an exported function for factories
-export function HttpLoaderFactory(httpClient: HttpClient) {
-  return new TranslateHttpLoader(httpClient);
-}
 
 @NgModule({
   imports: [
@@ -45,13 +40,7 @@ export function HttpLoaderFactory(httpClient: HttpClient) {
     MatProgressButtonsModule,
     TextMaskModule,
     CountdownModule,
-    TranslateModule.forRoot({
-      loader: {
-        provide: TranslateLoader,
-        useFactory: HttpLoaderFactory,
-        deps: [HttpClient],
-      },
-    }),
+    TranslateModule,
   ],
   declarations: [
     myFocus,

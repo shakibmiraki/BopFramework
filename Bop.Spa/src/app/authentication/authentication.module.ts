@@ -13,7 +13,7 @@ import { RouterModule } from "@angular/router";
   imports: [
     CommonModule,
     SharedModule,
-    RouterModule.forChild(AuthenticationRoutes)
+    RouterModule.forChild(AuthenticationRoutes),
   ],
   declarations: [
     RegistrationFormComponent,
