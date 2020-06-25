@@ -30,7 +30,6 @@ export class AuthInterceptor implements HttpInterceptor {
     const accessToken = this.tokenStoreService.getRawAuthToken(
       AuthTokenType.AccessToken
     );
-
     if (accessToken) {
       request = request.clone({
         headers: request.headers.set(

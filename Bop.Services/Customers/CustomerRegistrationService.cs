@@ -174,7 +174,7 @@ namespace Bop.Services.Customers
             //validate unique user
             if (_customerService.GetCustomerByPhone(request.Phone) != null)
             {
-                result.AddError(_localizationService.GetResource("Account.Register.Errors.EmailAlreadyExists"));
+                result.AddError(_localizationService.GetResource("Account.Register.Errors.PhoneAlreadyExists"));
                 return result;
             }
 

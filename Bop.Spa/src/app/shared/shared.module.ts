@@ -3,7 +3,6 @@ import { MinValueDirective } from "./directives/min-value.validator.directive";
 import { MaterialModule } from "./material-module";
 import { NgModule } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { HttpClientModule } from "@angular/common/http";
 import { myFocus } from "./directives/focus.directive";
 import { ButtonSpinnerComponent } from "./components/button-spinner/button-spinner.component";
 import { PhoneValidator } from "./directives/phone.validator.directive";
@@ -33,7 +32,6 @@ import { SidenavListComponent } from "./components/sidenav-list/sidenav-list.com
 @NgModule({
   imports: [
     CommonModule,
-    HttpClientModule,
     FormsModule,
     RouterModule,
     MaterialModule,

@@ -7,17 +7,6 @@ import { FullComponent } from "./shared/layouts/full/full.component";
 export const AppRoutes: Routes = [
   {
     path: "",
-    component: FullComponent,
-    children: [
-      {
-        path: "",
-        loadChildren: () =>
-          import("./dashboard/dashboard.module").then((m) => m.DashboardModule),
-      },
-    ],
-  },
-  {
-    path: "",
     component: BlankComponent,
     children: [
       {
@@ -26,6 +15,17 @@ export const AppRoutes: Routes = [
           import("./authentication/authentication.module").then(
             (m) => m.AuthenticationModule
           ),
+      },
+    ],
+  },
+  {
+    path: "",
+    component: FullComponent,
+    children: [
+      {
+        path: "",
+        loadChildren: () =>
+          import("./dashboard/dashboard.module").then((m) => m.DashboardModule),
       },
     ],
   },

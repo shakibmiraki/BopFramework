@@ -25,6 +25,7 @@ export const AuthenticationRoutes: Routes = [
         path: "access-denied",
         component: AccessDeniedComponent,
       },
+      
     ],
   },
 ];
