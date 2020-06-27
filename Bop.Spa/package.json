@@ -14,11 +14,13 @@
   "dependencies": {
     "@angular/animations": "^9.1.4",
     "@angular/cdk": "^9.2.2",
+    "@angular/cli": "^10.0.0",
     "@angular/common": "^9.1.4",
     "@angular/compiler": "^9.1.4",
     "@angular/core": "^9.1.4",
     "@angular/flex-layout": "^8.0.0-beta.27",
     "@angular/forms": "^9.1.4",
+    "@angular/localize": "^9.1.11",
     "@angular/material": "^9.2.2",
     "@angular/platform-browser": "^9.1.4",
     "@angular/platform-browser-dynamic": "^9.1.4",
@@ -42,7 +44,6 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^0.901.7",
-    "@angular/cli": "^9.1.4",
     "@angular/compiler-cli": "^9.1.4",
     "@angular/language-service": "^9.1.4",
     "@types/jasmine": "^3.3.16",
