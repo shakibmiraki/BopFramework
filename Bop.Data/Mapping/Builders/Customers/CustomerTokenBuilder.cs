@@ -6,7 +6,7 @@ namespace Bop.Data.Mapping.Builders.Customers
     /// <summary>
     /// Represents a customer token mapping configuration
     /// </summary>
-    public class CustomerTokenMap : BopEntityBuilder<CustomerToken>
+    public partial class CustomerTokenBuilder : BopEntityBuilder<CustomerToken>
     {
 
         #region Methods
