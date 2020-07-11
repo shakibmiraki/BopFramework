@@ -6,7 +6,7 @@ using Bop.Core.Caching;
 using Bop.Core.Domain.Common;
 using Bop.Core.Domain.Customers;
 using Bop.Data;
-using Bop.Services.Caching.CachingDefaults;
+using Bop.Services.Caching;
 using Bop.Services.Caching.Extensions;
 using Bop.Services.Common;
 using Bop.Services.Events;
@@ -22,7 +22,7 @@ namespace Bop.Services.Customers
         #region Fields
 
         private readonly CustomerSettings _customerSettings;
-        private readonly ICacheManager _cacheManager;
+        private readonly ICacheKeyService _cacheKeyService;
         private readonly IBopDataProvider _dataProvider;
         private readonly IEventPublisher _eventPublisher;
         private readonly IGenericAttributeService _genericAttributeService;
@@ -40,7 +40,7 @@ namespace Bop.Services.Customers
         #region Ctor
 
         public CustomerService(CustomerSettings customerSettings,
-            ICacheManager cacheManager,
+            ICacheKeyService cacheKeyService,
             IBopDataProvider dataProvider,
             IEventPublisher eventPublisher,
             IGenericAttributeService genericAttributeService,
@@ -53,7 +53,7 @@ namespace Bop.Services.Customers
             IHostedSiteContext hostedSiteContext)
         {
             _customerSettings = customerSettings;
-            _cacheManager = cacheManager;
+            _cacheKeyService = cacheKeyService;
             _dataProvider = dataProvider;
             _eventPublisher = eventPublisher;
             _genericAttributeService = genericAttributeService;
@@ -407,7 +407,7 @@ namespace Bop.Services.Customers
             if (string.IsNullOrWhiteSpace(systemName))
                 return null;
 
-            var key = BopCustomerServiceCachingDefaults.CustomerRolesBySystemNameCacheKey.FillCacheKey(systemName);
+            var key = _cacheKeyService.PrepareKeyForDefaultCache(BopCustomerServicesDefaults.CustomerRolesBySystemNameCacheKey, systemName);
 
             var query = from cr in _customerRoleRepository.Table
                         orderby cr.Id
@@ -435,9 +435,9 @@ namespace Bop.Services.Customers
                         (showHidden || cr.Active)
                         select cr.Id;
 
-            var key = BopCustomerServiceCachingDefaults.CustomerRoleIdsCacheKey.FillCacheKey(customer.Id, showHidden);
+            var key = _cacheKeyService.PrepareKeyForShortTermCache(BopCustomerServicesDefaults.CustomerRoleIdsCacheKey, customer, showHidden);
 
-            return _cacheManager.Get(key, () => query.ToArray());
+            return _staticCacheManager.Get(key, () => query.ToArray());
         }
 
         /// <summary>
@@ -457,9 +457,9 @@ namespace Bop.Services.Customers
                         (showHidden || cr.Active)
                         select cr;
 
-            var key = BopCustomerServiceCachingDefaults.CustomerRolesCacheKey.FillCacheKey(customer, showHidden);
+            var key = _cacheKeyService.PrepareKeyForShortTermCache(BopCustomerServicesDefaults.CustomerRolesCacheKey, customer, showHidden);
 
-            return _cacheManager.Get(key, () => query.ToList());
+            return _staticCacheManager.Get(key, () => query.ToList());
         }
 
         /// <summary>
@@ -469,7 +469,7 @@ namespace Bop.Services.Customers
         /// <returns>Customer roles</returns>
         public virtual IList<CustomerRole> GetAllCustomerRoles(bool showHidden = false)
         {
-            var key = BopCustomerServiceCachingDefaults.CustomerRolesAllCacheKey.FillCacheKey(showHidden);
+            var key = _cacheKeyService.PrepareKeyForDefaultCache(BopCustomerServicesDefaults.CustomerRolesAllCacheKey, showHidden);
 
             var query = from cr in _customerRoleRepository.Table
                         orderby cr.Name
@@ -647,8 +647,7 @@ namespace Bop.Services.Customers
             if (_customerSettings.PasswordLifetime == 0)
                 return false;
 
-            //cache result between HTTP requests
-            var cacheKey = BopCustomerServiceCachingDefaults.CustomerPasswordLifetimeCacheKey.FillCacheKey(customer);
+            var cacheKey = _cacheKeyService.PrepareKeyForShortTermCache(BopCustomerServicesDefaults.CustomerPasswordLifetimeCacheKey, customer);
 
             //get current password usage time
             var currentLifetime = _staticCacheManager.Get(cacheKey, () =>

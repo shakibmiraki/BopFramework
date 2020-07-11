@@ -7,6 +7,7 @@ using Bop.Core.Configuration;
 using Bop.Core.Domain.Localization;
 using Bop.Core.Domain.Security;
 
+
 namespace Bop.Services.Localization
 {
     /// <summary>
@@ -120,11 +121,12 @@ namespace Bop.Services.Localization
         /// <param name="settings">Settings</param>
         /// <param name="keySelector">Key selector</param>
         /// <param name="languageId">Language identifier</param>
+        /// <param name="storeId">Store identifier</param>
         /// <param name="returnDefaultValue">A value indicating whether to return default value (if localized is not found)</param>
         /// <param name="ensureTwoPublishedLanguages">A value indicating whether to ensure that we have at least two published languages; otherwise, load only default value</param>
         /// <returns>Localized property</returns>
         string GetLocalizedSetting<TSettings>(TSettings settings, Expression<Func<TSettings, string>> keySelector,
-            int languageId, bool returnDefaultValue = true, bool ensureTwoPublishedLanguages = true)
+            int languageId, int storeId, bool returnDefaultValue = true, bool ensureTwoPublishedLanguages = true)
             where TSettings : ISettings, new();
 
         /// <summary>
@@ -169,9 +171,41 @@ namespace Bop.Services.Localization
         /// <param name="permissionRecord">Permission record</param>
         void DeleteLocalizedPermissionName(PermissionRecord permissionRecord);
 
+        /// <summary>
+        /// Add a locale resource (if new) or update an existing one
+        /// </summary>
+        /// <param name="resourceName">Resource name</param>
+        /// <param name="resourceValue">Resource value</param>
+        /// <param name="languageCulture">Language culture code. If null or empty, then a resource will be added for all languages</param>
+        void AddOrUpdatePluginLocaleResource(string resourceName, string resourceValue, string languageCulture = null);
+
+        /// <summary>
+        /// Add locale resources
+        /// </summary>
+        /// <param name="resources">Resource name-value pairs</param>
+        /// <param name="languageId">Language identifier; pass null to add the passed resources for all languages</param>
+        void AddPluginLocaleResource(IDictionary<string, string> resources, int? languageId = null);
+
+        /// <summary>
+        /// Delete a locale resource
+        /// </summary>
+        /// <param name="resourceName">Resource name</param>
+        void DeletePluginLocaleResource(string resourceName);
+
+        /// <summary>
+        /// Delete locale resources
+        /// </summary>
+        /// <param name="resourceNames">Resource names</param>
+        /// <param name="languageId">Language identifier; pass null to delete the passed resources from all languages</param>
+        void DeletePluginLocaleResources(IList<string> resourceNames, int? languageId = null);
+
+        /// <summary>
+        /// Delete locale resources by the passed name prefix
+        /// </summary>
+        /// <param name="resourceNamePrefix">Resource name prefix</param>
+        /// <param name="languageId">Language identifier; pass null to delete resources by prefix from all languages</param>
+        void DeletePluginLocaleResources(string resourceNamePrefix, int? languageId = null);
         string ExportResourcesToJson(Language language);
-
         void ImportResourcesFromJson(Language language, Dictionary<string, string> resources);
-
     }
 }

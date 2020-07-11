@@ -5,9 +5,9 @@ using Bop.Core;
 using Bop.Core.Domain.Customers;
 using Bop.Core.Domain.Logging;
 using Bop.Data;
+using Bop.Services.Caching;
 using Bop.Services.Caching.Extensions;
 using Bop.Services.Events;
-using Bop.Services.Caching.CachingDefaults;
 using Nop.Services.Logging;
 
 namespace Bop.Services.Logging
@@ -18,7 +18,7 @@ namespace Bop.Services.Logging
     public class CustomerActivityService : ICustomerActivityService
     {
         #region Fields
-
+        private readonly ICacheKeyService _cacheKeyService;
         private readonly IEventPublisher _eventPublisher;
         private readonly IRepository<ActivityLog> _activityLogRepository;
         private readonly IRepository<ActivityLogType> _activityLogTypeRepository;
@@ -29,12 +29,14 @@ namespace Bop.Services.Logging
 
         #region Ctor
 
-        public CustomerActivityService(IEventPublisher eventPublisher,
+        public CustomerActivityService(ICacheKeyService cacheKeyService, 
+            IEventPublisher eventPublisher,
             IRepository<ActivityLog> activityLogRepository,
             IRepository<ActivityLogType> activityLogTypeRepository,
             IWebHelper webHelper,
             IWorkContext workContext)
         {
+            _cacheKeyService = cacheKeyService;
             _eventPublisher = eventPublisher;
             _activityLogRepository = activityLogRepository;
             _activityLogTypeRepository = activityLogTypeRepository;
@@ -100,7 +102,7 @@ namespace Bop.Services.Logging
             var query = from alt in _activityLogTypeRepository.Table
                         orderby alt.Name
                         select alt;
-            var activityLogTypes = query.ToCachedList(BopLoggingCachingDefaults.ActivityTypeAllCacheKey);
+            var activityLogTypes = query.ToCachedList(_cacheKeyService.PrepareKeyForDefaultCache(BopLoggingDefaults.ActivityTypeAllCacheKey));
 
             return activityLogTypes;
         }

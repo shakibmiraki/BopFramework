@@ -1,8 +1,9 @@
 ﻿using Bop.Core.Domain.Customers;
-using Bop.Services.Caching.CachingDefaults;
+using Bop.Services.Caching;
 using Bop.Services.Events;
 
-namespace Bop.Services.Caching.CacheEventConsumers.Customers
+
+namespace Bop.Services.Customers.Caching
 {
     /// <summary>
     /// Represents a customer cache event consumer
@@ -17,7 +18,7 @@ namespace Bop.Services.Caching.CacheEventConsumers.Customers
         /// <param name="eventMessage">Event message</param>
         public void HandleEvent(CustomerPasswordChangedEvent eventMessage)
         {
-            Remove(BopCustomerServiceCachingDefaults.CustomerPasswordLifetimeCacheKey.FillCacheKey(eventMessage.Password.CustomerId));
+            Remove(_cacheKeyService.PrepareKey(BopCustomerServicesDefaults.CustomerPasswordLifetimeCacheKey, eventMessage.Password.CustomerId));
         }
 
         /// <summary>
@@ -26,8 +27,8 @@ namespace Bop.Services.Caching.CacheEventConsumers.Customers
         /// <param name="entity">Entity</param>
         protected override void ClearCache(Customer entity)
         {
-            RemoveByPrefix(BopCustomerServiceCachingDefaults.CustomerCustomerRolesPrefixCacheKey, false);
-            RemoveByPrefix(BopCustomerServiceCachingDefaults.CustomerAddressesPrefixCacheKey, false);
+            RemoveByPrefix(BopCustomerServicesDefaults.CustomerCustomerRolesPrefixCacheKey);
+            RemoveByPrefix(BopCustomerServicesDefaults.CustomerAddressesPrefixCacheKey);
         }
 
         #endregion

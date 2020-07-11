@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Transactions;
-using Bop.Core;
 using LinqToDB;
 using LinqToDB.Data;
+using Bop.Core;
 
 namespace Bop.Data
 {
@@ -121,7 +121,7 @@ namespace Bop.Data
 
             _dataProvider.DeleteEntity(entity);
         }
-        
+
 
         /// <summary>
         /// Delete entities

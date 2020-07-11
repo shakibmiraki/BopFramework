@@ -1,4 +1,6 @@
-﻿namespace Bop.Services.Common
+﻿using Bop.Core.Caching;
+
+namespace Bop.Services.Common
 {
     /// <summary>
     /// Represents default values related to common services
@@ -15,12 +17,9 @@
         /// {0} : entity ID
         /// {1} : key group
         /// </remarks>
-        public static string GenericAttributeCacheKey => "Bop.genericattribute.{0}-{1}";
+        public static CacheKey GenericAttributeCacheKey => new CacheKey("Bop.genericattribute.{0}-{1}");
 
-        /// <summary>
-        /// Gets a key pattern to clear cache
-        /// </summary>
-        public static string GenericAttributePrefixCacheKey => "Bop.genericattribute.";
+
 
         #endregion
 

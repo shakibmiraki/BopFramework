@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using LinqToDB;
@@ -9,16 +10,16 @@ using LinqToDB.DataProvider;
 using LinqToDB.Mapping;
 using LinqToDB.Tools;
 using Bop.Core;
+using Bop.Core.Domain;
 using Bop.Core.Infrastructure;
 using Bop.Data.Mapping;
-using Bop.Data;
+using StackExchange.Profiling;
+using StackExchange.Profiling.Data;
 
 namespace Bop.Data
 {
     public abstract class BaseDataProvider
     {
-        public abstract IDbConnection CreateDbConnection(string connectionString = null);
-
         #region Utils
 
         private void UpdateParameterValue(DataConnection dataConnection, DataParameter parameter)
@@ -50,6 +51,13 @@ namespace Bop.Data
         }
 
         /// <summary>
+        /// Gets a connection to the database for a current data provider
+        /// </summary>
+        /// <param name="connectionString">Connection string</param>
+        /// <returns>Connection to a database</returns>
+        protected abstract IDbConnection GetInternalDbConnection(string connectionString);
+
+        /// <summary>
         /// Creates the database connection
         /// </summary>
         protected virtual DataConnection CreateDataConnection()
@@ -78,6 +86,25 @@ namespace Bop.Data
         #region Methods
 
         /// <summary>
+        /// Creates a connection to a database
+        /// </summary>
+        /// <param name="connectionString">Connection string</param>
+        /// <returns>Connection to a database</returns>
+        public virtual IDbConnection CreateDbConnection(string connectionString = null)
+        {
+            var dbConnection = GetInternalDbConnection(!string.IsNullOrEmpty(connectionString) ? connectionString : CurrentConnectionString);
+
+            if (!DataSettingsManager.DatabaseIsInstalled)
+                return dbConnection;
+
+            var hostedSiteSettings = EngineContext.Current.Resolve<HostedSiteInformationSettings>();
+
+            LinqToDB.Common.Configuration.AvoidSpecificDataProviderAPI = hostedSiteSettings.DisplayMiniProfilerInPublicStore;
+
+            return hostedSiteSettings.DisplayMiniProfilerInPublicStore ? new ProfiledDbConnection((DbConnection)dbConnection, MiniProfiler.Current) : dbConnection;
+        }
+
+        /// <summary>
         /// Returns mapped entity descriptor.
         /// </summary>
         /// <typeparam name="TEntity">Entity type</typeparam>
@@ -95,7 +122,7 @@ namespace Bop.Data
         /// <returns>Queryable source</returns>
         public virtual ITable<TEntity> GetTable<TEntity>() where TEntity : BaseEntity
         {
-            return new DataContext(LinqToDbDataProvider, CurrentConnectionString) {MappingSchema = AdditionalSchema}
+            return new DataContext(LinqToDbDataProvider, CurrentConnectionString) { MappingSchema = AdditionalSchema }
                 .GetTable<TEntity>();
         }
 
@@ -281,7 +308,7 @@ namespace Bop.Data
                     return Singleton<MappingSchema>.Instance;
 
                 Singleton<MappingSchema>.Instance =
-                    new MappingSchema(ConfigurationName) {MetadataReader = new FluentMigratorMetadataReader()};
+                    new MappingSchema(ConfigurationName) { MetadataReader = new FluentMigratorMetadataReader() };
 
                 return Singleton<MappingSchema>.Instance;
             }

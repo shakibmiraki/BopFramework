@@ -56,8 +56,6 @@ namespace Bop.Web.Framework.Infrastructure
             //repositories
             builder.RegisterGeneric(typeof(EntityRepository<>)).As(typeof(IRepository<>)).InstancePerLifetimeScope();
 
-            //cache manager
-            builder.RegisterType<PerRequestCacheManager>().As<ICacheManager>().InstancePerLifetimeScope();
 
             //redis connection wrapper
             if (config.RedisEnabled)

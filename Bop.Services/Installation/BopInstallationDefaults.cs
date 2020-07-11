@@ -10,20 +10,5 @@
         /// </summary>
         public static string InstallPath => "install";
 
-        /// <summary>
-        /// Gets a path to the localization resources file
-        /// </summary>
-        public static string LocalizationResourcesPath => "~/App_Data/Localization/";
-
-        /// <summary>
-        /// Gets a localization resources file extension
-        /// </summary>
-        public static string LocalizationResourcesFileExtension => "nopres.xml";
-
-        /// <summary>
-        /// Gets a path to the installation required data file
-        /// </summary>
-        public static string RequiredDataPath => "~/App_Data/Install/Fast/create_required_data.sql";
-
     }
 }

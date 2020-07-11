@@ -24,6 +24,7 @@ using System.Net;
 using Bop.Core.Security;
 using Microsoft.AspNetCore.DataProtection;
 using Bop.Core.Redis;
+using Newtonsoft.Json.Serialization;
 
 namespace Bop.Web.Framework.Infrastructure.Extensions
 {
@@ -89,7 +90,7 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
             var installationService = EngineContext.Current.Resolve<IInstallationService>();
             installationService.InstallRequiredData(dataSetting.Phone, dataSetting.Password);
 
-            dataSetting.IsDatabaseInstalled = true;
+            dataSetting.DatabaseInstalled = true;
             DataSettingsManager.SaveSettings(dataSetting);
         }
 
@@ -235,7 +236,7 @@ namespace Bop.Web.Framework.Infrastructure.Extensions
             services.AddRazorPages();
 
             //MVC now serializes JSON with camel case names by default, use this code to avoid it
-            //mvcBuilder.AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
+            mvcBuilder.AddNewtonsoftJson(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
 
 
             //add fluent validation

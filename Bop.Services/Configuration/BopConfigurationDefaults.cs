@@ -1,13 +1,14 @@
 ﻿using Bop.Core.Caching;
 
-
-namespace Bop.Services.Caching.CachingDefaults
+namespace Bop.Services.Configuration
 {
     /// <summary>
     /// Represents default values related to configuration services
     /// </summary>
-    public static partial class BopConfigurationCachingDefaults
+    public static partial class BopConfigurationDefaults
     {
+        #region Caching defaults
+
         /// <summary>
         /// Gets a key for caching
         /// </summary>
@@ -22,5 +23,7 @@ namespace Bop.Services.Caching.CachingDefaults
         /// Gets a key pattern to clear cache
         /// </summary>
         public static string SettingsPrefixCacheKey => "Bop.setting.";
+
+        #endregion
     }
 }

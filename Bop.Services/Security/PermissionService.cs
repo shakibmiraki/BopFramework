@@ -6,7 +6,7 @@ using Bop.Core.Caching;
 using Bop.Core.Domain.Customers;
 using Bop.Core.Domain.Security;
 using Bop.Data;
-using Bop.Services.Caching.CachingDefaults;
+using Bop.Services.Caching;
 using Bop.Services.Caching.Extensions;
 using Bop.Services.Customers;
 using Bop.Services.Events;
@@ -20,7 +20,7 @@ namespace Bop.Services.Security
     public partial class PermissionService : IPermissionService
     {
         #region Fields
-
+        private readonly ICacheKeyService _cacheKeyService;
         private readonly ICustomerService _customerService;
         private readonly IEventPublisher _eventPublisher;
         private readonly ILocalizationService _localizationService;
@@ -33,7 +33,8 @@ namespace Bop.Services.Security
 
         #region Ctor
 
-        public PermissionService(ICustomerService customerService,
+        public PermissionService(ICacheKeyService cacheKeyService, 
+            ICustomerService customerService,
             IEventPublisher eventPublisher,
             ILocalizationService localizationService,
             IRepository<PermissionRecord> permissionRecordRepository,
@@ -41,6 +42,7 @@ namespace Bop.Services.Security
             IStaticCacheManager staticCacheManager,
             IWorkContext workContext)
         {
+            _cacheKeyService = cacheKeyService;
             _customerService = customerService;
             _eventPublisher = eventPublisher;
             _localizationService = localizationService;
@@ -61,14 +63,14 @@ namespace Bop.Services.Security
         /// <returns>Permissions</returns>
         protected virtual IList<PermissionRecord> GetPermissionRecordsByCustomerRoleId(int customerRoleId)
         {
-            var key = BopSecurityCachingDefaults.PermissionsAllByCustomerRoleIdCacheKey.FillCacheKey(customerRoleId);
+            var key = _cacheKeyService.PrepareKeyForDefaultCache(BopSecurityDefaults.PermissionsAllByCustomerRoleIdCacheKey, customerRoleId);
 
             var query = from pr in _permissionRecordRepository.Table
-                join prcrm in _permissionRecordCustomerRoleMappingRepository.Table on pr.Id equals prcrm
-                    .PermissionRecordId
-                where prcrm.CustomerRoleId == customerRoleId
-                orderby pr.Id
-                select pr;
+                        join prcrm in _permissionRecordCustomerRoleMappingRepository.Table on pr.Id equals prcrm
+                            .PermissionRecordId
+                        where prcrm.CustomerRoleId == customerRoleId
+                        orderby pr.Id
+                        select pr;
 
             return query.ToCachedList(key);
         }
@@ -320,7 +322,8 @@ namespace Bop.Services.Security
             if (string.IsNullOrEmpty(permissionRecordSystemName))
                 return false;
 
-            var key = BopSecurityCachingDefaults.PermissionsAllowedCacheKey.FillCacheKey(permissionRecordSystemName, customerRoleId);
+            var key = _cacheKeyService.PrepareKeyForDefaultCache(BopSecurityDefaults.PermissionsAllowedCacheKey, permissionRecordSystemName, customerRoleId);
+
             return _staticCacheManager.Get(key, () =>
             {
                 var permissions = GetPermissionRecordsByCustomerRoleId(customerRoleId);

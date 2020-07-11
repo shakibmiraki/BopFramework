@@ -3,7 +3,6 @@ using Bop.Core.Caching;
 using Bop.Core.Configuration;
 using Bop.Core.Domain.Configuration;
 using Bop.Data;
-using Bop.Services.Caching.CachingDefaults;
 using Bop.Services.Caching.Extensions;
 using Bop.Services.Events;
 using System;
@@ -25,7 +24,7 @@ namespace Bop.Services.Configuration
 
         private readonly IEventPublisher _eventPublisher;
         private readonly IRepository<Setting> _settingRepository;
-        private readonly IStaticCacheManager _cacheManager;
+        private readonly IStaticCacheManager _staticCacheManager;
 
         #endregion
 
@@ -33,11 +32,11 @@ namespace Bop.Services.Configuration
 
         public SettingService(IEventPublisher eventPublisher,
             IRepository<Setting> settingRepository,
-            IStaticCacheManager cacheManager)
+            IStaticCacheManager staticCacheManager)
         {
             _eventPublisher = eventPublisher;
             _settingRepository = settingRepository;
-            _cacheManager = cacheManager;
+            _staticCacheManager = staticCacheManager;
         }
 
         #endregion
@@ -50,8 +49,9 @@ namespace Bop.Services.Configuration
         /// <returns>Settings</returns>
         protected virtual IDictionary<string, IList<Setting>> GetAllSettingsDictionary()
         {
-            //cache
-            return _cacheManager.Get(BopConfigurationCachingDefaults.SettingsAllAsDictionaryCacheKey, () =>
+            //we can not use ICacheKeyService because it'll cause circular references.
+            //that's why we use the default cache time
+            return _staticCacheManager.Get(BopConfigurationDefaults.SettingsAllAsDictionaryCacheKey, () =>
             {
                 var settings = GetAllSettings();
 
@@ -288,7 +288,7 @@ namespace Bop.Services.Configuration
                         orderby s.Name
                         select s;
 
-            var settings = query.ToCachedList(BopConfigurationCachingDefaults.SettingsAllCacheKey);
+            var settings = query.ToCachedList(BopConfigurationDefaults.SettingsAllCacheKey);
 
             return settings;
         }
@@ -464,7 +464,7 @@ namespace Bop.Services.Configuration
         /// </summary>
         public virtual void ClearCache()
         {
-            _cacheManager.RemoveByPrefix(BopConfigurationCachingDefaults.SettingsPrefixCacheKey);
+            _staticCacheManager.RemoveByPrefix(BopConfigurationDefaults.SettingsPrefixCacheKey);
         }
 
         /// <summary>

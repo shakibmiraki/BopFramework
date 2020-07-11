@@ -1,7 +1,7 @@
 ﻿using Bop.Core.Domain.Customers;
-using Bop.Services.Caching.CachingDefaults;
+using Bop.Services.Caching;
 
-namespace Bop.Services.Caching.CacheEventConsumers.Customers
+namespace Bop.Services.Customers.Caching
 {
     /// <summary>
     /// Represents a customer customer role mapping cache event consumer
@@ -14,7 +14,7 @@ namespace Bop.Services.Caching.CacheEventConsumers.Customers
         /// <param name="entity">Entity</param>
         protected override void ClearCache(CustomerCustomerRoleMapping entity)
         {
-            RemoveByPrefix(BopCustomerServiceCachingDefaults.CustomerCustomerRolesPrefixCacheKey, false);
+            RemoveByPrefix(BopCustomerServicesDefaults.CustomerCustomerRolesPrefixCacheKey);
         }
     }
 }

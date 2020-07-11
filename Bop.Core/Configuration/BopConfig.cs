@@ -37,5 +37,10 @@ namespace Bop.Core.Configuration
         /// </summary>
         public bool UseRedisForCaching { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether we should ignore Redis timeout exception (Enabling this setting increases cache stability but may decrease site performance)
+        /// </summary>
+        public bool IgnoreRedisTimeoutException { get; set; }
+
     }
 }

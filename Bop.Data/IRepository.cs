@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Bop.Core;
 using LinqToDB.Data;
+using Bop.Core;
 
 namespace Bop.Data
 {
@@ -95,7 +95,7 @@ namespace Bop.Data
         /// Gets a table
         /// </summary>
         IQueryable<TEntity> Table { get; }
-        
+
         #endregion
     }
 }

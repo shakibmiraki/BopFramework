@@ -128,7 +128,7 @@ namespace Bop.Services.Installation
             _languageRepository.Insert(languages);
         }
 
-        protected virtual void InstallCustomersAndCustomers(string defaultCustomerPhone, string defaultCustomerPassword)
+        protected virtual void InstallCustomersAndUsers(string defaultCustomerPhone, string defaultCustomerPassword)
         {
             var crAdministrators = new CustomerRole
             {
@@ -293,7 +293,7 @@ namespace Bop.Services.Installation
             InstallHostedSite();
             InstallLanguages();
             InstallSettings();
-            InstallCustomersAndCustomers(defaultCustomerPhone, defaultCustomerPassword);
+            InstallCustomersAndUsers(defaultCustomerPhone, defaultCustomerPassword);
             InstallScheduleTasks();
             InstallPermission();
         }

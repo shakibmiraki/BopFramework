@@ -6,7 +6,8 @@ using Bop.Core.Domain.Common;
 using Bop.Data;
 using Bop.Services.Caching.Extensions;
 using Bop.Services.Events;
-using Bop.Services.Caching.CachingDefaults;
+using Bop.Core.Infrastructure;
+using Bop.Services.Caching;
 
 namespace Bop.Services.Common
 {
@@ -136,12 +137,15 @@ namespace Bop.Services.Common
         /// <returns>Get attributes</returns>
         public virtual IList<GenericAttribute> GetAttributesForEntity(int entityId, string keyGroup)
         {
-            var key = BopCommonCachingDefaults.GenericAttributeCacheKey.FillCacheKey(entityId, keyGroup);
+            //we cannot inject ICacheKeyService into constructor because it'll cause circular references.
+            //that's why we resolve it here this way
+            var key = EngineContext.Current.Resolve<ICacheKeyService>()
+                .PrepareKeyForShortTermCache(BopCommonDefaults.GenericAttributeCacheKey, entityId, keyGroup);
 
             var query = from ga in _genericAttributeRepository.Table
-                where ga.EntityId == entityId &&
-                      ga.KeyGroup == keyGroup
-                select ga;
+                        where ga.EntityId == entityId &&
+                              ga.KeyGroup == keyGroup
+                        select ga;
             var attributes = query.ToCachedList(key);
 
             return attributes;

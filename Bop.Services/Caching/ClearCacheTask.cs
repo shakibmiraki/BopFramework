@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Bop.Core.Caching;
+﻿using Bop.Core.Caching;
 using Bop.Services.Tasks;
 
 namespace Bop.Services.Caching

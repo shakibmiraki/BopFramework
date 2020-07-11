@@ -3,7 +3,7 @@
     /// <summary>
     /// Represents default values related to caching
     /// </summary>
-    public static partial class NopCachingDefaults
+    public static partial class BopCachingDefaults
     {
         /// <summary>
         /// Gets the default cache time in minutes
@@ -17,6 +17,6 @@
         /// {0} : Entity type name
         /// {1} : Entity id
         /// </remarks>
-        public static string NopEntityCacheKey => "Nop.{0}.id-{1}";
+        public static string BopEntityCacheKey => "Bop.{0}.id-{1}";
     }
 }

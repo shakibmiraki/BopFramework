@@ -48,7 +48,7 @@ namespace Bop.Data
         /// <summary>
         /// Gets or sets a is database installed
         /// </summary>
-        public bool IsDatabaseInstalled { get; set; }
+        public bool DatabaseInstalled { get; set; }
 
         /// <summary>
         /// Gets or sets a phone
@@ -64,7 +64,7 @@ namespace Bop.Data
         /// Gets or sets a collation
         /// </summary>
         public string Collation { get; set; }
-        
+
 
         #endregion
     }

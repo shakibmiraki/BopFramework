@@ -5,7 +5,7 @@ using System.Linq;
 using Bop.Core.Caching;
 using Bop.Core.Domain.Localization;
 using Bop.Data;
-using Bop.Services.Caching.CachingDefaults;
+using Bop.Services.Caching;
 using Bop.Services.Caching.Extensions;
 using Bop.Services.Configuration;
 using Bop.Services.Events;
@@ -18,7 +18,7 @@ namespace Bop.Services.Localization
     public partial class LanguageService : ILanguageService
     {
         #region Fields
-
+        private readonly ICacheKeyService _cacheKeyService;
         private readonly IEventPublisher _eventPublisher;
         private readonly IRepository<Language> _languageRepository;
         private readonly ISettingService _settingService;
@@ -29,12 +29,14 @@ namespace Bop.Services.Localization
 
         #region Ctor
 
-        public LanguageService(IEventPublisher eventPublisher,
+        public LanguageService(ICacheKeyService cacheKeyService, 
+            IEventPublisher eventPublisher,
             IRepository<Language> languageRepository,
             ISettingService settingService,
             IStaticCacheManager cacheManager,
             LocalizationSettings localizationSettings)
         {
+            _cacheKeyService = cacheKeyService;
             _eventPublisher = eventPublisher;
             _languageRepository = languageRepository;
             _settingService = settingService;
@@ -54,13 +56,13 @@ namespace Bop.Services.Localization
         {
             if (language == null)
                 throw new ArgumentNullException(nameof(language));
-            
+
             //update default admin area language (if required)
             if (_localizationSettings.DefaultAdminLanguageId == language.Id)
             {
                 foreach (var activeLanguage in GetAllLanguages())
                 {
-                    if (activeLanguage.Id == language.Id) 
+                    if (activeLanguage.Id == language.Id)
                         continue;
 
                     _localizationSettings.DefaultAdminLanguageId = activeLanguage.Id;
@@ -70,7 +72,7 @@ namespace Bop.Services.Localization
             }
 
             _languageRepository.Delete(language);
-            
+
             //event notification
             _eventPublisher.EntityDeleted(language);
         }
@@ -88,18 +90,12 @@ namespace Bop.Services.Localization
             query = query.OrderBy(l => l.DisplayOrder).ThenBy(l => l.Id);
 
             //cacheable copy
-            var key = BopLocalizationCachingDefaults.LanguagesAllCacheKey.FillCacheKey(storeId, showHidden);
-            
+            var key = _cacheKeyService.PrepareKeyForDefaultCache(BopLocalizationDefaults.LanguagesAllCacheKey, storeId, showHidden);
+
             var languages = _cacheManager.Get(key, () =>
             {
                 var allLanguages = query.ToList();
-
-                //store mapping
-                if (storeId > 0)
-                {
-                    allLanguages = allLanguages
-                        .ToList();
-                }
+                allLanguages = allLanguages.ToList();
 
                 return allLanguages;
             });

@@ -7,7 +7,7 @@ using Bop.Core;
 using Bop.Core.Caching;
 using Bop.Core.Domain.Localization;
 using Bop.Data;
-using Bop.Services.Caching.CachingDefaults;
+using Bop.Services.Caching;
 using Bop.Services.Caching.Extensions;
 using Bop.Services.Events;
 
@@ -19,7 +19,7 @@ namespace Bop.Services.Localization
     public partial class LocalizedEntityService : ILocalizedEntityService
     {
         #region Fields
-
+        private readonly ICacheKeyService _cacheKeyService;
         private readonly IEventPublisher _eventPublisher;
         private readonly IRepository<LocalizedProperty> _localizedPropertyRepository;
         private readonly IStaticCacheManager _cacheManager;
@@ -29,11 +29,13 @@ namespace Bop.Services.Localization
 
         #region Ctor
 
-        public LocalizedEntityService(IEventPublisher eventPublisher,
+        public LocalizedEntityService(ICacheKeyService cacheKeyService,
+            IEventPublisher eventPublisher,
             IRepository<LocalizedProperty> localizedPropertyRepository,
             IStaticCacheManager cacheManager,
             LocalizationSettings localizationSettings)
         {
+            _cacheKeyService = cacheKeyService;
             _eventPublisher = eventPublisher;
             _localizedPropertyRepository = localizedPropertyRepository;
             _cacheManager = cacheManager;
@@ -73,13 +75,13 @@ namespace Bop.Services.Localization
         protected virtual IList<LocalizedProperty> GetAllLocalizedProperties()
         {
             var query = from lp in _localizedPropertyRepository.Table
-                select lp;
+                        select lp;
 
-            return query.ToCachedList(BopLocalizationCachingDefaults.LocalizedPropertyAllCacheKey);
+            return query.ToCachedList(_cacheKeyService.PrepareKeyForDefaultCache(BopLocalizationDefaults.LocalizedPropertyAllCacheKey));
         }
 
         #endregion
-        
+
         #region Methods
 
         /// <summary>
@@ -120,8 +122,9 @@ namespace Bop.Services.Localization
         /// <returns>Found localized value</returns>
         public virtual string GetLocalizedValue(int languageId, int entityId, string localeKeyGroup, string localeKey)
         {
-            var key = BopLocalizationCachingDefaults.LocalizedPropertyCacheKey
-                .FillCacheKey(languageId, entityId, localeKeyGroup, localeKey);
+
+            var key = _cacheKeyService.PrepareKeyForDefaultCache(BopLocalizationDefaults.LocalizedPropertyCacheKey
+                , languageId, entityId, localeKeyGroup, localeKey);
 
             return _cacheManager.Get(key, () =>
             {
@@ -132,11 +135,11 @@ namespace Bop.Services.Localization
                     : _localizedPropertyRepository.Table;
 
                 var query = from lp in source
-                    where lp.LanguageId == languageId &&
-                          lp.EntityId == entityId &&
-                          lp.LocaleKeyGroup == localeKeyGroup &&
-                          lp.LocaleKey == localeKey
-                    select lp.LocaleValue;
+                            where lp.LanguageId == languageId &&
+                                  lp.EntityId == entityId &&
+                                  lp.LocaleKeyGroup == localeKeyGroup &&
+                                  lp.LocaleKey == localeKey
+                            select lp.LocaleValue;
 
                 //little hack here. nulls aren't cacheable so set it to ""
                 var localeValue = query.FirstOrDefault() ?? string.Empty;

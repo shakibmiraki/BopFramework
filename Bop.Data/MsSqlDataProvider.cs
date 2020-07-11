@@ -75,13 +75,16 @@ namespace Bop.Data
         #region Methods
 
         /// <summary>
-        /// Creates a connection to a database
+        /// Gets a connection to the database for a current data provider
         /// </summary>
         /// <param name="connectionString">Connection string</param>
         /// <returns>Connection to a database</returns>
-        public override IDbConnection CreateDbConnection(string connectionString = null)
+        protected override IDbConnection GetInternalDbConnection(string connectionString)
         {
-            return new SqlConnection(!string.IsNullOrEmpty(connectionString) ? connectionString : CurrentConnectionString);
+            if (string.IsNullOrEmpty(connectionString))
+                throw new ArgumentException(nameof(connectionString));
+
+            return new SqlConnection(connectionString);
         }
 
         /// <summary>
@@ -336,9 +339,8 @@ namespace Bop.Data
         /// </summary>
         /// <param name="targetTable">Target table name</param>
         /// <param name="targetColumn">Target column name</param>
-        /// <param name="isShort">Indicates whether to use short form</param>
         /// <returns>Name of an index</returns>
-        public virtual string GetIndexName(string targetTable, string targetColumn, bool isShort = true)
+        public virtual string GetIndexName(string targetTable, string targetColumn)
         {
             return $"IX_{targetTable}_{targetColumn}";
         }

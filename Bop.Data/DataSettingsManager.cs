@@ -132,7 +132,7 @@ namespace Bop.Data
             get
             {
                 if (!_databaseIsInstalled.HasValue)
-                    _databaseIsInstalled = LoadSettings(reloadSettings: true).IsDatabaseInstalled;
+                    _databaseIsInstalled = LoadSettings(reloadSettings: true).DatabaseInstalled;
 
                 return _databaseIsInstalled.Value;
             }
