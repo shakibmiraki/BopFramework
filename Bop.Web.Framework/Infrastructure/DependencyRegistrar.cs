@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Nop.Web.Framework;
 using Bop.Services.Logging;
 using Bop.Web.Framework.Mvc.Routing;
+using Bop.Services.Caching;
 
 namespace Bop.Web.Framework.Infrastructure
 {
@@ -106,7 +107,7 @@ namespace Bop.Web.Framework.Infrastructure
             builder.RegisterType<TokenValidatorService>().As<ITokenValidatorService>().InstancePerLifetimeScope();
             builder.RegisterType<TokenFactoryService>().As<ITokenFactoryService>().InstancePerLifetimeScope();
             builder.RegisterType<RoutePublisher>().As<IRoutePublisher>().SingleInstance();
-
+            builder.RegisterType<CacheKeyService>().As<ICacheKeyService>().InstancePerLifetimeScope();
 
             builder.RegisterType<ActionContextAccessor>().As<IActionContextAccessor>().InstancePerLifetimeScope();
 
