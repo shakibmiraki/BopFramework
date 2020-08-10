@@ -23,14 +23,14 @@ namespace Bop.Core.Domain.Customers
         public string Username { get; set; }
 
         /// <summary>
-        /// Gets or sets the email
+        /// Gets or sets the mobile
         /// </summary>
-        public string Phone { get; set; }
+        public string Mobile { get; set; }
 
         /// <summary>
-        /// Gets or sets the email that should be re-validated. Used in scenarios when a customer is already registered and wants to change an email address.
+        /// Gets or sets the mobile that should be re-validated. Used in scenarios when a customer is already registered and wants to change an mobile address.
         /// </summary>
-        public string PhoneToRevalidate { get; set; }
+        public string MobileToRevalidate { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the customer is required to re-login

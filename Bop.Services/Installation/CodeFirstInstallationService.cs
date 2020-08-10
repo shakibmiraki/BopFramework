@@ -156,7 +156,7 @@ namespace Bop.Services.Installation
             //admin customer
             var adminUser = new Customer
             {
-                Phone = defaultCustomerPhone,
+                Mobile = defaultCustomerPhone,
                 Username = defaultCustomerPhone,
                 Active = true,
                 CreatedOnUtc = DateTime.UtcNow,

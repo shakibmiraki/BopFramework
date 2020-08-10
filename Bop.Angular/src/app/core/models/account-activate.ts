@@ -1,4 +1,4 @@
 export interface AccountActivate {
-  phone: string;
-  token: string;
+  mobile: string;
+  code: string;
 }

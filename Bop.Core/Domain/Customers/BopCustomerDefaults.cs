@@ -28,6 +28,18 @@
         /// </summary>
         public static string AccountActivationTokenAttribute => "AccountActivationToken";
 
+        public static string FirstName => "FirstName";
+
+        public static string LastName => "LastName";
+
+        public static string Email => "Email";
+
+        public static string NationalCode => "NationalCode";
+
+        public static string BirthDate => "BirthDate";
+
+        public static string Gender => "Gender";
+
         #endregion
 
     }

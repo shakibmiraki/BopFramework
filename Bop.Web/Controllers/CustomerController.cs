@@ -65,14 +65,14 @@ namespace Bop.Web.Controllers
 
             if (ModelState.IsValid)
             {
-                model.Phone = model.Phone;
-                var loginResult = _customerRegistrationService.ValidateCustomer(model.Phone, model.Password);
+                model.Mobile = model.Mobile;
+                var loginResult = _customerRegistrationService.ValidateCustomer(model.Mobile, model.Password);
 
                 switch (loginResult)
                 {
                     case CustomerLoginResults.Successful:
                         {
-                            var customer = _customerService.GetCustomerByPhone(model.Phone);
+                            var customer = _customerService.GetCustomerByPhone(model.Mobile);
 
                             //sign in new customer
                             var token = _tokenFactoryService.CreateJwtTokens(customer);
@@ -148,10 +148,10 @@ namespace Bop.Web.Controllers
 
             if (ModelState.IsValid)
             {
-                model.Phone = model.Phone.Trim();
+                model.Mobile = model.Mobile.Trim();
 
                 var registrationRequest = new CustomerRegistrationRequest(
-                    model.Phone,
+                    model.Mobile,
                     model.Password,
                     _customerSettings.DefaultPasswordFormat);
                 var registrationResult = _customerRegistrationService.RegisterCustomer(registrationRequest);
@@ -186,7 +186,7 @@ namespace Bop.Web.Controllers
         public virtual IActionResult Activate([FromBody]AccountActivationRequest model)
         {
             var response = new AccountActivationResponse { Result = ResultType.Error };
-            var customer = _customerService.GetCustomerByPhone(model.Phone);
+            var customer = _customerService.GetCustomerByPhone(model.Mobile);
             if (customer == null)
             {
                 response.Messages.Add(_localizationService.GetResource("Account.AccountActivation.customerNotExist"));
@@ -196,7 +196,7 @@ namespace Bop.Web.Controllers
             var customerToken = _genericAttributeService.GetAttributesForEntity(customer.Id, customer.GetType().Name)
                 .SingleOrDefault(a => a.Key == BopCustomerDefaults.AccountActivationTokenAttribute);
 
-            if (customer.IsValidToken(customerToken, model.Token))
+            if (!customer.IsValidToken(customerToken, model.Code))
             {
                 response.Messages.Add(_localizationService.GetResource("Account.AccountActivation.WrongToken"));
                 return BadRequest(response);
@@ -215,7 +215,7 @@ namespace Bop.Web.Controllers
         public virtual IActionResult Resend([FromBody]AccountActivationRequest model)
         {
             var response = new AccountActivationResponse { Result = ResultType.Error };
-            var customer = _customerService.GetCustomerByPhone(model.Phone);
+            var customer = _customerService.GetCustomerByPhone(model.Mobile);
             if (customer == null)
             {
                 response.Messages.Add(_localizationService.GetResource("account.accountactivation.customernotexist"));

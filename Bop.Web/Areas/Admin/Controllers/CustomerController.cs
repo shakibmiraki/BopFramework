@@ -1,6 +1,7 @@
 ﻿using Bop.Core;
+using Bop.Core.Domain.Customers;
 using Bop.Services.Authentication;
-using Bop.Services.Events;
+using Bop.Services.Common;
 using Bop.Services.Localization;
 using Bop.Services.Security;
 using Bop.Web.Areas.Admin.Models;
@@ -9,7 +10,9 @@ using Bop.Web.Framework.Controllers;
 using Bop.Web.Framework.UI;
 using Bop.Web.Models.Customers;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using Newtonsoft.Json.Linq;
+using System;
 
 namespace Bop.Web.Areas.Admin.Controllers
 {
@@ -21,16 +24,22 @@ namespace Bop.Web.Areas.Admin.Controllers
         private readonly ILocalizationService _localizationService;
         private readonly ITokenStoreService _tokenStoreService;
         private readonly ITokenFactoryService _tokenFactoryService;
+        private readonly IWorkContext _workContext;
+        private readonly IGenericAttributeService _genericAttributeService;
 
-        public CustomerController(IPermissionService permissionService, 
-            ILocalizationService localizationService, 
+        public CustomerController(IPermissionService permissionService,
+            ILocalizationService localizationService,
             ITokenStoreService tokenStoreService,
-            ITokenFactoryService tokenFactoryService)
+            ITokenFactoryService tokenFactoryService,
+            IWorkContext workContext,
+            IGenericAttributeService genericAttributeService)
         {
             _permissionService = permissionService;
             _localizationService = localizationService;
             _tokenStoreService = tokenStoreService;
             _tokenFactoryService = tokenFactoryService;
+            _workContext = workContext;
+            _genericAttributeService = genericAttributeService;
         }
 
         /// <summary>
@@ -39,7 +48,7 @@ namespace Bop.Web.Areas.Admin.Controllers
         /// <param name="permission"></param>
         /// <returns></returns>
         [HttpPost]
-        public IActionResult Authorize([FromBody]PermissionRequest permission)
+        public IActionResult Authorize([FromBody] PermissionRequest permission)
         {
             var response = new PermissionResponse { Result = ResultType.Error };
             var permissionRecord = _permissionService.GetPermissionRecordBySystemName(permission.PermissionSystemName);
@@ -58,15 +67,7 @@ namespace Bop.Web.Areas.Admin.Controllers
             return Ok(response);
         }
 
-
-        
-//        public bool IsAuthenticated()
-//        {
-//            return User.Identity.IsAuthenticated;
-//        }
-
-
-        public IActionResult RefreshToken([FromBody]JToken jsonBody)
+        public IActionResult RefreshToken([FromBody] JToken jsonBody)
         {
 
             var response = new LoginResponse { Result = ResultType.Error };
@@ -93,6 +94,54 @@ namespace Bop.Web.Areas.Admin.Controllers
             response.AccessToken = jwtToken.AccessToken;
             response.RefreshToken = jwtToken.RefreshToken;
 
+            return Ok(response);
+        }
+
+
+        /// <summary>
+        /// Get User profile
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public IActionResult GetProfile()
+        {
+            var response = new ProfileResponse { Result = ResultType.Error };
+            var customer = _workContext.CurrentCustomer;
+            if (customer == null)
+            {
+                response.Messages.Add(_localizationService.GetResource("Account.AccountActivation.customerNotExist"));
+                return BadRequest(response);
+            }
+
+            var genericAttributes = _genericAttributeService.GetAttributesForEntity(customer.Id, customer.GetType().Name);
+            response.FirstName = genericAttributes.SingleOrDefault(a => a.Key == BopCustomerDefaults.FirstName)?.Value;
+            response.LastName = genericAttributes.SingleOrDefault(a => a.Key == BopCustomerDefaults.LastName)?.Value;
+            response.Email = genericAttributes.SingleOrDefault(a => a.Key == BopCustomerDefaults.Email)?.Value;
+            response.NationalCode = genericAttributes.SingleOrDefault(a => a.Key == BopCustomerDefaults.NationalCode)?.Value;
+            //response.BirthDate = DateTimeOffset.Parse(genericAttributes.SingleOrDefault(a => a.Key == BopCustomerDefaults.BirthDate)?.Value);
+            //response.Gender = bool.Parse(genericAttributes.SingleOrDefault(a => a.Key == BopCustomerDefaults.Gender)?.Value);
+            response.Result = ResultType.Success;
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Get User profile
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public IActionResult UpdateProfile([FromBody] ProfileRequest profile)
+        {
+            var response = new ProfileResponse { Result = ResultType.Error };
+            var customer = _workContext.CurrentCustomer;
+
+            _genericAttributeService.SaveAttribute(customer, BopCustomerDefaults.FirstName, profile.FirstName);
+            _genericAttributeService.SaveAttribute(customer, BopCustomerDefaults.LastName, profile.LastName);
+            _genericAttributeService.SaveAttribute(customer, BopCustomerDefaults.Email, profile.Email);
+            _genericAttributeService.SaveAttribute(customer, BopCustomerDefaults.NationalCode, profile.NationalCode);
+            _genericAttributeService.SaveAttribute(customer, BopCustomerDefaults.BirthDate, profile.BirthDate);
+            _genericAttributeService.SaveAttribute(customer, BopCustomerDefaults.Gender, profile.Gender);
+
+            response.Result = ResultType.Success;
             return Ok(response);
         }
 

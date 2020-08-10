@@ -1,5 +1,5 @@
 export interface Credentials {
-    phone: string;  
+    mobile: string;  
     password: string;
     rememberMe: boolean;
 }

@@ -1,5 +1,5 @@
 export interface RegistrationModel {
-  phone: string;
+  mobile: string;
   password: string;
   confirmPassword: string;
 }

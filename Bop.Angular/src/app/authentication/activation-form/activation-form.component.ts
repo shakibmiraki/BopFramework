@@ -16,8 +16,8 @@ export class ActivationFormComponent {
   @ViewChild(CountdownComponent) counter: CountdownComponent;
   
   model: AccountActivate = {
-    phone: localStorage.getItem(this.appConfig.config.tokenKey),
-    token: ''
+    mobile: localStorage.getItem(this.appConfig.config.tokenKey),
+    code: ''
   };
 
   errors: string;

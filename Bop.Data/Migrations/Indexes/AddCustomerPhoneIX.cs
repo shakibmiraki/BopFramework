@@ -11,7 +11,7 @@ namespace Bop.Data.Migrations.Indexes
         public override void Up()
         {
             Create.Index("IX_Customer_Phone").OnTable(nameof(Customer))
-                .OnColumn(nameof(Customer.Phone)).Ascending()
+                .OnColumn(nameof(Customer.Mobile)).Ascending()
                 .WithOptions().NonClustered();
         }
 

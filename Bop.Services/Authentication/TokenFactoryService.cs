@@ -137,7 +137,7 @@ namespace Bop.Services.Authentication
 
                 new Claim(ClaimTypes.NameIdentifier, customer.Id.ToString(), ClaimValueTypes.String, _jwtConfig.Issuer),
 
-                new Claim(ClaimTypes.MobilePhone, customer.Phone, ClaimValueTypes.String, _jwtConfig.Issuer),
+                new Claim(ClaimTypes.MobilePhone, customer.Mobile, ClaimValueTypes.String, _jwtConfig.Issuer),
                 // custom data
                 new Claim(ClaimTypes.UserData, customer.Id.ToString(), ClaimValueTypes.String, _jwtConfig.Issuer),
 

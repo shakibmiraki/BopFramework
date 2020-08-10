@@ -10,7 +10,7 @@ namespace Bop.Web.Validator
     {
         public LoginValidator(ILocalizationService localizationService)
         {
-            RuleFor(x => x.Phone).NotEmpty()
+            RuleFor(x => x.Mobile).NotEmpty()
                 .WithMessage(localizationService.GetResource("Authentication.Login.Phone.Required"))
                 .Matches(@"^(09)[13][0-9]\d{7}$")
                 .WithMessage(localizationService.GetResource("Authentication.Login.Phone.BadFormat"));

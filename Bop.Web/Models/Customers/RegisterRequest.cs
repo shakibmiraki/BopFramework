@@ -7,7 +7,7 @@ namespace Bop.Web.Models.Customers
     {
 
 
-        public string Phone { get; set; }
+        public string Mobile { get; set; }
 
         public string Password { get; set; }
 

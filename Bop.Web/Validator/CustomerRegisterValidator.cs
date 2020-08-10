@@ -5,11 +5,11 @@ using FluentValidation;
 
 namespace Bop.Web.Validator
 {
-    public class UserRegisterValidator : BaseBopValidator<RegisterRequest>
+    public class CustomerRegisterValidator : BaseBopValidator<RegisterRequest>
     {
-        public UserRegisterValidator(ILocalizationService localizationService)
+        public CustomerRegisterValidator(ILocalizationService localizationService)
         {
-            RuleFor(x => x.Phone).NotEmpty()
+            RuleFor(x => x.Mobile).NotEmpty()
                 .WithMessage(localizationService.GetResource("Authentication.Register.Phone.Required"))
                 .Matches(@"^(09)[13][0-9]\d{7}$")
                 .WithMessage(localizationService.GetResource("Authentication.Register.Phone.BadFormat"));

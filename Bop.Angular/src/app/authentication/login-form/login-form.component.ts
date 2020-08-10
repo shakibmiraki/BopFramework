@@ -19,7 +19,7 @@ export class LoginFormComponent implements OnInit, OnDestroy {
   ) {}
   private subscription: Subscription;
 
-  model: Credentials = { phone: '', password: '', rememberMe: false };
+  model: Credentials = { mobile: '', password: '', rememberMe: false };
   errors = '';
   returnUrl: string | null = null;
   isRequesting: boolean;
@@ -45,7 +45,7 @@ export class LoginFormComponent implements OnInit, OnDestroy {
     // subscribe to router event
     this.subscription = this.route.queryParams.subscribe((param: any) => {
       this.isActivatedUser = param['isActivatedUser'];
-      this.model.phone = param['phone'];
+      this.model.mobile = param['phone'];
     });
 
   }

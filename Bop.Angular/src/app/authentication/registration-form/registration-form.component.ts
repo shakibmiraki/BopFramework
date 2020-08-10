@@ -13,7 +13,7 @@ import * as AOS from 'aos';
 })
 export class RegistrationFormComponent implements OnInit {
 
-  model: RegistrationModel = { phone: '', password: '', confirmPassword: '' };
+  model: RegistrationModel = { mobile: '', password: '', confirmPassword: '' };
   errors: string;
   isRequesting: boolean;
   submitted = false;
@@ -44,7 +44,7 @@ export class RegistrationFormComponent implements OnInit {
       .subscribe(
         result => {
           if (result) {
-            localStorage.setItem(this.appConfig.config.tokenKey, this.model.phone);
+            localStorage.setItem(this.appConfig.config.tokenKey, this.model.mobile);
             this.router.navigate(['/activate']);
           }
         },

@@ -19,8 +19,8 @@ namespace Bop.Data.Mapping.Builders.Customers
         {
             table
                 .WithColumn(nameof(Customer.Username)).AsString(1000).Nullable()
-                .WithColumn(nameof(Customer.Phone)).AsString(1000).Nullable()
-                .WithColumn(nameof(Customer.PhoneToRevalidate)).AsString(1000).Nullable()
+                .WithColumn(nameof(Customer.Mobile)).AsString(1000).Nullable()
+                .WithColumn(nameof(Customer.MobileToRevalidate)).AsString(1000).Nullable()
                 .WithColumn(nameof(Customer.SystemName)).AsString(400).Nullable();
         }
 

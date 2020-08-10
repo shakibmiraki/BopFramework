@@ -45,9 +45,17 @@ namespace Bop.Web.Infrastructure
             endpointRouteBuilder.MapControllerRoute("AuthActivate", $"{pattern}/api/auth/activate/",
                 new { controller = "Customer", action = "Activate" });
 
-            //activate
+            //resend activation code
             endpointRouteBuilder.MapControllerRoute("AuthResend", $"{pattern}/api/auth/resend/",
                 new { controller = "Customer", action = "Resend" });
+
+            //get profile
+            endpointRouteBuilder.MapControllerRoute("CustomerGetResend", $"{pattern}/api/customer/getprofile/",
+                new { area = AreaNames.Admin, controller = "Customer", action = "GetProfile" });
+
+            //set profile
+            endpointRouteBuilder.MapControllerRoute("CustomerUpdateProfile", $"{pattern}/api/customer/updateprofile/",
+                new { area = AreaNames.Admin, controller = "Customer", action = "UpdateProfile" });
 
 
             ////admin customer

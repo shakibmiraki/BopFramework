@@ -50,8 +50,8 @@ namespace Bop.Services.Authentication
             if (!string.IsNullOrEmpty(customer.Username))
                 claims.Add(new Claim(ClaimTypes.Name, customer.Username, ClaimValueTypes.String, BopAuthenticationDefaults.ClaimsIssuer));
 
-            if (!string.IsNullOrEmpty(customer.Phone))
-                claims.Add(new Claim(ClaimTypes.MobilePhone, customer.Phone, ClaimValueTypes.String, BopAuthenticationDefaults.ClaimsIssuer));
+            if (!string.IsNullOrEmpty(customer.Mobile))
+                claims.Add(new Claim(ClaimTypes.MobilePhone, customer.Mobile, ClaimValueTypes.String, BopAuthenticationDefaults.ClaimsIssuer));
 
             //create principal for the current authentication scheme
             var userIdentity = new ClaimsIdentity(claims, BopAuthenticationDefaults.AuthenticationScheme);

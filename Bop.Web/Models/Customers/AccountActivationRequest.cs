@@ -2,8 +2,8 @@
 {
     public class AccountActivationRequest
     {
-        public string Phone { get; set; }
+        public string Mobile { get; set; }
 
-        public string Token { get; set; }
+        public string Code { get; set; }
     }
 }

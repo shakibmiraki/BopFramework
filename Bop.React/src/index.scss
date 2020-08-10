@@ -1,0 +1,274 @@
+@import "variables.scss";
+
+@font-face {
+  font-family: $font-name;
+  src: url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-FD.eot");
+  src: url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-FD.eot?#iefix") format("embedded-opentype"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-FD.woff2") format("woff2"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-FD.woff") format("woff"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-FD.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: $font-name;
+  src: url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Bold-FD.eot");
+  src: url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Bold-FD.eot?#iefix") format("embedded-opentype"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Bold-FD.woff2") format("woff2"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Bold-FD.woff") format("woff"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Bold-FD.ttf") format("truetype");
+  font-weight: bold;
+  font-style: normal;
+}
+@font-face {
+  font-family: $font-name;
+  src: url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Black-FD.eot");
+  src: url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Black-FD.eot?#iefix") format("embedded-opentype"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Black-FD.woff2") format("woff2"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Black-FD.woff") format("woff"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Black-FD.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}
+@font-face {
+  font-family: $font-name;
+  src: url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Medium-FD.eot");
+  src: url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Medium-FD.eot?#iefix") format("embedded-opentype"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Medium-FD.woff2") format("woff2"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Medium-FD.woff") format("woff"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Medium-FD.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: $font-name;
+  src: url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Light-FD.eot");
+  src: url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Light-FD.eot?#iefix") format("embedded-opentype"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Light-FD.woff2") format("woff2"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Light-FD.woff") format("woff"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Light-FD.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+@font-face {
+  font-family: $font-name;
+  src: url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Thin-FD.eot");
+  src: url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Thin-FD.eot?#iefix") format("embedded-opentype"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Thin-FD.woff2") format("woff2"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Thin-FD.woff") format("woff"),
+    url("../node_modules/vazir-font/dist/Farsi-Digits/Vazir-Thin-FD.ttf") format("truetype");
+  font-weight: 100;
+  font-style: normal;
+}
+#root {
+  min-width: 300px;
+}
+body {
+  overflow-x: hidden;
+}
+
+p,
+li,
+ul,
+div,
+a,
+td,
+tr,
+span,
+button {
+  font-family: $font-name;
+}
+
+div.text-danger {
+  padding: 3px 10px;
+  font-size: 13px;
+}
+.form-check {
+  padding: 4px 0;
+}
+
+.Toastify__toast {
+  min-height: 55px;
+}
+
+.form-check {
+  padding-left: 1.25rem;
+}
+
+/* Start Routing Transition */
+.switch-wrapper {
+  position: relative;
+}
+
+.switch-wrapper > div {
+  position: absolute;
+  width: 100%;
+}
+
+/* End Routing Transition */
+
+/* Start RTL */
+[dir="rtl"] input[type="text"],
+[dir="rtl"] div.text-danger,
+[dir="rtl"] legend,
+[dir="rtl"] label {
+  text-align: right;
+}
+
+[dir="rtl"] .form-check-input {
+  margin-left: unset;
+  margin-right: -1.25rem;
+}
+[dir="rtl"] .form-check {
+  text-align: right;
+  padding-left: unset;
+  padding-right: 1.25rem;
+}
+[dir="rtl"] form label {
+  font-size: 0.9rem;
+}
+
+[dir="rtl"] .Toastify__toast--rtl {
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+/* End RTL */
+
+::-webkit-input-placeholder {
+  /* Chrome/Opera/Safari */
+  font-size: 13px !important;
+}
+::-moz-placeholder {
+  /* Firefox 19+ */
+  font-size: 13px !important;
+}
+:-ms-input-placeholder {
+  /* IE 10+ */
+  font-size: 13px !important;
+}
+:-moz-placeholder {
+  /* Firefox 18- */
+  font-size: 13px !important;
+}
+
+[dir="rtl"] :-moz-placeholder {
+  text-align: right;
+}
+[dir="rtl"] :-ms-input-placeholder {
+  text-align: right;
+}
+[dir="rtl"] ::-webkit-input-placeholder {
+  text-align: right;
+}
+
+.ltr {
+  direction: ltr;
+}
+.rtl {
+  direction: rtl;
+}
+
+#root > div,
+#root .switch-wrapper,
+#root .switch-wrapper > div {
+  height: 100%;
+}
+.form-control {
+  border-radius: 12px !important;
+  height: calc(1.5em + 0.75rem + 8px) !important;
+}
+
+.left-addon {
+  position: absolute;
+  padding: 12px 12px 12px 4px;
+  left: 0;
+  width: 65px;
+  height: 44px;
+  top: 0;
+}
+
+.sticky-btn i {
+  float: right;
+}
+.font-small-1 {
+  font-size: 0.9rem !important;
+}
+.font-small-2 {
+  font-size: 0.8rem !important;
+}
+.font-small-3 {
+  font-size: 0.7rem !important;
+}
+
+.font-big-1 {
+  font-size: 1.1rem !important;
+}
+.font-big-2 {
+  font-size: 1.2rem !important;
+}
+.font-big-3 {
+  font-size: 1.3rem !important;
+}
+.font-big-4 {
+  font-size: 1.4rem !important;
+}
+.font-big-5 {
+  font-size: 1.5rem !important;
+}
+.flex-grow-2 {
+  flex-grow: 2;
+}
+.flex-grow-3 {
+  flex-grow: 3;
+}
+.flex-grow-4 {
+  flex-grow: 4;
+}
+.flex-grow-5 {
+  flex-grow: 5;
+}
+.flex-grow-6 {
+  flex-grow: 6;
+}
+.flex-0 {
+  flex: 0;
+}
+.flex-1 {
+  flex: 1;
+}
+.flex-2 {
+  flex: 2;
+}
+.flex-3 {
+  flex: 3;
+}
+.flex-4 {
+  flex: 4;
+}
+.flex-5 {
+  flex: 5;
+}
+.flex-6 {
+  flex: 6;
+}
+.flex-7 {
+  flex: 7;
+}
+.flex-8 {
+  flex: 8;
+}
+.flex-9 {
+  flex: 9;
+}
+.flex-10 {
+  flex: 10;
+}
+
+.text-fail {
+  color: #dc3545 !important;
+}
+
+.ReactCollapse--collapse {
+  transition: height 300ms;
+}

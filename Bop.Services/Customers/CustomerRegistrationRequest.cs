@@ -22,7 +22,7 @@ namespace Bop.Services.Customers
         {
             Customer = new Customer
             {
-                Phone = phone,
+                Mobile = phone,
                 Username = phone,
                 Active = isActive,
             };

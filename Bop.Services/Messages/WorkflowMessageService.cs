@@ -102,14 +102,14 @@ namespace Bop.Services.Messages
         public virtual int SendCustomerPhoneValidationMessage(Customer customer, int languageId)
         {
 
-            var customerPhone = customer.Phone;
+            var customerPhone = customer.Mobile;
             var customerToken = _genericAttributeService.GetAttribute<string>(customer, BopCustomerDefaults.AccountActivationTokenAttribute);
 
             if (customer == null)
                 throw new ArgumentNullException(nameof(customer));
 
             if (string.IsNullOrEmpty(customerPhone))
-                throw new ArgumentNullException(nameof(customer.Phone));
+                throw new ArgumentNullException(nameof(customer.Mobile));
 
             if (string.IsNullOrEmpty(customerToken))
                 throw new ArgumentNullException(nameof(customerToken));

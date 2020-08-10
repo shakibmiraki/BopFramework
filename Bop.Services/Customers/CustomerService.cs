@@ -121,7 +121,7 @@ namespace Bop.Services.Customers
 
             //search by phone
             if (!string.IsNullOrWhiteSpace(phone))
-                query = query.Where(c => c.Phone.Contains(phone));
+                query = query.Where(c => c.Mobile.Contains(phone));
 
             query = query.OrderByDescending(c => c.CreatedOnUtc);
 
@@ -170,8 +170,8 @@ namespace Bop.Services.Customers
 
             if (_customerSettings.SuffixDeletedCustomers)
             {
-                if (!string.IsNullOrEmpty(customer.Phone))
-                    customer.Phone += "-DELETED";
+                if (!string.IsNullOrEmpty(customer.Mobile))
+                    customer.Mobile += "-DELETED";
                 if (!string.IsNullOrEmpty(customer.Username))
                     customer.Username += "-DELETED";
             }
@@ -251,7 +251,7 @@ namespace Bop.Services.Customers
 
             var query = from c in _customerRepository.Table
                         orderby c.Id
-                        where c.Phone == phone
+                        where c.Mobile == phone
                         select c;
             var customer = query.FirstOrDefault();
             return customer;
