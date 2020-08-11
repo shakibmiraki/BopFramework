@@ -19,9 +19,6 @@ export interface IAppConfig {
     resendPath: string;
     verifyAccessPath: string;
     refreshTokenPath: string;
-    exportLanguagePath: string;
-    importLanguagePath: string;
-    getAllLanguagePath: string;
   };
 }
 
@@ -40,8 +37,5 @@ export const AppConfig: IAppConfig = {
     resendPath: `${apiEndpoint}/api/auth/resend`,
     verifyAccessPath: `${apiEndpoint}/admin/user/authorize`,
     refreshTokenPath: `${apiEndpoint}/admin/user/refreshtoken`,
-    exportLanguagePath: `${apiEndpoint}/admin/localization/exportlanguage`,
-    importLanguagePath: `${apiEndpoint}/admin/localization/importlanguage`,
-    getAllLanguagePath: `${apiEndpoint}/admin/localization/getalllanguages`,
   },
 };

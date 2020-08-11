@@ -14,6 +14,7 @@ using Bop.Services.Configuration;
 using Bop.Services.Security;
 using Bop.Services.Customers;
 using Bop.Services.Defaults;
+using Bop.Services.Localization;
 
 namespace Bop.Services.Installation
 {
@@ -26,16 +27,13 @@ namespace Bop.Services.Installation
 
 
         private readonly IRepository<Customer> _customerRepository;
-        private readonly IRepository<CustomerPassword> _customerPasswordRepository;
         private readonly IRepository<CustomerRole> _customerRoleRepository;
         private readonly IRepository<Language> _languageRepository;
         private readonly IRepository<ScheduleTask> _scheduleTaskRepository;
         private readonly IRepository<HostedSite> _hostedSiteRepository;
-        private readonly IWebHelper _webHelper;
         private readonly IPermissionService _permissionService;
         private readonly IBopDataProvider _dataProvider;
-
-
+        private readonly ILocalizationService _localizationService;
 
 
         #endregion
@@ -43,23 +41,22 @@ namespace Bop.Services.Installation
         #region Ctor
 
         public CodeFirstInstallationService(IRepository<Customer> customerRepository,
-            IRepository<CustomerPassword> customerPasswordRepository,
             IRepository<CustomerRole> customerRoleRepository,
             IRepository<Language> languageRepository,
             IRepository<ScheduleTask> scheduleTaskRepository,
             IRepository<HostedSite> hostedSiteRepository,
-            IWebHelper webHelper, IPermissionService permissionService,
-            IBopDataProvider dataProvider)
+            IPermissionService permissionService,
+            IBopDataProvider dataProvider,
+            ILocalizationService localizationService)
         {
             _customerRepository = customerRepository;
-            _customerPasswordRepository = customerPasswordRepository;
             _customerRoleRepository = customerRoleRepository;
             _languageRepository = languageRepository;
             _scheduleTaskRepository = scheduleTaskRepository;
-            _webHelper = webHelper;
             _permissionService = permissionService;
             _hostedSiteRepository = hostedSiteRepository;
             _dataProvider = dataProvider;
+            _localizationService = localizationService;
         }
 
         #endregion
@@ -127,6 +124,81 @@ namespace Bop.Services.Installation
             };
             _languageRepository.Insert(languages);
         }
+
+        protected virtual void InstallTranslactions()
+        {
+
+            var fa = _languageRepository.Table.FirstOrDefault(l => l.LanguageCulture == "fa-IR");
+            var en = _languageRepository.Table.FirstOrDefault(l => l.LanguageCulture == "en-US");
+
+            var resources = new List<LocaleStringResource>
+            {
+              new LocaleStringResource {
+                LanguageId = fa.Id,
+                ResourceName = "account.accountactivation.activation.code",
+                ResourceValue = "کد فعالسازی"
+            },
+                new LocaleStringResource {
+                LanguageId = fa.Id,
+                ResourceName = "account.accountactivation.tokenexpired",
+                ResourceValue = "کد فعال سازی نامعتبر می باشد"
+            },
+                new LocaleStringResource {
+                LanguageId = fa.Id,
+                ResourceName = "account.accountactivation.customeralreadyactivated",
+                ResourceValue = "این کاربر قبلا فعال گردیده است"
+            },
+                new LocaleStringResource {
+                LanguageId = fa.Id,
+                ResourceName = "account.accountactivation.customernotexist",
+                ResourceValue = "کاربری با این اطلاعات در سیستم ثبت نشده است"
+            },
+                new LocaleStringResource {
+                LanguageId = fa.Id,
+                ResourceName = "account.accountactivation.wrongtoken",
+                ResourceValue = "کد وارد شده اشتباه می باشد"
+            },
+                new LocaleStringResource {
+                LanguageId = fa.Id,
+                ResourceName = "account.login.wrongcredentials",
+                ResourceValue = "اطلاعات وارد شده برای ورود به سیستم اشتباه است"
+            },                new LocaleStringResource {
+                LanguageId = fa.Id,
+                ResourceName = "account.login.wrongcredentials.customernotexist",
+                ResourceValue = "کاربری با این اطلاعات در سیستم ثبت نشده است"
+            },                new LocaleStringResource {
+                LanguageId = fa.Id,
+                ResourceName = "account.login.wrongcredentials.deleted",
+                ResourceValue = "اکانت این کاربر حذف شده است"
+            },                new LocaleStringResource {
+                LanguageId = fa.Id,
+                ResourceName = "account.login.wrongcredentials.notactive",
+                ResourceValue = "این حساب هنوز فعال نشده است"
+            },                new LocaleStringResource {
+                LanguageId = fa.Id,
+                ResourceName = "account.login.wrongcredentials.wrongcustomernameorpassword",
+                ResourceValue = "نام کاربری یا رمز عبور اشتباه است"
+            }
+            };
+
+            foreach (var resource in resources)
+            {
+                var localResource = _localizationService.GetLocaleStringResourceByName(resource.ResourceName, fa.Id);
+
+                if (localResource is null)
+                {
+                    _localizationService.InsertLocaleStringResource(resource);
+                }
+                else
+                {
+                    localResource.ResourceValue = resource.ResourceValue;
+                    _localizationService.UpdateLocaleStringResource(localResource);
+                }
+
+            }
+        }
+
+
 
         protected virtual void InstallCustomersAndUsers(string defaultCustomerPhone, string defaultCustomerPassword)
         {
@@ -292,6 +364,7 @@ namespace Bop.Services.Installation
         {
             InstallHostedSite();
             InstallLanguages();
+            InstallTranslactions();
             InstallSettings();
             InstallCustomersAndUsers(defaultCustomerPhone, defaultCustomerPassword);
             InstallScheduleTasks();

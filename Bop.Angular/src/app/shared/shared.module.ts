@@ -14,7 +14,6 @@ import {
 } from "./directives/user.validator.directive";
 import { MatProgressButtonsModule } from "mat-progress-buttons";
 import { TranslateModule } from "@ngx-translate/core";
-import { UploadComponent } from "./components/upload/upload.component";
 import { SpinnerComponent } from "./components/spinner/spinner.component";
 import { toJalaaliPipe, formatJalaaliPipe } from "./pipes/moment-jalaali.pipe";
 import { formatTimePipe } from "./pipes/time.pipe";
@@ -51,7 +50,6 @@ import { SidenavListComponent } from "./components/sidenav-list/sidenav-list.com
     MaxValueDirective,
     ButtonSpinnerComponent,
     SpinnerComponent,
-    UploadComponent,
     toJalaaliPipe,
     formatJalaaliPipe,
     formatTimePipe,
@@ -74,7 +72,6 @@ import { SidenavListComponent } from "./components/sidenav-list/sidenav-list.com
     MatProgressButtonsModule,
     ButtonSpinnerComponent,
     SpinnerComponent,
-    UploadComponent,
     toJalaaliPipe,
     formatJalaaliPipe,
     formatTimePipe,

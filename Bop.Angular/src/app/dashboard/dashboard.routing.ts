@@ -1,4 +1,3 @@
-import { LocalizationComponent } from "./localization/localization.component";
 import { Routes } from "@angular/router";
 import { HomeComponent } from "./home/home.component";
 import { AuthGuard } from "../core/services/auth.guard";
@@ -28,17 +27,7 @@ export const DashboardRoutes: Routes = [
           } as AuthGuardPermission,
         },
         canActivate: [AuthGuard],
-      },
-      {
-        path: "localization",
-        component: LocalizationComponent,
-        data: {
-          permission: {
-            permittedRoles: ["Administrators"],
-          } as AuthGuardPermission,
-        },
-        canActivate: [AuthGuard],
-      },
+      }
     ],
   },
 ];

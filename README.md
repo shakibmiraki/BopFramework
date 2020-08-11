@@ -27,3 +27,13 @@
 - User service
 - Lazy-Loading modules
 
+## Front-End (React) : 
+- Login page
+- Register page
+- Account-Activation page
+- PageNotFound component
+- Spinner component
+- Notification service
+- Authentication service
+- Multiple theme configuration with use of emotion library
+

@@ -59,7 +59,7 @@ namespace Bop.Web.Controllers
         #region Login / Logout
 
         [HttpPost]
-        public IActionResult Login([FromBody]LoginRequest model)
+        public IActionResult Login([FromBody] LoginRequest model)
         {
             var response = new LoginResponse { Result = ResultType.Error };
 
@@ -142,7 +142,7 @@ namespace Bop.Web.Controllers
         #region Register / Activation
 
         [HttpPost]
-        public virtual IActionResult Register([FromBody]RegisterRequest model)
+        public virtual IActionResult Register([FromBody] RegisterRequest model)
         {
             var response = new RegisterResponse { Result = ResultType.Error };
 
@@ -183,7 +183,7 @@ namespace Bop.Web.Controllers
         }
 
         [HttpPost]
-        public virtual IActionResult Activate([FromBody]AccountActivationRequest model)
+        public virtual IActionResult Activate([FromBody] AccountActivationRequest model)
         {
             var response = new AccountActivationResponse { Result = ResultType.Error };
             var customer = _customerService.GetCustomerByPhone(model.Mobile);
@@ -212,7 +212,7 @@ namespace Bop.Web.Controllers
         }
 
         [HttpPost]
-        public virtual IActionResult Resend([FromBody]AccountActivationRequest model)
+        public virtual IActionResult Resend([FromBody] AccountActivationRequest model)
         {
             var response = new AccountActivationResponse { Result = ResultType.Error };
             var customer = _customerService.GetCustomerByPhone(model.Mobile);

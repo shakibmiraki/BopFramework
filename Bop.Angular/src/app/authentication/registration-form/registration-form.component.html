@@ -11,7 +11,7 @@
         <mat-card-content>
           <mat-card-title>
             <p class="h4 mb-4">
-              {{ "resources.account.register.form.title" | translate }}
+              {{ "account.register.form.title" | translate }}
             </p>
           </mat-card-title>
 
@@ -26,7 +26,7 @@
             <div class="form-group">
               <div class="md-form">
                 <label for="phone">
-                  {{ "resources.account.register.field.phone" | translate }}
+                  {{ "account.register.field.phone" | translate }}
                 </label>
                 <input
                   type="text"
@@ -45,15 +45,11 @@
                   class="invalid-feedback"
                 >
                   <div *ngIf="phone.errors.required">
-                    {{
-                      "resources.account.share.validation.phone.required"
-                        | translate
-                    }}
+                    {{ "account.share.validation.phone.required" | translate }}
                   </div>
                   <div *ngIf="phone.errors.validatePhone">
                     {{
-                      "resources.account.share.validation.phone.wrongformat"
-                        | translate
+                      "account.share.validation.phone.wrongformat" | translate
                     }}
                   </div>
                 </div>
@@ -63,7 +59,7 @@
             <div class="form-group">
               <div class="md-form">
                 <label for="password">
-                  {{ "resources.account.register.field.password" | translate }}
+                  {{ "account.register.field.password" | translate }}
                 </label>
                 <input
                   type="password"
@@ -85,14 +81,12 @@
                 >
                   <div *ngIf="password.errors.required">
                     {{
-                      "resources.account.share.validation.password.required"
-                        | translate
+                      "account.share.validation.password.required" | translate
                     }}
                   </div>
                   <div *ngIf="password.errors.minlength">
                     {{
-                      "resources.account.share.validation.password.minlength"
-                        | translate
+                      "account.share.validation.password.minlength" | translate
                     }}
                   </div>
                 </div>
@@ -102,10 +96,7 @@
             <div class="form-group">
               <div class="md-form">
                 <label for="confirmPassword">
-                  {{
-                    "resources.account.register.field.confirmpassword"
-                      | translate
-                  }}
+                  {{ "account.register.field.confirmpassword" | translate }}
                 </label>
                 <input
                   type="password"
@@ -128,19 +119,19 @@
                 >
                   <div *ngIf="confirmPassword.errors.required">
                     {{
-                      "resources.account.share.validation.confirmpassword.required"
+                      "account.share.validation.confirmpassword.required"
                         | translate
                     }}
                   </div>
                   <div *ngIf="confirmPassword.errors.minlength">
                     {{
-                      "resources.account.share.validation.confirmpassword.minlength"
+                      "account.share.validation.confirmpassword.minlength"
                         | translate
                     }}
                   </div>
                   <div *ngIf="confirmPassword.errors.mustMatch">
                     {{
-                      "resources.account.share.validation.confirmpassword.notequal"
+                      "account.share.validation.confirmpassword.notequal"
                         | translate
                     }}
                   </div>
@@ -151,7 +142,7 @@
             <app-button-spinner
               [inputDisabled]="!f.valid"
               [isRunning]="isRequesting"
-              [inputValue]="'resources.account.register.button.register'"
+              [inputValue]="'account.register.button.register'"
             ></app-button-spinner>
           </form>
         </mat-card-content>
