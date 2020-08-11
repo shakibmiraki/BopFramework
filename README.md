@@ -21,7 +21,6 @@
 - PageNotFound component
 - ButtonSpinner component
 - Spinner component
-- Upload component
 - Core module (HttpInterceptor,ErrorInterceptor,LocalizationIntercaptor)
 - Notification service
 - User service
