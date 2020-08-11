@@ -4,29 +4,24 @@ import { useEffect } from "react";
 import styles from "./index-style";
 import { routes } from "./../../constants/constant";
 import { localeService } from "./../../services/locale";
-import { authService } from "./../../services/auth";
 import history from "./../../services/history";
 import Zoom from "react-reveal/Zoom";
 import { config } from "../../config";
 import { Header } from "./../../components/Share/header";
 import { Logo } from "./../../components/Share/logo";
+import { userService } from "./../../services/user";
 
 const navigate = () => {
   setTimeout(() => {
-    if (localeService.getLanguageInitialized()) {
-      if (authService.getSignedUp()) {
-        history.push(routes.home);
-        return;
-      }
-      if (authService.getActivationSent()) {
-        history.push(`${routes.sign_up.base}${routes.sign_up.activation}`);
-        return;
-      }
-      history.push(routes.sign_up.base);
-    } else {
-      history.push(routes.language);
-      // history.push(routes.sign_up.base);
+    if (userService.isAuthUserLoggedIn()) {
+      history.push(routes.home);
+      return;
     }
+    if (localeService.getLanguageInitialized()) {
+      history.push(routes.login.base);
+      return;
+    }
+    history.push(routes.language);
   }, 700);
 };
 

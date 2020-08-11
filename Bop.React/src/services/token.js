@@ -11,6 +11,11 @@ const getJwtToken = () => {
   return localStorageService.getKey(storage_key.jwt_token);
 };
 
+const removeJwtToken = () => {
+  localStorageService.removeKey(storage_key.jwt_token);
+  return Promise.resolve();
+};
+
 const setRefreshToken = (refresh_token) => {
   localStorageService.setKey(storage_key.refresh_token, refresh_token);
   return Promise.resolve();
@@ -18,6 +23,11 @@ const setRefreshToken = (refresh_token) => {
 
 const getRefreshToken = () => {
   return localStorageService.getKey(storage_key.refresh_token);
+};
+
+const removeRefreshToken = () => {
+  localStorageService.removeKey(storage_key.refresh_token);
+  return Promise.resolve();
 };
 
 const getAccessTokenExpirationDateUtc = () => {
@@ -60,8 +70,10 @@ const getDecodedTokenRoles = () => {
 export const tokenService = {
   setJwtToken,
   getJwtToken,
+  removeJwtToken,
   setRefreshToken,
   getRefreshToken,
+  removeRefreshToken,
   hasAccessTokenExpired,
   getDecodedAccessToken,
   getDecodedTokenRoles,

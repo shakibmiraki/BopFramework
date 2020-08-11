@@ -1,9 +1,8 @@
 import { api } from "./api";
 import { config } from "./../config";
 import { utilService } from "./utils";
-import { storage_key } from "../constants/constant";
-import { localStorageService } from "./localStorage";
 import { userService } from "./user";
+import { tokenService } from "./token";
 
 const register = async (model) => {
   const value = {
@@ -75,22 +74,18 @@ const login = async (model) => {
     });
 };
 
-const setSignedUp = () => {
-  localStorageService.setKey(storage_key.user_signed_up, true);
-  return Promise.resolve();
-};
-
-const getSignedUp = () => {
-  return localStorageService.getKey(storage_key.user_signed_up);
-};
-
-const setActivationSent = () => {
-  localStorageService.setKey(storage_key.activation_send, true);
-  return Promise.resolve();
-};
-
-const getActivationSent = () => {
-  return localStorageService.getKey(storage_key.activation_send);
+const logout = async () => {
+  const refreshToken = encodeURIComponent(tokenService.getRefreshToken());
+  return api
+    .get(`${config.apiUrl}/api/auth/logout?refreshToken=${refreshToken}`)
+    .then((result) => {
+      console.log(result);
+      return result;
+    })
+    .catch((error) => {
+      utilService.handleError(error);
+      throw error;
+    });
 };
 
 export const authService = {
@@ -98,8 +93,5 @@ export const authService = {
   resend,
   activate,
   login,
-  setSignedUp,
-  getSignedUp,
-  setActivationSent,
-  getActivationSent,
+  logout,
 };

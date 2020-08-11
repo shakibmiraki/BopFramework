@@ -18,7 +18,6 @@ export const register = (model) => (dispatch) => {
     .then((result) => {
       console.log(result);
       userService.setMobile(model.mobile);
-      authService.setActivationSent();
       dispatch(isRequested(result.data.messages));
       history.push(`${routes.sign_up.base}${routes.sign_up.activation}`);
     })
@@ -45,7 +44,6 @@ export const activate = (model) => (dispatch) => {
     .activate(model)
     .then(async (result) => {
       console.log(result);
-      authService.setSignedUp();
       dispatch(isRequested());
       history.push(`${routes.login.base}`);
     })
@@ -66,6 +64,21 @@ export const login = (model) => (dispatch) => {
       tokenService.setRefreshToken(result.data.refreshToken);
       dispatch(isRequested());
       history.push(`${routes.home}`);
+    })
+    .catch((error) => {
+      dispatch(errorOccurred());
+    });
+};
+
+export const logout = () => (dispatch) => {
+  dispatch(isRequesting());
+  return authService
+    .logout()
+    .then(() => {
+      tokenService.removeJwtToken();
+      tokenService.removeRefreshToken();
+      dispatch(isRequested());
+      history.push(`${routes.login.base}`);
     })
     .catch((error) => {
       dispatch(errorOccurred());

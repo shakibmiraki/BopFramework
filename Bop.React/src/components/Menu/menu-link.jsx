@@ -10,7 +10,7 @@ export const MenuLink = ({ label, to, activeOnlyWhenExact, child, onClick }) => 
   });
 
   return (
-    <NavLink onClick={onClick} to={to} className="d-block bm-item menu-item">
+    <NavLink onClick={onClick} to={to ? to : ""} className="d-block bm-item menu-item">
       <MenuItem className="menu-wrap" {...(match ? { active: true } : { active: false })}>
         <span className="p-2 d-inline-block">{child}</span>
         {label}

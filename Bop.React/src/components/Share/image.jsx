@@ -2,60 +2,6 @@
 import { jsx, css } from "@emotion/core";
 import { images } from "./../../constants/images";
 
-export const CoverImage = ({ url }) => {
-  return (
-    <img
-      css={css({
-        height: "100%",
-        width: "100%",
-        zIndex: "-1",
-        left: 0,
-        right: 0,
-        top: 0,
-        position: "relative",
-      })}
-      src={url}
-      alt=""
-    />
-  );
-};
-
-export const BillWatermark = ({ src, width = 150, height = 150 }) => {
-  return (
-    <img
-      css={css({
-        width: `${width}px`,
-        height: `${height}px`,
-        margin: "auto",
-        opacity: "0.2",
-        position: "absolute",
-        float: "none",
-        bottom: 0,
-        left: 0,
-        right: 0,
-      })}
-      src={src}
-      alt=""
-    />
-  );
-};
-
-export const ReceiptWatermarkedLogo = ({ src, width = 100, height = 100 }) => {
-  return (
-    <img
-      css={css({
-        width: `${width}px`,
-        height: `${height}px`,
-        position: "absolute",
-        bottom: "0",
-        left: "0",
-        opacity: "0.1",
-      })}
-      src={src}
-      alt=""
-    />
-  );
-};
 
 // export const SquaredBackground = ({ rows = 10, columns = 22, color = "#efefef" }) => {
 //   let skewX = 0;

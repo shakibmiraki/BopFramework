@@ -7,24 +7,15 @@ import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
 import { localeService } from "../../services/locale";
 import { GoHome } from "react-icons/go";
-import { FaWallet, FaRegBookmark } from "react-icons/fa";
+import { FaSistrix } from "react-icons/fa";
 import { MenuTab } from "../Share/tab";
-import { GrReactjs } from 'react-icons/gr';
+import { GrReactjs } from "react-icons/gr";
+import { AiOutlineSave } from "react-icons/ai";
 
 const styles = css({
   ".react-tabs": {
     width: "100%",
   },
-  // ".react-tabs .react-tabs__tab-panel": {
-  //   display: "flex",
-  //   position: "fixed",
-  //   bottom: "55px",
-  //   width: "100%",
-  //   backgroundColor: "#9f46a3",
-  //   color: "white",
-  //   minHeight: "55px",
-  //   zIndex: -1,
-  // },
   ".react-tabs__tab-list": {
     display: "flex",
     borderBottom: "0",
@@ -103,17 +94,17 @@ export const TabNavigation = ({ name }) => {
           <Tab>
             <MenuTab active={tabIndex === 1}>
               <div className="tab-icon">
-                <FaWallet />
+                <FaSistrix />
               </div>
-              <div className="tab-text">{t("tab_navigation.menu.title.my_cards")}</div>
+              <div className="tab-text">{t("tab_navigation.menu.title.search")}</div>
             </MenuTab>
           </Tab>
           <Tab>
             <MenuTab active={tabIndex === 2}>
               <div className="tab-icon">
-                <FaRegBookmark />
+                <AiOutlineSave />
               </div>
-              <div className="tab-text">{t("tab_navigation.menu.title.favorite_pages")}</div>
+              <div className="tab-text">{t("tab_navigation.menu.title.saved_item")}</div>
             </MenuTab>
           </Tab>
           <Tab>

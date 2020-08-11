@@ -7,10 +7,10 @@ import { Header } from "./../../components/Share/header";
 import { MenuCircle } from "../../components/Menu/menu-circle";
 import Zoom from "react-reveal/Zoom";
 import { config } from "../../config";
-import { images } from "./../../constants/images";
 import { TabNavigation } from "./../../components/Menu/tab-navigation";
 import { Title, TextDirection } from "./../../components/Share/text";
 import { routes } from "../../constants/constant";
+import { FcBriefcase, FcClearFilters, FcCapacitor, FcGallery, FcLike, FcPrivacy, FcWebcam, FcPhotoReel, FcMultipleCameras } from "react-icons/fc";
 
 const Home = () => {
   const { t } = useTranslation();
@@ -28,20 +28,20 @@ const Home = () => {
               <div className="row mb-3">
                 <MenuCircle
                   url={routes.home.base}
-                  text={t("share.menu.title.transfer")}
-                  icon={<img src={images.icons.transfer} alt="put transfer icon" />}
+                  text={t("share.menu.title.menu_title")}
+                  icon={<FcBriefcase fontSize="3rem" />}
                 />
 
                 <MenuCircle
                   url={routes.home.base}
-                  text={t("share.menu.title.topup")}
-                  icon={<img src={images.icons.topup} alt="put topup icon" />}
+                  text={t("share.menu.title.menu_title")}
+                  icon={<FcMultipleCameras fontSize="3rem" />}
                 />
 
                 <MenuCircle
                   url={routes.home.base}
-                  text={t("share.menu.title.internet_topup")}
-                  icon={<img src={images.icons.internet_package} alt="put internet topup icon" />}
+                  text={t("share.menu.title.menu_title")}
+                  icon={<FcPhotoReel fontSize="3rem" />}
                 />
               </div>
             </Zoom>
@@ -53,33 +53,33 @@ const Home = () => {
               <div className="row">
                 <MenuCircle
                   url={routes.home.base}
-                  text={t("share.menu.title.bank_service")}
-                  icon={<img src={images.icons.bank_services} alt="put bank service icon" />}
+                  text={t("share.menu.title.menu_title")}
+                  icon={<FcWebcam fontSize="3rem" />}
                 />
                 <MenuCircle
                   url={routes.home.base}
-                  text={t("share.menu.title.mobile_service")}
-                  icon={<img src={images.icons.mobile_services} alt="put mobile service icon" />}
+                  text={t("share.menu.title.menu_title")}
+                  icon={<FcPrivacy fontSize="3rem" />}
                 />
                 <MenuCircle
                   url={routes.home.base}
-                  text={t("share.menu.title.car_service")}
-                  icon={<img src={images.icons.car_services} alt="put car service icon" />}
+                  text={t("share.menu.title.menu_title")}
+                  icon={<FcLike fontSize="3rem" />}
                 />
                 <MenuCircle
                   url={routes.home.base}
-                  text={t("share.menu.title.bill")}
-                  icon={<img src={images.icons.bills} alt="put bill icon" />}
-                />
-                <MenuCircle
-                  url="/noun_customer"
-                  text={t("share.menu.title.noun_customer")}
-                  icon={<img src={images.icons.non_customer_services} alt="put noun_customer icon" />}
+                  text={t("share.menu.title.menu_title")}
+                  icon={<FcGallery fontSize="3rem" />}
                 />
                 <MenuCircle
                   url={routes.home.base}
-                  text={t("share.menu.title.charity")}
-                  icon={<img src={images.icons.charity} alt="put charity icon" />}
+                  text={t("share.menu.title.menu_title")}
+                  icon={<FcCapacitor fontSize="3rem" />}
+                />
+                <MenuCircle
+                  url={routes.home.base}
+                  text={t("share.menu.title.menu_title")}
+                  icon={<FcClearFilters fontSize="3rem" />}
                 />
               </div>
             </Zoom>

@@ -5,7 +5,7 @@ import { IoMdArrowRoundBack } from "react-icons/io";
 import { Navigation } from "./../Menu/navigation";
 import { ThemeColor } from "./color";
 import history from "./../../services/history";
-import { SquaredBackground, CoverImage } from "./image";
+import { SquaredBackground } from "./image";
 import { Logo } from "./logo";
 
 export const Back = () => {
@@ -23,10 +23,12 @@ export const Back = () => {
   );
 };
 
-export const Header = ({ logo, burger, back, text, height = "150", cover }) => {
+export const Header = ({ logo, burger, back, text, height = "150" }) => {
   return (
     <div css={css({ position: "relative" })}>
-      <div css={css({ height: `${height}px` })}>{cover ? <CoverImage url={cover} /> : <SquaredBackground />}</div>
+      <div css={css({ height: `${height}px` })}>
+        <SquaredBackground />
+      </div>
       <div css={css({ position: "absolute", left: "0", right: "0", top: "0" })}>
         {burger ? <Navigation /> : null}
         {logo ? <Logo /> : null}

@@ -20,8 +20,6 @@ export const ProfileInfo = () => {
     <div css={css(styles)}>
       <div className="profile-info">
         <div className="media position-relative align-items-center">
-          {/* <img className="rounded-circle mr-3 ml-3 border bg-white" src={images.avatar} alt="..." /> */}
-
           <ImgUpload />
 
           <TextDirection>

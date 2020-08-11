@@ -21,8 +21,8 @@ const AboutUs = () => {
             <div className="row mb-3">
               <StyledLogo />
             </div>
-            <div className="row">
-              <Paragraph text={t("about_us.copyright.paragraph")} />
+            <div className="row font-big-2">
+              <Paragraph className="w-100 d-block text-center" text={t("about_us.copyright.paragraph")} />
             </div>
 
             <div className="row justify-content-center call-info p-2">

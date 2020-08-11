@@ -1,6 +1,6 @@
 /** @jsx jsx */
 import { jsx, css } from "@emotion/core";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { push as Menu } from "react-burger-menu";
 import styles from "./navigation-style";
 import { useTranslation } from "react-i18next";
@@ -15,10 +15,11 @@ import { MenuLink } from "./menu-link";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { ThemeColor } from "./../Share/color";
 import { colors } from "./../../constants/colors";
+import { logout } from "../../actions/auth";
 
 export const Navigation = () => {
   const { t } = useTranslation();
-
+  const dispatch = useDispatch();
   const { ltr } = useSelector((state) => state.language);
 
   return (
@@ -53,6 +54,12 @@ export const Navigation = () => {
           <MenuLink
             to={routes.about_us}
             label={t("navigation.menu.title.about_us")}
+            child={<MdPermContactCalendar className="icon-size" />}
+          />
+
+          <MenuLink
+            onClick={() => dispatch(logout())}
+            label={t("navigation.menu.title.logout")}
             child={<MdPermContactCalendar className="icon-size" />}
           />
         </Menu>
