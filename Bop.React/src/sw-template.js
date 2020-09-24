@@ -1,27 +1,15 @@
 /* eslint-disable no-undef */
 if ("function" === typeof importScripts) {
-  importScripts("./workbox-v5.1.3/workbox-sw.js");
-  importScripts("./workbox-v5.1.3/workbox-core.prod.js");
-  importScripts("./workbox-v5.1.3/workbox-precaching.prod.js");
-  importScripts("./workbox-v5.1.3/workbox-strategies.prod.js");
-  importScripts("./workbox-v5.1.3/workbox-routing.prod.js");
-  importScripts("./workbox-v5.1.3/workbox-expiration.prod.js");
-  // importScripts("https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js");
+  importScripts("https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox-sw.js");
 
   /* global workbox */
   if (workbox) {
-    workbox.setConfig({ modulePathPrefix: "/workbox-v5.1.3/" });
+    // workbox.setConfig({ modulePathPrefix: "/workbox-v5.1.3/" });
 
     console.log("Workbox is loaded");
 
     /* injection point for manifest files.  */
-    // workbox.precaching.precacheAndRoute([]);
     workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
-
-    /* custom cache rules*/
-    // workbox.routing.registerNavigationRoute("/index.html", {
-    //   blacklist: [/^\/_/, /\/[^\/]+\.[^\/]+$/],
-    // });
 
     //image caching
     workbox.routing.registerRoute(
@@ -50,6 +38,14 @@ if ("function" === typeof importScripts) {
         ],
       })
     );
+
+    // Cache Api
+    // workbox.routing.registerRoute(
+    //   ({ url }) => url.pathname.endsWith("/V1/GetSomething"),
+    //   new workbox.strategies.CacheFirst({
+    //     cacheName: "api-cache-1",
+    //   })
+    // );
 
     // JS, CSS caching
     workbox.routing.registerRoute(
